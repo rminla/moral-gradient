@@ -3,31 +3,28 @@ import type { Finding } from "@/lib/types";
 import { HBar } from "./Bars";
 import Share from "./Share";
 import { ExampleTag } from "./Banner";
-
-const pillarName: Record<string, string> = { saydo: "Say vs Do", pressure: "Under pressure", selfinterest: "Self-interest", baseline: "Baseline" };
-const pillarColor: Record<string, string> = { saydo: "bg-say", pressure: "bg-judge", selfinterest: "bg-do", baseline: "bg-ink" };
+import { Kicker, pillar } from "./Brand";
 
 export default function FindingCard({ f, modelName, example }: { f: Finding; modelName: string; example: boolean }) {
+  const p = pillar(f.pillar);
   return (
-    <article className="card flex flex-col p-5">
-      <div className="mb-3 flex items-center gap-2 text-xs">
-        <span className="chip"><span className={`h-1.5 w-1.5 rounded-full ${pillarColor[f.pillar] || "bg-ink"}`} />{pillarName[f.pillar] || f.pillar}</span>
-        <span className="text-black/50">{modelName}</span>
+    <article className="flex flex-col border-t-2 border-ink pt-3">
+      <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Kicker k={f.pillar} />
+        <span className="font-sans text-[11px] text-ink/50">· {modelName}</span>
         <span className="ml-auto">{example ? <ExampleTag /> : <ExampleTag>Pilot · exploratory</ExampleTag>}</span>
       </div>
       <Link href={`/f/${f.id}`} className="group">
-        <h3 className="serif text-xl leading-snug group-hover:underline">{f.headline}</h3>
+        <h3 className="serif text-[24px] leading-[1.15] tracking-[-0.01em] group-hover:text-vermilion">{f.headline}</h3>
       </Link>
-      <div className="mt-2 font-mono text-2xl font-semibold tabular-nums">{f.stat}</div>
-      <div className="text-xs text-black/55">{f.stat_label}</div>
-      <p className="mt-3 text-sm leading-6 text-black/70">{f.summary}</p>
-      <div className="mt-4 space-y-2.5">
-        {f.bars.slice(0, 4).map((b) => (
-          <HBar key={b.label} label={b.label} value={b.value} color={pillarColor[f.pillar] || "bg-ink"} />
-        ))}
+      <div className={`num mt-3 text-[26px] font-medium ${p.text}`}>{f.stat}</div>
+      <div className="font-sans text-[11px] uppercase tracking-[0.08em] text-ink/55">{f.stat_label}</div>
+      <p className="mt-3 font-serif text-[16px] leading-relaxed text-ink/80">{f.summary}</p>
+      <div className="mb-5 mt-4 space-y-2.5">
+        {f.bars.slice(0, 4).map((b) => <HBar key={b.label} label={b.label} value={b.value} color={p.color} />)}
       </div>
-      <div className="mt-auto flex items-center justify-between pt-5">
-        <Link href={`/f/${f.id}`} className="text-xs font-semibold text-black/60 hover:text-black">Details →</Link>
+      <div className="mt-auto flex items-center justify-between border-t border-ink/10 pt-3">
+        <Link href={`/f/${f.id}`} className="font-sans text-xs font-medium text-ink/70 hover:text-vermilion">Read the finding →</Link>
         <Share path={`/f/${f.id}`} text={`${f.headline} ${f.stat} (${f.stat_label})`} compact />
       </div>
     </article>

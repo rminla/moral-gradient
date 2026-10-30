@@ -1,48 +1,68 @@
 import { ImageResponse } from "next/og";
 import { getBundle, modelName } from "@/lib/bundle";
-import { SITE_NAME } from "@/lib/config";
+import { OG, OgScaleStrip, OgWordmark, PILLAR_OG, ogFonts, siteHost } from "@/lib/og";
 
+export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "Finding";
 
-const COLORS: Record<string, string> = { saydo: "#7c3aed", pressure: "#0284c7", selfinterest: "#d97706", baseline: "#12141a" };
-
-export default async function OG({ params }: { params: Promise<{ id: string }> }) {
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const b = await getBundle();
+  const [b, fonts] = await Promise.all([getBundle(), ogFonts()]);
   const f = b.findings.find((x) => x.id === id);
-  const accent = COLORS[f?.pillar || "saydo"] || "#12141a";
+  const p = PILLAR_OG[f?.pillar || "saydo"] || PILLAR_OG.saydo;
+  const bars = (f?.bars || []).slice(0, 4);
+  const vals = bars.map((x) => x.value ?? 0);
+  const lo = vals.length ? vals.lastIndexOf(Math.min(...vals)) : -1;
+  const gap = vals.length ? Math.max(...vals) - Math.min(...vals) : 0;
+  const W = 440; // chart track width
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#f6f4ef", padding: 56, fontFamily: "sans-serif", color: "#12141a" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 26 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "#12141a", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800 }}>{SITE_NAME.replace(/^The /, "").charAt(0)}</div>
-          <div style={{ fontWeight: 700 }}>{SITE_NAME}</div>
-          <div style={{ marginLeft: "auto", display: "flex", padding: "6px 16px", borderRadius: 999, background: accent, color: "white", fontSize: 22 }}>{f ? modelName(b, f.model) : ""}</div>
-        </div>
-        <div style={{ display: "flex", flex: 1, gap: 48, marginTop: 36 }}>
-          <div style={{ display: "flex", flexDirection: "column", flex: 1.1 }}>
-            <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1 }}>{f?.headline || "Finding"}</div>
-            <div style={{ fontSize: 76, fontWeight: 800, marginTop: 24, color: accent }}>{f?.stat}</div>
-            <div style={{ fontSize: 26, color: "#555" }}>{f?.stat_label}</div>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: OG.paper, color: OG.ink, fontFamily: "Plex Sans" }}>
+        <OgScaleStrip h={12} />
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "34px 60px 30px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `2px solid ${OG.ink}`, paddingBottom: 18 }}>
+            <OgWordmark size={32} />
+            <div style={{ display: "flex", gap: 14, alignItems: "center", fontSize: 18, letterSpacing: 2.5, textTransform: "uppercase" }}>
+              <span style={{ color: p.color }}>{p.name}</span><span style={{ color: "#8a8478" }}>·</span><span style={{ color: "#5c574d" }}>{f ? modelName(b, f.model) : ""}</span>
+            </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", flex: 0.9, justifyContent: "center", gap: 20 }}>
-            {(f?.bars || []).slice(0, 4).map((x) => (
-              <div key={x.label} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22 }}><span>{x.label}</span><span style={{ fontWeight: 700 }}>{Math.round((x.value || 0) * 100)}%</span></div>
-                <div style={{ display: "flex", height: 18, borderRadius: 9, background: "#e7e3da" }}>
-                  <div style={{ display: "flex", width: `${Math.max(2, (x.value || 0) * 100)}%`, height: 18, borderRadius: 9, background: accent }} />
-                </div>
-              </div>
-            ))}
+          <div style={{ display: "flex", flex: 1, gap: 56, marginTop: 34 }}>
+            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+              <div style={{ fontFamily: "Newsreader", fontSize: 62, lineHeight: 1.04, letterSpacing: -1.5 }}>{f?.headline || "Finding"}</div>
+              <div style={{ fontFamily: "Plex Mono", fontSize: 64, marginTop: 26, color: p.color }}>{f?.stat}</div>
+              <div style={{ fontSize: 18, letterSpacing: 2, textTransform: "uppercase", color: "#6b665b", marginTop: 6 }}>{f?.stat_label}</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", width: W + 40, justifyContent: "center", gap: 26 }}>
+              {bars.map((x, i) => {
+                const v = Math.min(1, Math.max(0, x.value ?? 0));
+                const c = i === lo && gap >= 0.2 ? p.color : OG.ink;
+                return (
+                  <div key={x.label} style={{ display: "flex", flexDirection: "column" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, marginBottom: 8 }}>
+                      <span>{x.label}</span><span style={{ fontFamily: "Plex Mono", color: c }}>{Math.round(v * 100)}%</span>
+                    </div>
+                    <div style={{ display: "flex", position: "relative", width: W, height: 18 }}>
+                      <div style={{ position: "absolute", left: 0, top: 0, width: 2, height: 18, background: OG.ink }} />
+                      <div style={{ position: "absolute", left: W / 2, top: 0, width: 1, height: 18, background: OG.rule }} />
+                      <div style={{ position: "absolute", left: W - 1, top: 0, width: 1, height: 18, background: OG.rule }} />
+                      <div style={{ position: "absolute", left: 0, top: 8, width: Math.max(2, v * W), height: 3, background: c }} />
+                      <div style={{ position: "absolute", left: v * W - 9, top: 0, width: 18, height: 18, borderRadius: 9, background: c, border: `3px solid ${OG.paper}` }} />
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{ display: "flex", justifyContent: "space-between", width: W, fontFamily: "Plex Mono", fontSize: 14, color: "#8a8478" }}><span>0%</span><span>50%</span><span>100%</span></div>
+            </div>
           </div>
-        </div>
-        <div style={{ display: "flex", fontSize: 20, color: "#777", marginTop: 12 }}>
-          {b.is_example ? "Example data from the single-model pilot · " : "Pilot, exploratory · "}Descriptive only: what the model did, not what it should do.
+          <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${OG.rule}`, paddingTop: 14, fontSize: 17, color: "#6b665b" }}>
+            <span>{b.is_example ? "Example data from the single-model pilot · " : "Pilot, exploratory · "}Descriptive only: what the model did, not what it should do.</span>
+            <span style={{ fontFamily: "Plex Mono", color: OG.ink }}>{siteHost()}</span>
+          </div>
         </div>
       </div>
     ),
-    size,
+    { ...size, fonts },
   );
 }

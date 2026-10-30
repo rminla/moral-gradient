@@ -105,13 +105,13 @@ This sends the bundle, the donor-only traces and the ledger spend summary.
 1. **GitHub**: the folder is already a git repo with an initial commit. Create the private repo `rminla/moral-gradient` (empty, no README), then `git remote add origin git@github.com:rminla/moral-gradient.git && git push -u origin main`. `.gitignore` already excludes `.env*`, local DBs, donor-only traces, job logs and the donor-trace screenshot.
 2. **Turso**: `turso db create moral-gradient`. Copy the URL into `DATABASE_URL` and create a token for `DATABASE_AUTH_TOKEN`. The schema is created on first request. Then run `DATABASE_URL=… DATABASE_AUTH_TOKEN=… npm run db:init` once to seed the milestones.
 3. **Vercel**: import `rminla/moral-gradient` (repo root, framework Next.js) and add the env vars above (`JOB_RUNNER_MODE=webhook` or `dryrun`). Then deploy.
-4. **Domain**: add it in Vercel → Domains and set `NEXT_PUBLIC_SITE_URL`.
+4. **Domain**: `moralgradient.org` is added in Vercel → Domains. Set `NEXT_PUBLIC_SITE_URL=https://moralgradient.org` in Vercel and redeploy (links, share images and Stripe redirects use it).
 5. **Stripe** (test mode first):
    - Set `STRIPE_SECRET_KEY`.
-   - Add a webhook endpoint at `https://<domain>/api/stripe/webhook` for the events `checkout.session.completed` and `charge.refunded`, and set `STRIPE_WEBHOOK_SECRET`.
+   - Add a webhook endpoint at `https://moralgradient.org/api/stripe/webhook` for the events `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `charge.refunded`, and set `STRIPE_WEBHOOK_SECRET`.
    - Test with card 4242 4242 4242 4242, then switch to live keys.
 6. **Resend**: verify the domain (DNS records), then set `RESEND_API_KEY` and `EMAIL_FROM`.
-7. **Results**: on the box, `npm run bundle && SITE=https://<domain> INGEST_TOKEN=… npm run push:results`. Run it after every export, or call it at the end of the runner.
+7. **Results**: on the box, `npm run bundle && SITE=https://moralgradient.org INGEST_TOKEN=… npm run push:results`. Run it after every export, or call it at the end of the runner.
 
 ## Security notes
 

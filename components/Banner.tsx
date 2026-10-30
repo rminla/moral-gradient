@@ -4,19 +4,22 @@ export function ExampleBanner({ example, examplesInLedger, exploratory }: { exam
   const mock = paymentsMode() === "mock";
   if (!example && !mock && !examplesInLedger && !exploratory) return null;
   return (
-    <div className="border-b border-amber-300/60 bg-amber-50 text-amber-900">
-      <div className="mx-auto max-w-6xl px-5 py-2 text-xs">
-        <b>Preview build.</b>{" "}
-        {example && "Results shown are EXAMPLE DATA built from the single-model pilot (Claude Haiku 5.5), not a published wave. "}
-        {!example && exploratory && "Pilot results: one model (Claude Haiku 5.5), exploratory and not yet preregistered. Superseded and excluded runs are listed but never charted. "}
-        {examplesInLedger && "The donation leaderboard includes example donations. "}
-        {mock && "Payments run in mock mode: no card is charged."}
+    <div className="border-b border-ink/15 bg-panel">
+      <div className="mx-auto flex max-w-6xl items-baseline gap-3 px-5 py-2 font-sans text-xs text-ink/75">
+        <span className="kicker shrink-0 bg-highlight px-1.5 py-0.5 text-ink">Preview</span>
+        <span>
+          {example && "Results shown are EXAMPLE DATA built from the single-model pilot (Claude Haiku 5.5), not a published wave. "}
+          {!example && exploratory && "Pilot results: one model (Claude Haiku 5.5), exploratory and not yet preregistered. Superseded and excluded runs are listed but never charted. "}
+          {examplesInLedger && "The donation leaderboard includes example donations. "}
+          {mock && "Payments run in mock mode: no card is charged."}
+        </span>
       </div>
     </div>
   );
 }
 
+/** Highlighter-style annotation tag, used for caveats (example data, small samples, in progress). */
 export function ExampleTag({ show = true, children = "Example data" }: { show?: boolean; children?: React.ReactNode }) {
   if (!show) return null;
-  return <span className="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800">{children}</span>;
+  return <span className="inline-flex items-center bg-highlight/80 px-1.5 py-px font-sans text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">{children}</span>;
 }

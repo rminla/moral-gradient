@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { modelName, pct, scenarioTitle } from "@/lib/bundle";
 import type { Baseline, Bundle, Pressure, SayDo, SelfInterest } from "@/lib/types";
-import { HBar } from "./Bars";
+import { Axis, HBar } from "./Bars";
 import { ExampleTag } from "./Banner";
 
 const optionText = (b: Bundle, scen: string, opt: string) => b.scenarios.find((s) => s.id === scen)?.judge_options?.[opt]?.replace(/\.$/, "") || opt;
 
 export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
   return (
-    <div className="card overflow-x-auto">
-      <table className="w-full min-w-[720px] text-sm">
-        <thead className="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
-          <tr><th className="p-3 font-semibold">Scenario</th><th className="p-3 font-semibold">Model</th><th className="p-3 font-semibold">Its stated view implies</th>
-            <th className="p-3 text-right font-semibold text-say">Says</th><th className="p-3 text-right font-semibold text-judge">Judges</th><th className="p-3 text-right font-semibold text-do">Does</th><th className="p-3 text-right font-semibold">Gap</th></tr>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[760px] font-sans text-sm">
+        <thead className="border-b-2 border-ink text-left">
+          <tr className="label"><th className="py-2 pr-3">Scenario</th><th className="p-2">Model</th><th className="min-w-[13rem] p-2">Its stated view implies</th>
+            <th className="p-2 text-right text-say">Says</th><th className="p-2 text-right text-judge">Judges</th><th className="p-2 text-right text-do">Does</th><th className="whitespace-nowrap py-2 pl-2 text-right">Gap · judge→do</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => {
@@ -20,20 +20,20 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
             const sayCons = r.say.agree_rate == null ? null : r.say.agree_rate >= 0.5 ? r.say.agree_rate : 1 - r.say.agree_rate;
             const gap = r.judge.consistent_rate != null && d?.consistent_rate != null ? r.judge.consistent_rate - d.consistent_rate : null;
             return (
-              <tr key={r.scenario + r.model} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
-                <td className="p-3"><Link href={`/scenarios/${r.scenario}`} className="font-medium hover:underline">{scenarioTitle(b, r.scenario)}</Link><div className="text-xs text-black/45">{r.scenario}{r.sample_size_note && <> · <span className="text-amber-700">{r.sample_size_note}</span></>}</div></td>
-                <td className="p-3 text-black/70">{modelName(b, r.model)}</td>
-                <td className="p-3 text-black/70">{optionText(b, r.scenario, r.say_implied_option)}</td>
-                <td className="p-3 text-right font-mono tabular-nums">{pct(sayCons)}</td>
-                <td className="p-3 text-right font-mono tabular-nums">{pct(r.judge.consistent_rate)}</td>
-                <td className="p-3 text-right font-mono tabular-nums">{pct(d?.consistent_rate)}</td>
-                <td className="p-3 text-right"><span className={`rounded-md px-2 py-0.5 font-mono text-xs font-semibold tabular-nums ${gap != null && Math.abs(gap) >= 0.3 ? "bg-amber-100 text-amber-900" : "bg-black/5 text-black/60"}`}>{gap == null ? "–" : `${gap > 0 ? "−" : gap < 0 ? "+" : ""}${Math.round(Math.abs(gap) * 100)} pts`}</span></td>
+              <tr key={r.scenario + r.model} className={`border-b border-ink/10 hover:bg-panel ${r.sample_size_note ? "text-ink/55" : ""}`}>
+                <td className="py-3 pr-3"><Link href={`/scenarios/${r.scenario}`} className="font-serif text-[17px] text-ink hover:text-vermilion">{scenarioTitle(b, r.scenario)}</Link><div className="num text-[11px] text-ink/45">{r.scenario}{r.sample_size_note && <> · <span className="bg-highlight/70 px-1 font-sans text-ink">{r.sample_size_note}</span></>}</div></td>
+                <td className="whitespace-nowrap p-2 text-ink/70">{modelName(b, r.model)}</td>
+                <td className="min-w-[13rem] p-2 text-ink/70">{optionText(b, r.scenario, r.say_implied_option)}</td>
+                <td className="num p-2 text-right">{pct(sayCons)}</td>
+                <td className="num p-2 text-right">{pct(r.judge.consistent_rate)}</td>
+                <td className="num p-2 text-right">{pct(d?.consistent_rate)}</td>
+                <td className="py-2 pl-2 text-right"><GapCell gap={gap} /></td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="border-t border-black/5 p-3 text-xs text-black/50">Each column is the share of answers consistent with the option the model&apos;s own stated view implies. &ldquo;Gap&rdquo; = Judges minus Does, in the original version of the scenario. No column says which option is right.</p>
+      <p className="mt-2 font-sans text-xs text-ink/50">Each column is the share of answers consistent with the option the model&apos;s own stated view implies. &ldquo;Gap&rdquo; = Judges minus Does, in the original version of the scenario. No column says which option is right.</p>
     </div>
   );
 }
@@ -45,24 +45,38 @@ function siSub(c: SelfInterest["conditions"][number], control?: SelfInterest["co
   return parts.filter(Boolean).join(" · ");
 }
 
+function GapCell({ gap }: { gap: number | null }) {
+  if (gap == null) return <span className="num text-ink/40">–</span>;
+  const big = Math.abs(gap) >= 0.3;
+  const w = Math.round(Math.abs(gap) * 48);
+  return (
+    <span className="inline-flex items-center justify-end gap-2 whitespace-nowrap">
+      <span className="relative inline-block h-2 w-12 bg-ink/[0.06]"><span className={`absolute inset-y-0 right-0 ${big ? "bg-vermilion" : "bg-ink/40"}`} style={{ width: w }} /></span>
+      <span className={`num w-16 text-xs ${big ? "font-medium text-vermilion" : "text-ink/60"}`}>{`${gap > 0 ? "−" : gap < 0 ? "+" : ""}${Math.round(Math.abs(gap) * 100)} pts`}</span>
+    </span>
+  );
+}
+
 export function SelfInterestChart({ s, b }: { s: SelfInterest; b: Bundle }) {
   const control = s.conditions.find((c) => c.condition === "a_none");
   return (
-    <div className="card p-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="text-sm font-semibold">{s.case_label}</div>
+    <figure className="border-t-2 border-ink pt-3">
+      <div className="flex flex-wrap items-baseline gap-2">
+        <figcaption className="serif text-[20px] leading-tight">{s.case_label}</figcaption>
         {s.partial && <ExampleTag>In progress</ExampleTag>}
-        <span className="ml-auto text-xs text-black/50">{modelName(b, s.model)} · {scenarioTitle(b, s.scenario)}</span>
+        <span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, s.model)} · {scenarioTitle(b, s.scenario)}</span>
       </div>
-      <p className="mt-1 text-xs text-black/50">Share of runs where the model waived the fee. Every condition is the same scenario plus one sentence about the model&apos;s own interest. Shift = self-serving rate with the incentive minus without it (Fisher exact p). Small samples (n=20 each): exploratory.</p>
+      <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of runs where the model waived the fee. Every condition is the same scenario plus one sentence about the model&apos;s own interest. Shift = self-serving rate with the incentive minus without it (Fisher exact p). Small samples (n=20 each): exploratory.</p>
       <div className="mt-4 space-y-3">
         {s.conditions.map((c) => (
-          <HBar key={c.condition} label={c.label} value={c.waive_rate} n={c.n}
-            color={c.condition === "a_none" ? "bg-black/60" : c.direction === "toward_waive" ? "bg-sky-500" : "bg-do"}
+          <HBar key={c.condition} label={c.label} value={c.waive_rate} n={c.n} reference={c.condition === "a_none" ? null : control?.waive_rate}
+            color={c.condition === "a_none" ? "bg-ink" : c.direction === "toward_waive" ? "bg-prussian" : "bg-vermilion"}
             sub={c.condition === "a_none" ? "control" : siSub(c, control)} />
         ))}
       </div>
-    </div>
+      <Axis className="mt-1" />
+      {control && <p className="mt-2 font-sans text-[11px] text-ink/50"><span className="mr-1 inline-block w-4 border-t border-dashed border-ink align-middle" />dashed line = control ({pct(control.waive_rate)}). <span className="text-vermilion">●</span> incentive pushes toward keeping the fee · <span className="text-prussian">●</span> toward waiving it.</p>}
+    </figure>
   );
 }
 
@@ -75,21 +89,22 @@ const ARM_ORDER = ["neutral_control", "pushback", "persuader", "flattery", "auth
 export function PressureChart({ rows, b }: { rows: Pressure[]; b: Bundle }) {
   const items = [...new Set(rows.map((r) => r.item))];
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-x-10 gap-y-12 md:grid-cols-2">
       {items.map((it) => {
         const rs = rows.filter((r) => r.item === it).sort((a, z) => ARM_ORDER.indexOf(a.arm) - ARM_ORDER.indexOf(z.arm));
         const small = rs.every((r) => r.n < 10);
         return (
-          <div key={it} className="card p-5">
-            <div className="flex items-center gap-2"><div className="text-sm font-semibold">{it}</div>{small && <ExampleTag>Smoke test · n≤3</ExampleTag>}<span className="ml-auto text-xs text-black/50">{modelName(b, rs[0].model)}</span></div>
-            <p className="mt-1 text-xs text-black/50">Share of conversations where the answer moved away from the model&apos;s first answer. Moving for real information is reasonable; moving for flattery or authority is not.</p>
+          <figure key={it} className="border-t-2 border-ink pt-3">
+            <div className="flex flex-wrap items-baseline gap-2"><figcaption className="num text-[15px] font-medium">{it}</figcaption>{small && <ExampleTag>Smoke test · n≤3</ExampleTag>}<span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, rs[0].model)}</span></div>
+            <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of conversations where the answer moved away from the model&apos;s first answer. Moving for real information is reasonable; moving for flattery or authority is not.</p>
             <div className="mt-4 space-y-3">
               {rs.map((r) => (
-                <HBar key={r.arm} label={ARM_LABEL[r.arm] || r.arm} value={r.flip_rate} n={r.n} color={r.arm === "information" ? "bg-emerald-600" : r.arm === "neutral_control" ? "bg-black/50" : "bg-judge"}
+                <HBar key={r.arm} label={ARM_LABEL[r.arm] || r.arm} value={r.flip_rate} n={r.n} color={r.arm === "information" ? "bg-moss" : r.arm === "neutral_control" ? "bg-ink/50" : "bg-prussian"}
                   sub={r.recovery_rate != null ? `returned to first answer ${pct(r.recovery_rate)}` : undefined} />
               ))}
             </div>
-          </div>
+            <Axis className="mt-1" />
+          </figure>
         );
       })}
     </div>
@@ -98,18 +113,18 @@ export function PressureChart({ rows, b }: { rows: Pressure[]; b: Bundle }) {
 
 export function BaselineTable({ rows }: { rows: Baseline[] }) {
   return (
-    <div className="card overflow-x-auto">
-      <table className="w-full min-w-[640px] text-sm">
-        <thead className="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
-          <tr><th className="p-3">Item</th><th className="p-3">Instrument</th><th className="p-3 text-right">Model</th><th className="p-3">People (published data)</th></tr>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] font-sans text-sm">
+        <thead className="border-b-2 border-ink text-left">
+          <tr className="label"><th className="py-2 pr-3">Item</th><th className="p-2">Instrument</th><th className="p-2 text-right">Model</th><th className="p-2">People (published data)</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.item} className="border-b border-black/5 last:border-0">
-              <td className="p-3"><div className="font-medium">{r.statement || r.item.replace("AWAD-", "Trolley: ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</div><div className="text-xs text-black/45">{r.item} · n={r.n}</div></td>
-              <td className="p-3 text-black/65">{r.instrument}</td>
-              <td className="p-3 text-right font-mono tabular-nums">{r.act_rate != null ? `${pct(r.act_rate)} act` : r.mean != null ? `mean ${r.mean}` : "–"}</td>
-              <td className="p-3 text-black/65">{r.human ? <><b className="font-mono">{pct(r.human.value)}</b> act<div className="text-xs text-black/45">{r.human.source}</div></> : <span className="text-xs text-black/40">Norms added with the full wave</span>}</td>
+            <tr key={r.item} className="border-b border-ink/10">
+              <td className="py-3 pr-3"><div className="font-serif text-[16px]">{r.statement || r.item.replace("AWAD-", "Trolley: ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</div><div className="num text-[11px] text-ink/45">{r.item} · n={r.n}</div></td>
+              <td className="p-2 text-ink/65">{r.instrument}</td>
+              <td className="num p-2 text-right">{r.act_rate != null ? `${pct(r.act_rate)} act` : r.mean != null ? `mean ${r.mean}` : "–"}</td>
+              <td className="p-2 text-ink/65">{r.human ? <><b className="num font-medium text-ink">{pct(r.human.value)}</b> act<div className="text-[11px] text-ink/45">{r.human.source}</div></> : <span className="text-xs italic text-ink/40">Norms added with the full wave</span>}</td>
             </tr>
           ))}
         </tbody>

@@ -21,20 +21,20 @@ export default function LiveBudget({ initial }: { initial: S }) {
   ];
   return (
     <div className="card p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="label !mb-0">Budget, live</div>
-        <span className="flex items-center gap-1.5 text-[11px] text-black/50"><span key={tick} className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />updates every 20 s</span>
+      <div className="mb-4 flex items-center justify-between border-b border-ink/15 pb-2">
+        <div className="kicker text-ink">The ledger</div>
+        <span className="flex items-center gap-1.5 font-sans text-[11px] text-ink/50"><span key={tick} className="h-1.5 w-1.5 animate-pulse rounded-full bg-vermilion" />live · every 20 s</span>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        {items.map((i) => (
-          <div key={i.k}>
-            <div className="font-mono text-xl font-semibold tabular-nums">{i.v}</div>
-            <div className="text-xs font-medium text-black/70">{i.k}</div>
-            <div className="text-[11px] text-black/45">{i.hint}</div>
+      <dl className="grid grid-cols-3 divide-x divide-ink/15">
+        {items.map((i, n) => (
+          <div key={i.k} className={n === 0 ? "pr-3" : "px-3"}>
+            <dd className="num text-[22px] font-medium leading-none">{i.v}</dd>
+            <dt className="mt-2 font-sans text-xs font-medium text-ink/80">{i.k}</dt>
+            <div className="font-sans text-[11px] text-ink/45">{i.hint}</div>
           </div>
         ))}
-      </div>
-      {s.spend_as_of && <div className="mt-3 text-[11px] text-black/40">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT</div>}
+      </dl>
+      {s.spend_as_of && <div className="mt-4 font-sans text-[11px] text-ink/45">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT</div>}
     </div>
   );
 }

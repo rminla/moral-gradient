@@ -37,9 +37,9 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
     <main>
       <ExampleBanner example={b.is_example} exploratory={b.exploratory} />
       <div className="mx-auto max-w-6xl px-5 py-12">
-        <div className="text-sm text-black/50">{m.lab} · <code>{m.model_id}</code> · <span className="chip">{m.status}</span></div>
-        <h1 className="serif mt-2 text-5xl">{m.name}</h1>
-        {m.notes && <p className="mt-2 max-w-2xl text-black/60">{m.notes}</p>}
+        <div className="text-sm text-ink/50">{m.lab} · <code>{m.model_id}</code> · <span className="chip">{m.status}</span></div>
+        <h1 className="serif mt-2 text-[56px] leading-none tracking-[-0.02em]">{m.name}</h1>
+        {m.notes && <p className="mt-2 max-w-2xl text-ink/60">{m.notes}</p>}
 
         <div className="mt-10 grid gap-4 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="card p-5">
@@ -48,24 +48,24 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
           </div>
           <div className="card p-5">
             <div className="label">Self-interest</div>
-            <div className="mt-2 font-mono text-4xl font-semibold tabular-nums">{maxShift == null ? "–" : `${Math.round(maxShift * 100)} pts`}</div>
-            <div className="text-sm text-black/60">largest shift from any incentive vs no incentive</div>
-            <p className="mt-3 text-xs text-black/45">Measured on a case where the no-incentive baseline was already 100%. The borderline version (baseline nearer 50%) is the stronger test.</p>
+            <div className="mt-2 num text-4xl font-semibold">{maxShift == null ? "–" : `${Math.round(maxShift * 100)} pts`}</div>
+            <div className="text-sm text-ink/60">largest shift from any incentive vs no incentive</div>
+            <p className="mt-3 text-xs text-ink/45">Measured on a case where the no-incentive baseline was already 100%. The borderline version (baseline nearer 50%) is the stronger test.</p>
           </div>
           <div className="card p-5">
             <div className="label">Under pressure</div>
-            <div className="mt-2 font-mono text-4xl font-semibold tabular-nums">{pct(social)}</div>
-            <div className="text-sm text-black/60">moved under social pressure</div>
-            <div className="mt-1 text-sm text-black/60">vs <b className="font-mono">{pct(info)}</b> for real new information</div>
-            <p className="mt-3 text-xs text-amber-700">Smoke-test sample (n≤3 per arm). Illustrative only.</p>
+            <div className="mt-2 num text-4xl font-semibold">{pct(social)}</div>
+            <div className="text-sm text-ink/60">moved under social pressure</div>
+            <div className="mt-1 text-sm text-ink/60">vs <b className="num">{pct(info)}</b> for real new information</div>
+            <p className="mt-3 text-xs text-ink/70 bg-highlight/50 px-1">Smoke-test sample (n≤3 per arm). Illustrative only.</p>
           </div>
         </div>
 
-        <section className="mt-12"><h2 className="serif text-2xl">Say vs Do by scenario</h2><div className="mt-4"><SayDoTable b={b} rows={sd} /></div></section>
-        <section className="mt-12"><h2 className="serif text-2xl">Self-interest</h2><div className="mt-4 grid gap-4 md:grid-cols-2">{si.map((s) => <SelfInterestChart key={s.case} s={s} b={b} />)}</div></section>
-        <section className="mt-12"><h2 className="serif text-2xl">Values under pressure</h2><div className="mt-4"><PressureChart rows={pr} b={b} /></div></section>
-        <section className="mt-12"><h2 className="serif text-2xl">Baseline</h2><div className="mt-4"><BaselineTable rows={mine(b.baseline)} /></div></section>
-        <section className="mt-12"><h2 className="serif text-2xl">Findings</h2><div className="mt-4 grid gap-4 md:grid-cols-3">{mine(b.findings).map((f) => <FindingCard key={f.id} f={f} modelName={modelName(b, f.model)} example={b.is_example} />)}</div></section>
+        <section className="mt-12"><h2 className="serif text-[28px] tracking-[-0.01em]">Say vs Do by scenario</h2><div className="mt-4"><SayDoTable b={b} rows={sd} /></div></section>
+        <section className="mt-12"><h2 className="serif text-[28px] tracking-[-0.01em]">Self-interest</h2><div className="mt-4 grid gap-4 md:grid-cols-2">{si.map((s) => <SelfInterestChart key={s.case} s={s} b={b} />)}</div></section>
+        <section className="mt-12"><h2 className="serif text-[28px] tracking-[-0.01em]">Values under pressure</h2><div className="mt-4"><PressureChart rows={pr} b={b} /></div></section>
+        <section className="mt-12"><h2 className="serif text-[28px] tracking-[-0.01em]">Baseline</h2><div className="mt-4"><BaselineTable rows={mine(b.baseline)} /></div></section>
+        <section className="mt-12"><h2 className="serif text-[28px] tracking-[-0.01em]">Findings</h2><div className="mt-4 grid gap-4 md:grid-cols-3">{mine(b.findings).map((f) => <FindingCard key={f.id} f={f} modelName={modelName(b, f.model)} example={b.is_example} />)}</div></section>
       </div>
     </main>
   );

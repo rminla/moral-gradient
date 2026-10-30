@@ -1,25 +1,57 @@
 @import "tailwindcss";
 
+/* ───────────────────────── Moral Gradient brand system ─────────────────────────
+   Paper, ink and one diverging scale (Prussian ↔ Vermilion). See BRAND.md.        */
+
+@theme inline {
+  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --color-paper: #f6f4ef;
-  --color-ink: #12141a;
-  --color-say: #7c3aed;
-  --color-judge: #0284c7;
-  --color-do: #d97706;
-  --color-money: #059669;
+  /* surfaces */
+  --color-paper: #f3eee4;
+  --color-panel: #faf7f0;
+  --color-ink: #1a1916;
+  --color-rule: #d8d0c0;
+  /* the diverging scale: cool pole → neutral → warm pole */
+  --color-prussian: #1d4e6e;
+  --color-prussian-2: #7fa1b3;
+  --color-neutral: #e9e2d3;
+  --color-vermilion-2: #e2a48f;
+  --color-vermilion: #c23b1e;
+  --color-vermilion-dark: #9e2d14;
+  /* supporting */
+  --color-brass: #a07a22;
+  --color-moss: #3d6b45;
+  --color-highlight: #f3e08a;
+  /* semantic aliases used across components */
+  --color-accent: #c23b1e;
+  --color-say: #1d4e6e;
+  --color-judge: #a07a22;
+  --color-do: #c23b1e;
+  --color-money: #c23b1e;
 }
 
 html { background: var(--color-paper); color: var(--color-ink); }
-body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
-.serif { font-family: var(--font-serif); }
-@utility card { @apply rounded-2xl border border-black/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]; }
-@utility chip { @apply inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-0.5 text-xs font-medium text-black/70; }
-@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition; }
-@utility btn-primary { @apply btn bg-ink text-white hover:bg-black; }
-@utility btn-money { @apply btn bg-money text-white hover:brightness-110; }
-@utility btn-ghost { @apply btn border border-black/15 bg-white hover:bg-black/5; }
-@utility input { @apply w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-black/40 focus:ring-2 focus:ring-black/5; }
-@utility label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-black/55; }
-.prose-muted p { @apply text-[15px] leading-7 text-black/75; }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-feature-settings: "kern"; }
+::selection { background: var(--color-highlight); color: var(--color-ink); }
+a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.serif { font-family: var(--font-serif); font-optical-sizing: auto; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+@utility card { @apply border border-ink/15 bg-panel; }
+@utility chip { @apply inline-flex items-center gap-1.5 border border-ink/25 px-1.5 py-px font-sans text-[10.5px] font-medium uppercase tracking-[0.09em] text-ink/70; }
+@utility kicker { @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em]; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 border px-4 py-2.5 font-sans text-sm font-medium transition-colors; }
+@utility btn-primary { @apply btn border-ink bg-ink text-paper hover:border-vermilion hover:bg-vermilion; }
+@utility btn-money { @apply btn border-vermilion bg-vermilion text-white hover:border-vermilion-dark hover:bg-vermilion-dark; }
+@utility btn-ghost { @apply btn border-ink/35 bg-transparent text-ink hover:border-ink hover:bg-ink/[0.04]; }
+@utility input { @apply w-full border border-ink/25 bg-panel px-3 py-2.5 text-sm outline-none placeholder:text-ink/35 focus:border-ink focus:ring-2 focus:ring-highlight/70; }
+@utility label { @apply mb-1.5 block font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/55; }
+@utility rule-head { @apply border-t-2 border-ink pt-3; }
+@utility link { @apply underline decoration-ink/30 underline-offset-[3px] hover:decoration-vermilion; }
+.prose-muted p { @apply font-serif text-[18px] leading-[1.65] text-ink/85; }
+.prose-muted code { @apply font-mono text-[14px]; }
+.dropcap::first-letter { font-family: var(--font-serif); float: left; font-size: 4.1em; line-height: 0.85; padding: 0.06em 0.08em 0 0; color: var(--color-vermilion); }
