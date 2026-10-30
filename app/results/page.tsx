@@ -17,7 +17,7 @@ export default async function Results() {
       <div className="mx-auto max-w-6xl px-5 py-12">
         <div className="kicker text-ink/60">Results</div>
         <h1 className="serif mt-2 text-[52px] leading-none tracking-[-0.02em]">Results</h1>
-        <p className="mt-4 max-w-2xl font-serif text-[18px] leading-relaxed text-ink/75">Bundle generated {new Date(b.generated_utc).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT. Public items only; the 30% hold-out is never shown. <span className="text-ink/55">{b.source}</span></p>
+        <p className="mt-4 max-w-2xl font-serif text-[18px] leading-relaxed text-ink/75">Bundle generated {new Date(b.generated_utc).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT. Public items only; the 30% hold-out is never shown.</p>
 
         <nav className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-y border-ink/15 py-3 font-sans text-[13px] text-ink/70">
           {[["models", "Models"], ["saydo", "Say vs Do"], ["selfinterest", "Self-interest"], ["pressure", "Under pressure"], ["baseline", "Baseline"], ["findings", "Findings"], ["runs", "Run log"]].map(([id, t]) => <a key={id} href={`#${id}`} className="hover:text-vermilion">{t}</a>)}
@@ -28,7 +28,7 @@ export default async function Results() {
           <div className="grid border-t border-ink md:grid-cols-3">
             {b.models.map((m) => (
               <Link key={m.slug} href={`/models/${m.slug}`} className="group border-b border-ink/15 py-4 md:border-r md:px-4 md:first:pl-0">
-                <div className="flex items-baseline gap-2"><div className="serif text-[22px] group-hover:text-vermilion">{m.name}</div><span className="chip">{m.status}</span></div>
+                <div className="flex items-baseline gap-2"><div className="serif text-[22px] group-hover:text-vermilion">{m.name}</div>{m.status !== "pilot" && <span className="chip">{m.status}</span>}</div>
                 <div className="font-sans text-xs text-ink/55">{m.lab} · <code className="num">{m.model_id}</code></div>
                 {m.notes && <p className="mt-2 font-sans text-xs leading-5 text-ink/55">{m.notes}</p>}
               </Link>

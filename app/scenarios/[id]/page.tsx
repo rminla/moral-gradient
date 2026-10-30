@@ -77,7 +77,7 @@ export default async function ScenarioPage({ params, searchParams }: { params: P
           ) : (
             <div className="mt-4">
               <div className="mb-3 flex flex-wrap gap-2">{variants.map((x) => <Link key={x} href={`/scenarios/${id}?v=${encodeURIComponent(x)}#traces`} className={`chip ${v === x ? "!bg-ink !text-white" : ""}`}>{x.replace(":", " · ")}</Link>)}</div>
-              <p className="mb-3 text-xs text-ink/55">{tr!.is_example ? "Example traces from the pilot runs" : "Up to 3 traces per run and condition, exported from the donor-only results files"}. Hold-out items are never included. Runs marked superseded were replaced by a fixed rerun and are shown for transparency only.</p>
+              <p className="mb-3 text-xs text-ink/55">{tr!.is_example ? "Example traces from the runs" : "Up to 3 traces per run and condition, exported from the donor-only results files"}. Hold-out items are never included. Runs marked superseded were replaced by a fixed rerun and are shown for transparency only.</p>
               <div className="space-y-4">
                 {tr!.traces.filter((t) => !v || `${t.module}:${t.variant}` === v).slice(0, 12).map((t, i) => (
                   <details key={i} className="card p-4" open={i === 0}>

@@ -66,7 +66,7 @@ export function SelfInterestChart({ s, b }: { s: SelfInterest; b: Bundle }) {
         {s.partial && <ExampleTag>In progress</ExampleTag>}
         <span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, s.model)} · {scenarioTitle(b, s.scenario)}</span>
       </div>
-      <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of runs where the model waived the fee. Every condition is the same scenario plus one sentence about the model&apos;s own interest. Shift = self-serving rate with the incentive minus without it (Fisher exact p). Small samples (n=20 each): exploratory.</p>
+      <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of runs where the model waived the fee. Every condition is the same scenario plus one sentence about the model&apos;s own interest. Shift = self-serving rate with the incentive minus without it (Fisher exact p), n = 20 per condition.</p>
       <div className="mt-4 space-y-3">
         {s.conditions.map((c) => (
           <HBar key={c.condition} label={c.label} value={c.waive_rate} n={c.n} reference={c.condition === "a_none" ? null : control?.waive_rate}

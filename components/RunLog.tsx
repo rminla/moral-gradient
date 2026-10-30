@@ -20,7 +20,7 @@ export default function RunLog({ runs }: { runs: RunInfo[] }) {
           ))}
         </tbody>
       </table>
-      <p className="mt-2 font-sans text-xs text-ink/50">&ldquo;Charted&rdquo; runs are exploratory pilot data. Superseded runs were replaced by a fixed rerun and excluded runs were probes or aborted; both are listed for transparency and never charted. Costs are ledger estimates (tokens × list price).</p>
+      <p className="mt-2 font-sans text-xs text-ink/50">&ldquo;Charted&rdquo; runs are the ones shown in the charts above. Superseded runs were replaced by a fixed rerun and excluded runs were probes or aborted; both are listed for transparency and never charted. Costs are ledger estimates (tokens × list price).</p>
     </div>
   );
 }

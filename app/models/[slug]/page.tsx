@@ -37,7 +37,7 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
     <main>
       <ExampleBanner example={b.is_example} exploratory={b.exploratory} />
       <div className="mx-auto max-w-6xl px-5 py-12">
-        <div className="text-sm text-ink/50">{m.lab} · <code>{m.model_id}</code> · <span className="chip">{m.status}</span></div>
+        <div className="text-sm text-ink/50">{m.lab} · <code>{m.model_id}</code>{m.status !== "pilot" && <> · <span className="chip">{m.status}</span></>}</div>
         <h1 className="serif mt-2 text-[56px] leading-none tracking-[-0.02em]">{m.name}</h1>
         {m.notes && <p className="mt-2 max-w-2xl text-ink/60">{m.notes}</p>}
 
