@@ -1,3 +1,14 @@
+# Direction A, "Signal" (branch design-a-bold)
+
+> Exploration branch. Overrides the type, colour and chart sections of the brand notes below wherever they conflict.
+
+- **Type:** Archivo, using its expanded width for display at bold, tight sizes. JetBrains Mono covers every label, number and button, uppercase with 0.08em tracking.
+- **Colour:** white, ink #0c0c0d and a single signal red, #ff3d1f, used only for what models *do*. What they *say* is grey (#6c6f75).
+- **Layout:** a 1200px framed column. Hairline rails run the full page height. Sections are bordered cells with crop-mark corners, and some sections are full-bleed black. The nav is segmented cells ending in a black Donate cell.
+- **Charts:** square cells. A bar is 20 cells at 5% each. In the hero exhibit, one square is one run, and outlined red squares are runs where the model didn't act. The funding meter uses one square per $1.
+- **Motion:** headline rise, cells popping in one after another, and a blinking dot on Donate. All of it respects prefers-reduced-motion.
+- **Mark:** a 3×3 block of runs, eight ink cells and one red.
+
 # Moral Gradient — brand notes
 
 **Idea.** Stated values are cheap; behaviour is the test. Moral Gradient tracks what AI models **do** (as agents with tools, under social pressure, and when their own interest pulls the other way) next to what they *say* is right. The identity is a scale between those two poles, and the emphasis is always on the **do** end. It should read like a data-journalism desk or a university lab, not an AI startup.
