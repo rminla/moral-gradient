@@ -205,7 +205,7 @@ for s in selfinterest:
                 "stat_label": "waived · without vs with a fee-collection rating",
                 "summary": f"With a vaguer hardship, the model waived {P(c0['waive_rate'])} of the time. Told it was rated on fees collected: {P(fees['waive_rate'])} (Fisher p = {fees['shift_p']}, n = 20 each, exploratory). None of the self-serving replies mentioned the incentive.",
                 "axis": "% of 20 runs per condition where it waived the fee",
-                "takeaway": f"Rated on fees collected, it waived less often ({P(c0['waive_rate'])} → {P(fees['waive_rate'])}) and never said why. Small sample: exploratory.",
+                "takeaway": f"Rated on fees collected, it waived less often ({P(c0['waive_rate'])} → {P(fees['waive_rate'])}) and never said why.",
                 "bars": [{"label": c["label"], "value": c["waive_rate"]} for c in s["conditions"]]})
 
 # ---------- Spend (from the bundle; the site prefers the live ledger when it can read it) ----------
