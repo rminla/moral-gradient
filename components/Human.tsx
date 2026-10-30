@@ -1,5 +1,5 @@
 import { modelName, pct } from "@/lib/bundle";
-import type { Baseline, Bundle } from "@/lib/types";
+import type { Baseline, Bundle, Foundation } from "@/lib/types";
 import { Cells } from "./Bars";
 
 /**
@@ -63,6 +63,62 @@ export function TrolleyChart({ rows, b }: { rows: Baseline[]; b: Bundle }) {
       <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/55">
         Humans: {AWAD_2020.short}. <a href={AWAD_2020.url} className="link" target="_blank" rel="noopener noreferrer">{AWAD_2020.cite}</a> Shown as a reference point, not a target.
       </p>
+    </div>
+  );
+}
+
+const FNAME: Record<string, string> = {
+  care: "Care", equality: "Equality", proportionality: "Proportionality", loyalty: "Loyalty", authority: "Authority", purity: "Purity",
+  harm: "Harm / care", fairness: "Fairness", ingroup: "Loyalty (ingroup)", impartial_beneficence: "Impartial beneficence", instrumental_harm: "Instrumental harm",
+};
+const INAME: Record<string, string> = { "MFQ-2": "Moral Foundations Questionnaire-2", "MFQ-30": "Moral Foundations Questionnaire (MFQ-30)", OUS: "Oxford Utilitarianism Scale" };
+
+/** Foundation scores: model mean (signal red dot) vs published human mean (ink tick, with SD or cross-country range band). */
+export function FoundationsChart({ rows, b }: { rows: Foundation[]; b: Bundle }) {
+  const insts = [...new Set(rows.map((r) => r.instrument))];
+  if (!rows.length) return null;
+  return (
+    <div className="grid gap-3 lg:grid-cols-3">
+      {insts.map((inst) => {
+        const rs = rows.filter((r) => r.instrument === inst);
+        const [lo, hi] = rs[0].scale;
+        const x = (v: number) => `${((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * 100}%`;
+        const h = rs[0].human;
+        return (
+          <figure key={inst} className="ticks flex flex-col border border-rule p-5">
+            <figcaption>
+              <div className="kicker text-ink/50">{inst} · scale {lo}–{hi}</div>
+              <div className="mt-2 text-[16px] font-semibold leading-snug">{INAME[inst] || inst}</div>
+            </figcaption>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10.5px] text-ink/60">
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-vermilion" />{modelName(b, rs[0].model)}</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block h-3 w-[3px] bg-ink" />People ({h.range ? "range: countries" : "band: ±1 SD"})</span>
+            </div>
+            <div className="mt-4 space-y-4">
+              {rs.map((r) => {
+                const band = r.human.range ? r.human.range : r.human.sd != null ? [r.human.mean - r.human.sd, r.human.mean + r.human.sd] : null;
+                return (
+                  <div key={r.foundation}>
+                    <div className="mb-1.5 flex items-baseline justify-between gap-2 text-[13px]">
+                      <span>{FNAME[r.foundation] || r.foundation}</span>
+                      <span className="font-mono text-[11px]"><span className="text-vermilion">{r.model_mean.toFixed(2)}</span><span className="text-ink/40"> vs </span><span>{r.human.mean.toFixed(2)}</span></span>
+                    </div>
+                    <div className="relative h-4 border-y border-rule bg-panel">
+                      {band && <span className="absolute inset-y-0 bg-ink/15" style={{ left: x(band[0]), width: `calc(${x(band[1])} - ${x(band[0])})` }} />}
+                      <span className="absolute inset-y-[-3px] w-[3px] -translate-x-1/2 bg-ink" style={{ left: x(r.human.mean) }} />
+                      <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-vermilion ring-2 ring-paper" style={{ left: x(r.model_mean) }} />
+                    </div>
+                    <div className="mt-1 font-mono text-[10px] text-ink/45">{r.items_scored} of {r.items_in_scale} items · {r.answers} answers</div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-5 font-mono text-[10px] leading-4 text-ink/50">
+              People: {h.stat}. {h.url ? <a href={h.url} className="link" target="_blank" rel="noopener noreferrer">{h.source}</a> : h.source}
+            </p>
+          </figure>
+        );
+      })}
     </div>
   );
 }

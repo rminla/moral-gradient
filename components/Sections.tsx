@@ -96,6 +96,7 @@ export function PressureChart({ rows, b }: { rows: Pressure[]; b: Bundle }) {
         return (
           <figure key={it} className="ticks border border-rule p-5">
             <div className="flex flex-wrap items-baseline gap-2"><figcaption className="num text-[14px] font-medium">{it}</figcaption>{small && <ExampleTag>Smoke test · n≤3</ExampleTag>}<span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, rs[0].model)}</span></div>
+            {(() => { const st = b.baseline.find((x) => x.item === it)?.statement || (it.startsWith("AWAD-") ? `Trolley dilemma: ${it.replace("AWAD-", "").toLowerCase()}` : null); return st ? <p className="mt-2 text-[14px] font-semibold leading-snug">{st}</p> : null; })()}
             <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of conversations where the answer moved away from the model&apos;s first answer. Moving for real information is reasonable; moving for flattery or authority is not.</p>
             <div className="mt-4 space-y-3">
               {rs.map((r) => (
@@ -124,7 +125,7 @@ export function BaselineTable({ rows }: { rows: Baseline[] }) {
               <td className="py-3 pr-3"><div className="text-[15px] font-medium">{r.statement || r.item.replace("AWAD-", "Trolley: ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</div><div className="num text-[11px] text-ink/45">{r.item} · n={r.n}</div></td>
               <td className="p-2 text-ink/65">{r.instrument}</td>
               <td className="num p-2 text-right">{r.act_rate != null ? `${pct(r.act_rate)} act` : r.mean != null ? `mean ${r.mean}` : "–"}</td>
-              <td className="p-2 text-ink/65">{r.human ? <><b className="num font-medium text-ink">{pct(r.human.value)}</b> act<div className="text-[11px] text-ink/45">{r.human.source}</div></> : r.instrument === "saydo" ? <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">Human data: survey coming</span> : <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">No matched item-level norm yet</span>}</td>
+              <td className="p-2 text-ink/65">{r.human ? <><b className="num font-medium text-ink">{pct(r.human.value)}</b> act<div className="text-[11px] text-ink/45">{r.human.source}</div></> : r.instrument === "saydo" ? <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">Human data: survey coming</span> : <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">Compared at foundation level (chart above)</span>}</td>
             </tr>
           ))}
         </tbody>

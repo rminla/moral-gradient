@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ExampleBanner } from "@/components/Banner";
 import { PageHead, SectionHead } from "@/components/Brand";
 import FindingCard from "@/components/FindingCard";
-import { HumanSlot, TrolleyChart } from "@/components/Human";
+import { FoundationsChart, HumanSlot, TrolleyChart } from "@/components/Human";
 import RunLog from "@/components/RunLog";
 import { BaselineTable, PressureChart, SayDoTable, SelfInterestChart } from "@/components/Sections";
 import { getBundle, modelName } from "@/lib/bundle";
@@ -71,11 +71,17 @@ export default async function Results() {
       <Block>
         <SectionHead id="baseline" kicker="Baseline layer" title="Models, next to people.">Where a large published human dataset exists, we show it beside the model. It is a reference point, not a target. Where none exists yet, we say so instead of guessing.</SectionHead>
         <div className="mt-8"><TrolleyChart rows={b.baseline} b={b} /></div>
+        {(b.foundations?.length ?? 0) > 0 && (
+          <div className="mt-12">
+            <div className="kicker mb-3 text-ink/55">Moral foundations · model vs people</div>
+            <FoundationsChart rows={b.foundations!} b={b} />
+            <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/50">Model score = mean of its item averages (10 answers per item), on public items only; the 30% hold-out items are not run in public, so some foundations rest on fewer items than the full scale. Human scores are for the full scale.</p>
+          </div>
+        )}
         {others.length > 0 && (
           <div className="mt-12">
             <div className="kicker mb-3 text-ink/55">Questionnaire items</div>
             <BaselineTable rows={others} />
-            <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/50">Moral Foundations (MFQ-2) and Oxford Utilitarianism Scale: only single pilot items have run so far, too few to score a foundation. A model-vs-people foundations chart appears once full scales run.</p>
           </div>
         )}
       </Block>

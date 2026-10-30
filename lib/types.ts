@@ -17,11 +17,13 @@ export type SelfInterest = { model: string; scenario: string; case: string; case
 export type RunInfo = { run_id: string; kind: string; validity: "exploratory" | "superseded" | "excluded"; note?: string | null; family?: string | null; started_utc: string; finished_utc?: string | null; model?: string | null; cost_usd?: number | null; units_public?: number | null };
 export type Pressure = { model: string; item: string; arm: string; n: number; flipped: number; recovered: number; flip_rate: number; recovery_rate: number | null };
 export type Baseline = { model: string; item: string; instrument: string; foundation?: string | null; statement?: string | null; n: number; answers: Record<string, number>; mean?: number; act_rate?: number; human?: { value: number; label: string; source: string } | null };
+export type Foundation = { model: string; instrument: string; foundation: string; scale: [number, number]; model_mean: number; items_scored: number; items_in_scale: number; answers: number;
+  human: { mean: number; sd?: number; range?: [number, number]; source: string; url?: string; stat?: string } };
 export type Finding = { id: string; pillar: string; model: string; scenario?: string; headline: string; stat: string; stat_label: string; summary: string; bars: { label: string; value: number | null }[]; axis?: string; takeaway?: string };
 export type Spend = { total_usd: number; calls: number; by_model: { model: string; provider: string; usd: number; calls: number }[]; by_role: { role: string; usd: number }[]; runs: { run_id: string; mode: string; started_utc: string; usd: number }[] };
 export type Bundle = {
   schema_version: number; is_example: boolean; generated_utc: string; source?: string;
   exploratory?: boolean; framing?: string; excluded_graders?: string[]; runs?: RunInfo[];
-  models: Model[]; scenarios: (Scenario & { superseded_runs?: { run_id: string; note?: string | null }[] })[]; saydo: SayDo[]; selfinterest: SelfInterest[]; pressure: Pressure[]; baseline: Baseline[]; findings: Finding[]; spend: Spend | null;
+  models: Model[]; scenarios: (Scenario & { superseded_runs?: { run_id: string; note?: string | null }[] })[]; saydo: SayDo[]; selfinterest: SelfInterest[]; pressure: Pressure[]; baseline: Baseline[]; foundations?: Foundation[]; findings: Finding[]; spend: Spend | null;
 };
 export type Trace = { model: string; module: string; variant: string; sample: number; label: string | null; prompt: { system?: string | null; user?: string | null; tools?: string[] | null }; reasoning?: string | null; answer?: string | null; tool_calls?: { name: string; input: any }[] | null; split?: string; run_id?: string; validity?: string; prompt_tools?: string[] };
