@@ -65,10 +65,35 @@ export function Eyebrow({ children, dark = false }: { children: React.ReactNode;
 
 export function SectionHead({ n, kicker, title, children, id }: { n?: string; kicker?: string; title: React.ReactNode; children?: React.ReactNode; id?: string }) {
   return (
-    <header id={id} className="scroll-mt-20 pt-2">
+    <header id={id} className="scroll-mt-24 pt-2">
       {(kicker || n) && <Eyebrow>{n ? `${n} · ` : ""}{kicker}</Eyebrow>}
-      <h2 className="serif mt-4 text-[32px] leading-[1.05] md:text-[40px]">{title}</h2>
-      {children && <div className="mt-3 max-w-2xl font-sans text-[16px] leading-relaxed text-ink/60">{children}</div>}
+      <h2 className="wide mt-4 text-[30px] font-bold leading-[1] tracking-[-0.04em] md:text-[44px]">{title}</h2>
+      {children && <div className="mt-3 max-w-2xl text-[16px] leading-relaxed text-ink/60">{children}</div>}
     </header>
+  );
+}
+
+/** Page-width frame that lines up with the nav rails. */
+export function Frame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`mx-auto max-w-[1200px] px-5 md:px-8 ${className}`}>{children}</div>;
+}
+
+/** Signal page header: pixel-grid cell, pill eyebrow, big expanded headline (optional grey lead-in). */
+export function PageHead({ eyebrow, title, grey, children, aside, center = false }: { eyebrow?: React.ReactNode; title: React.ReactNode; grey?: React.ReactNode; children?: React.ReactNode; aside?: React.ReactNode; center?: boolean }) {
+  return (
+    <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
+      <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+      <span aria-hidden className="absolute right-[57px] top-[57px] hidden h-[27px] w-[27px] bg-vermilion md:block" />
+      <div className={`relative grid gap-8 px-5 pb-12 pt-12 md:px-8 md:pb-16 md:pt-16 ${aside ? "md:grid-cols-[minmax(0,1fr)_340px] md:items-end" : ""} ${center ? "text-center" : ""}`}>
+        <div className="rise min-w-0">
+          {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+          <h1 className={`wide mt-6 max-w-[920px] text-[38px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px] ${center ? "mx-auto" : ""}`}>
+            {grey && <span className="text-ink/35">{grey} </span>}{title}
+          </h1>
+          {children && <div className={`mt-6 max-w-2xl text-[17px] leading-relaxed text-ink/65 ${center ? "mx-auto" : ""}`}>{children}</div>}
+        </div>
+        {aside && <div className="min-w-0">{aside}</div>}
+      </div>
+    </section>
   );
 }

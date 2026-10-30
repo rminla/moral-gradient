@@ -2,7 +2,9 @@ import Link from "next/link";
 import { NextMilestoneCard } from "@/components/Milestone";
 import { currentUser } from "@/lib/auth";
 import { paymentsMode, SITE_NAME } from "@/lib/config";
-import { getFunding } from "@/lib/funding";
+import { getFunding, getLeaderboard } from "@/lib/funding";
+import { PageHead } from "@/components/Brand";
+import Leaderboard from "@/components/Leaderboard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Donate" };
@@ -10,23 +12,22 @@ export const metadata = { title: "Donate" };
 const ERR: Record<string, string> = { amount: "Please choose an amount between $1 and $10,000.", name: "Add a display name, or choose to donate anonymously.", unavailable: "Donations open as soon as card payments are connected. Please check back soon." };
 
 export default async function Donate({ searchParams }: { searchParams: Promise<{ error?: string; cancelled?: string }> }) {
-  const [f, user, sp] = await Promise.all([getFunding(), currentUser(), searchParams]);
+  const [f, user, sp, leaders] = await Promise.all([getFunding(), currentUser(), searchParams, getLeaderboard(8)]);
   return (
-    <main className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-[1.3fr_1fr]">
-      <div>
-        <div className="kicker text-vermilion">Support the work</div>
-        <h1 className="serif mt-2 text-[52px] leading-[1.02] tracking-[-0.02em]">Fund the next <em>model</em>.</h1>
-        <p className="mt-4 max-w-xl font-serif text-[19px] leading-relaxed text-ink/80">{SITE_NAME} is free and open. Your donation pays for API calls, nothing else is taken out except the card fee, and every dollar and expense is public. Donors can read the prompts and reasoning traces behind every public result.</p>
-        {sp.error && <div className="mt-4 border border-vermilion bg-vermilion/5 p-3 text-sm text-vermilion-dark">{ERR[sp.error] || "Something went wrong."}</div>}
-        {sp.cancelled && <div className="mt-4 border border-ink/10 bg-panel p-3 text-sm">Checkout cancelled. Nothing was charged.</div>}
-        <form action="/api/donate" method="post" className="card mt-6 space-y-6 p-6">
+    <main>
+      <PageHead eyebrow="Support the work" grey="Fund the" title={<>next <span className="text-vermilion">model.</span></>}>{SITE_NAME} is free and open. Your donation pays for API calls, nothing else is taken out except the card fee, and every dollar and expense is public. Donors can read the prompts and reasoning traces behind every public result.</PageHead>
+      <section className="mx-auto grid max-w-[1200px] border-b border-rule md:grid-cols-[1.3fr_1fr] md:divide-x md:divide-rule">
+      <div className="min-w-0 border-b border-rule p-5 md:border-b-0 md:p-8">
+        {sp.error && <div className="mb-4 border border-vermilion bg-highlight/40 p-3 text-sm text-vermilion-dark">{ERR[sp.error] || "Something went wrong."}</div>}
+        {sp.cancelled && <div className="mb-4 border border-rule bg-panel p-3 text-sm">Checkout cancelled. Nothing was charged.</div>}
+        <form action="/api/donate" method="post" className="ticks space-y-7 border border-rule p-5 md:p-7">
           <div>
             <span className="label">Amount (USD)</span>
             <div className="grid grid-cols-4 gap-2">
               {[5, 10, 25, 100].map((a, i) => (
                 <label key={a} className="cursor-pointer">
                   <input type="radio" name="amount" value={a} defaultChecked={i === 1} className="peer sr-only" />
-                  <div className="border border-ink/15 bg-panel py-3 text-center num font-semibold text-lg hover:border-ink peer-checked:border-vermilion peer-checked:bg-vermilion peer-checked:text-white">${a}</div>
+                  <div className="num border border-rule bg-paper py-4 text-center text-[20px] font-medium hover:border-ink peer-checked:border-vermilion peer-checked:bg-vermilion peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-ink">${a}</div>
                 </label>
               ))}
             </div>
@@ -38,11 +39,11 @@ export default async function Donate({ searchParams }: { searchParams: Promise<{
           <fieldset>
             <span className="label">How should we show it?</span>
             <div className="grid gap-2 md:grid-cols-2">
-              <label className="flex cursor-pointer gap-3 border border-ink/15 p-3 has-[:checked]:border-ink has-[:checked]:bg-ink/[0.03]">
+              <label className="flex cursor-pointer gap-3 border border-rule p-3 has-[:checked]:border-ink has-[:checked]:bg-panel">
                 <input type="radio" name="display_mode" value="anonymous" defaultChecked className="mt-1 accent-ink" />
                 <span><b className="text-sm">Anonymous</b><span className="block text-xs text-ink/55">Counted in the total, shown as &ldquo;Anonymous&rdquo;.</span></span>
               </label>
-              <label className="flex cursor-pointer gap-3 border border-ink/15 p-3 has-[:checked]:border-ink has-[:checked]:bg-ink/[0.03]">
+              <label className="flex cursor-pointer gap-3 border border-rule p-3 has-[:checked]:border-ink has-[:checked]:bg-panel">
                 <input type="radio" name="display_mode" value="named" className="mt-1 accent-ink" />
                 <span><b className="text-sm">With my name</b><span className="block text-xs text-ink/55">On the public leaderboard.</span></span>
               </label>
@@ -62,22 +63,23 @@ export default async function Donate({ searchParams }: { searchParams: Promise<{
             <input name="email" type="email" defaultValue={user?.email || ""} placeholder="you@example.com" className="input" />
             <p className="mt-1 text-xs text-ink/50">Never shown publicly. Sign in later with this email to read prompts and reasoning traces.</p>
           </div>
-          <button className="btn-money w-full !py-3.5 !text-base">{paymentsMode() === "mock" ? "Continue to test checkout" : "Continue to secure checkout"}</button>
+          <button className="btn-money w-full !py-4 !text-base"><span className="h-2 w-2 bg-white" />{paymentsMode() === "mock" ? "Continue to test checkout" : "Continue to secure checkout"}</button>
           <p className="text-center text-xs text-ink/45">{paymentsMode() === "mock" ? "Mock mode: no card will be charged." : "Payments by Stripe. Card fee (about 2.9% + 30¢) is shown publicly."} Donations are not tax-deductible.</p>
         </form>
       </div>
-      <aside className="space-y-4">
-        <NextMilestoneCard f={f} showQueue={4} />
-        <div className="border-t-2 border-ink pt-3 font-serif text-[16px] leading-snug text-ink/80">
-          <div className="label">Our promises</div>
-          <ul className="list-[upper-roman] space-y-2 pl-6 marker:font-sans marker:text-xs marker:text-ink/45">
-            <li>Donations never influence methods or results.</li>
-            <li>Gifts from AI labs or their staff are disclosed.</li>
-            <li>Each funded run has a hard spending cap equal to the money raised for it.</li>
-            <li>Unused money stays in the pool for the next model.</li>
-          </ul>
+      <aside className="flex min-w-0 flex-col">
+        <NextMilestoneCard f={f} showQueue={4} cta={false} />
+        <div className="border-b border-rule p-5 md:p-8">
+          <div className="kicker border-b border-ink pb-3 text-ink">Our promises</div>
+          <ol className="text-[15px] leading-snug">
+            {["Donations never influence methods or results.", "Gifts from AI labs or their staff are disclosed.", "Each funded run has a hard spending cap equal to the money raised for it.", "Unused money stays in the pool for the next model."].map((t, i) => (
+              <li key={i} className="flex gap-3 border-b border-rule py-3 last:border-0"><span className="num text-[11px] text-vermilion">{String(i + 1).padStart(2, "0")}</span>{t}</li>
+            ))}
+          </ol>
         </div>
+        <div className="p-5 md:p-8"><Leaderboard rows={leaders} /></div>
       </aside>
+      </section>
     </main>
   );
 }

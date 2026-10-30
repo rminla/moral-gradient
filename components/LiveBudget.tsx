@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 type S = { raised_usd: number; pool_usd: number; spent_usd: number | null; spend_source: string | null; spend_as_of: string | null; donors: number };
 const fmt = (v: number | null | undefined, d = 2) => (v == null ? "–" : `$${v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })}`);
 
-/** Polls /api/status every 20s so spend from the cost ledger shows up within a minute. */
+/** Polls /api/status every 20s so spend from the cost ledger shows up within a minute. Signal: three bordered number cells. */
 export default function LiveBudget({ initial }: { initial: S }) {
   const [s, setS] = useState(initial);
   const [tick, setTick] = useState(0);
@@ -20,21 +20,21 @@ export default function LiveBudget({ initial }: { initial: S }) {
     { k: "Unallocated pool", v: fmt(s.pool_usd, 2), hint: "waiting for the next milestone" },
   ];
   return (
-    <div className="card p-5">
-      <div className="mb-4 flex items-center justify-between border-b border-ink/15 pb-2">
+    <div className="ticks flex h-full flex-col border border-rule bg-paper">
+      <div className="flex items-center justify-between border-b border-rule px-5 py-3">
         <div className="kicker text-ink">The ledger</div>
-        <span className="flex items-center gap-1.5 font-sans text-[11px] text-ink/50"><span key={tick} className="h-1.5 w-1.5 animate-pulse rounded-full bg-vermilion" />live · every 20 s</span>
+        <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50"><span key={tick} className="blink h-2 w-2 bg-vermilion" />live · every 20 s</span>
       </div>
-      <dl className="grid grid-cols-3 divide-x divide-ink/15">
-        {items.map((i, n) => (
-          <div key={i.k} className={n === 0 ? "pr-3" : "px-3"}>
-            <dd className="num text-[22px] font-medium leading-none">{i.v}</dd>
-            <dt className="mt-2 font-sans text-xs font-medium text-ink/80">{i.k}</dt>
-            <div className="font-sans text-[11px] text-ink/45">{i.hint}</div>
+      <dl className="grid flex-1 divide-y divide-rule sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {items.map((i) => (
+          <div key={i.k} className="flex flex-col p-5">
+            <dd className="num text-[30px] font-medium leading-none tracking-[-0.03em]">{i.v}</dd>
+            <dt className="mt-auto pt-6 text-[13px] font-semibold">{i.k}</dt>
+            <div className="font-mono text-[10.5px] text-ink/45">{i.hint}</div>
           </div>
         ))}
       </dl>
-      {s.spend_as_of && <div className="mt-4 font-sans text-[11px] text-ink/45">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT</div>}
+      {s.spend_as_of && <div className="border-t border-rule px-5 py-2.5 font-mono text-[10.5px] text-ink/45">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT</div>}
     </div>
   );
 }

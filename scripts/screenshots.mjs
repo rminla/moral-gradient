@@ -1,5 +1,5 @@
 // Capture key pages to screenshots/*.png with the system Chrome. Assumes the site runs on BASE (default http://localhost:3000)
-// with ALLOW_MOCK_PAYMENTS=1 and ALLOW_DEV_LOGIN=1. Makes one mock donation and signs in through the dev magic link.
+// with ALLOW_MOCK_PAYMENTS=1 and ALLOW_DEV_LOGIN=1. Makes one anonymous mock donation (run `npm run db:init -- --reset-local` afterwards to clear it) and signs in through the dev magic link.
 import fs from "node:fs";
 import puppeteer from "puppeteer-core";
 const BASE = process.env.BASE || "http://localhost:3000";
@@ -19,8 +19,7 @@ const amount = process.env.DONATION || "25";
 await page.goto(BASE + "/donate", { waitUntil: "networkidle0" });
 await page.click('input[name="amount"][value=""]');
 await page.type('input[name="amount_custom"]', amount);
-await page.click('input[name="display_mode"][value="named"]');
-await page.type('input[name="display_name"]', "Screenshot Tester (example)");
+await page.click('input[name="display_mode"][value="anonymous"]');
 await page.type('input[name="message"]', "Testing the mock checkout");
 await page.type('input[name="email"]', "donor@example.com");
 await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("form button.btn-money")]);

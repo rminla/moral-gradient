@@ -30,7 +30,7 @@ npm install
 cp .env.example .env.local      # then set SESSION_SECRET and INGEST_TOKEN to long random strings
 # for a local preview without Stripe/Resend, also set ALLOW_MOCK_PAYMENTS=1 and ALLOW_DEV_LOGIN=1
 npm run bundle                  # adapt ../results into data/site-bundle.json (+ donor-only data/site-traces.json)
-npm run db:init                 # schema + milestone queue (add --examples for flagged example donations)
+npm run db:init                 # schema + milestone queue (add --reset-local to clear local test donations)
 npm run build && npm start      # http://localhost:3000
 npm run screenshots             # optional: PNGs of the key pages into screenshots/
 ```

@@ -10,7 +10,7 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[760px] font-sans text-sm">
-        <thead className="border-b-2 border-ink text-left">
+        <thead className="border-b border-ink text-left">
           <tr className="label"><th className="py-2 pr-3">Scenario</th><th className="p-2">Model</th><th className="min-w-[13rem] p-2">Its stated view implies</th>
             <th className="p-2 text-right text-say">Says it&apos;s right</th><th className="p-2 text-right text-prussian-2">Tells others to</th><th className="p-2 text-right text-do">Actually does</th><th className="whitespace-nowrap py-2 pl-2 text-right">Gap</th></tr>
         </thead>
@@ -20,8 +20,8 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
             const sayCons = r.say.agree_rate == null ? null : r.say.agree_rate >= 0.5 ? r.say.agree_rate : 1 - r.say.agree_rate;
             const gap = r.judge.consistent_rate != null && d?.consistent_rate != null ? r.judge.consistent_rate - d.consistent_rate : null;
             return (
-              <tr key={r.scenario + r.model} className={`border-b border-ink/10 hover:bg-panel ${r.sample_size_note ? "text-ink/55" : ""}`}>
-                <td className="py-3 pr-3"><Link href={`/scenarios/${r.scenario}`} className="font-serif text-[17px] text-ink hover:text-vermilion">{scenarioTitle(b, r.scenario)}</Link><div className="num text-[11px] text-ink/45">{r.scenario}{r.sample_size_note && SHOW_CAVEATS && <> · <span className="bg-highlight/70 px-1 font-sans text-ink">{r.sample_size_note}</span></>}</div></td>
+              <tr key={r.scenario + r.model} className={`border-b border-rule hover:bg-panel ${r.sample_size_note ? "text-ink/55" : ""}`}>
+                <td className="py-3 pr-3"><Link href={`/scenarios/${r.scenario}`} className="text-[15px] font-semibold text-ink hover:text-vermilion">{scenarioTitle(b, r.scenario)}</Link><div className="num text-[11px] text-ink/45">{r.scenario}{r.sample_size_note && SHOW_CAVEATS && <> · <span className="bg-highlight/70 px-1 font-sans text-ink">{r.sample_size_note}</span></>}</div></td>
                 <td className="whitespace-nowrap p-2 text-ink/70">{modelName(b, r.model)}</td>
                 <td className="min-w-[13rem] p-2 text-ink/70">{optionText(b, r.scenario, r.say_implied_option)}</td>
                 <td className="num p-2 text-right">{pct(sayCons)}</td>
@@ -60,9 +60,9 @@ function GapCell({ gap }: { gap: number | null }) {
 export function SelfInterestChart({ s, b }: { s: SelfInterest; b: Bundle }) {
   const control = s.conditions.find((c) => c.condition === "a_none");
   return (
-    <figure className="border-t-2 border-ink pt-3">
+    <figure className="ticks border border-rule p-5">
       <div className="flex flex-wrap items-baseline gap-2">
-        <figcaption className="serif text-[20px] leading-tight">{s.case_label}</figcaption>
+        <figcaption className="text-[18px] font-semibold leading-tight tracking-[-0.01em]">{s.case_label}</figcaption>
         {s.partial && <ExampleTag>In progress</ExampleTag>}
         <span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, s.model)} · {scenarioTitle(b, s.scenario)}</span>
       </div>
@@ -75,7 +75,7 @@ export function SelfInterestChart({ s, b }: { s: SelfInterest; b: Bundle }) {
         ))}
       </div>
       <Axis className="mt-1" />
-      {control && <p className="mt-2 font-sans text-[11px] text-ink/50"><span className="mr-1 inline-block w-4 border-t border-dashed border-ink align-middle" />dashed line = control ({pct(control.waive_rate)}). <span className="text-vermilion">●</span> incentive pushes toward keeping the fee · <span className="text-prussian">●</span> toward waiving it.</p>}
+      {control && <p className="mt-2 font-sans text-[11px] text-ink/50"><span className="mr-1 inline-block h-3 w-[2px] bg-ink align-middle" />black tick = control ({pct(control.waive_rate)}). <span className="inline-block h-2 w-2 bg-vermilion" /> incentive pushes toward keeping the fee · <span className="inline-block h-2 w-2 bg-prussian" /> toward waiving it.</p>}
     </figure>
   );
 }
@@ -89,13 +89,13 @@ const ARM_ORDER = ["neutral_control", "pushback", "persuader", "flattery", "auth
 export function PressureChart({ rows, b }: { rows: Pressure[]; b: Bundle }) {
   const items = [...new Set(rows.map((r) => r.item))];
   return (
-    <div className="grid gap-x-10 gap-y-12 md:grid-cols-2">
+    <div className="grid gap-3 md:grid-cols-2">
       {items.map((it) => {
         const rs = rows.filter((r) => r.item === it).sort((a, z) => ARM_ORDER.indexOf(a.arm) - ARM_ORDER.indexOf(z.arm));
         const small = rs.every((r) => r.n < 10);
         return (
-          <figure key={it} className="border-t-2 border-ink pt-3">
-            <div className="flex flex-wrap items-baseline gap-2"><figcaption className="num text-[15px] font-medium">{it}</figcaption>{small && <ExampleTag>Smoke test · n≤3</ExampleTag>}<span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, rs[0].model)}</span></div>
+          <figure key={it} className="ticks border border-rule p-5">
+            <div className="flex flex-wrap items-baseline gap-2"><figcaption className="num text-[14px] font-medium">{it}</figcaption>{small && <ExampleTag>Smoke test · n≤3</ExampleTag>}<span className="ml-auto font-sans text-[11px] text-ink/50">{modelName(b, rs[0].model)}</span></div>
             <p className="mt-1 font-sans text-xs leading-5 text-ink/55">Share of conversations where the answer moved away from the model&apos;s first answer. Moving for real information is reasonable; moving for flattery or authority is not.</p>
             <div className="mt-4 space-y-3">
               {rs.map((r) => (
@@ -115,16 +115,16 @@ export function BaselineTable({ rows }: { rows: Baseline[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[640px] font-sans text-sm">
-        <thead className="border-b-2 border-ink text-left">
+        <thead className="border-b border-ink text-left">
           <tr className="label"><th className="py-2 pr-3">Item</th><th className="p-2">Instrument</th><th className="p-2 text-right">Model</th><th className="p-2">People (published data)</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.item} className="border-b border-ink/10">
-              <td className="py-3 pr-3"><div className="font-serif text-[16px]">{r.statement || r.item.replace("AWAD-", "Trolley: ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</div><div className="num text-[11px] text-ink/45">{r.item} · n={r.n}</div></td>
+            <tr key={r.item} className="border-b border-rule">
+              <td className="py-3 pr-3"><div className="text-[15px] font-medium">{r.statement || r.item.replace("AWAD-", "Trolley: ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</div><div className="num text-[11px] text-ink/45">{r.item} · n={r.n}</div></td>
               <td className="p-2 text-ink/65">{r.instrument}</td>
               <td className="num p-2 text-right">{r.act_rate != null ? `${pct(r.act_rate)} act` : r.mean != null ? `mean ${r.mean}` : "–"}</td>
-              <td className="p-2 text-ink/65">{r.human ? <><b className="num font-medium text-ink">{pct(r.human.value)}</b> act<div className="text-[11px] text-ink/45">{r.human.source}</div></> : <span className="text-xs italic text-ink/40">Norms added with the full wave</span>}</td>
+              <td className="p-2 text-ink/65">{r.human ? <><b className="num font-medium text-ink">{pct(r.human.value)}</b> act<div className="text-[11px] text-ink/45">{r.human.source}</div></> : r.instrument === "saydo" ? <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">Human data: survey coming</span> : <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/40">No matched item-level norm yet</span>}</td>
             </tr>
           ))}
         </tbody>

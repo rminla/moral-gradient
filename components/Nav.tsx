@@ -4,6 +4,7 @@ import { Wordmark } from "./Brand";
 
 const LINKS = [
   ["/results", "Results"],
+  ["/models", "Models"],
   ["/costs", "Funding"],
   ["/about", "Method"],
 ] as const;
@@ -20,7 +21,7 @@ export default async function Nav() {
           <Link href="/" aria-label="Moral Gradient, home" className="flex shrink-0 items-center border-r border-rule px-5"><Wordmark /></Link>
           <nav className="hidden items-stretch md:flex">
             {LINKS.map(([h, t]) => (
-              <Link key={h} href={h} className="flex items-center border-r border-rule px-6 font-mono text-[12px] uppercase tracking-[0.08em] text-ink/70 transition-colors hover:bg-panel hover:text-ink">{t}</Link>
+              <Link key={h} href={h} className="flex items-center border-r border-rule px-5 font-mono text-[12px] uppercase tracking-[0.08em] text-ink/70 transition-colors hover:bg-panel hover:text-ink">{t}</Link>
             ))}
           </nav>
           <div className="hatch hidden flex-1 md:block" />
@@ -32,9 +33,9 @@ export default async function Nav() {
             <span className="blink h-2 w-2 bg-vermilion" />Donate
           </Link>
         </div>
-        <nav className="grid grid-cols-3 border-t border-rule md:hidden">
+        <nav className="grid grid-cols-4 border-t border-rule md:hidden">
           {LINKS.map(([h, t], i) => (
-            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.08em] text-ink/70 ${i < 2 ? "border-r border-rule" : ""}`}>{t}</Link>
+            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.08em] text-ink/70 ${i < 3 ? "border-r border-rule" : ""}`}>{t}</Link>
           ))}
         </nav>
       </header>

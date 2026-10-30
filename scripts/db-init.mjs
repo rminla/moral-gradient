@@ -1,6 +1,6 @@
 // Initialise the site DB: schema + milestone queue. Flags:
 //   --reseed-milestones   re-read data/milestones.json (only replaces queued, unfunded milestones)
-//   --examples            add clearly-flagged EXAMPLE donations (is_example=1) for local previews. Never use in production.
+//   --reset-local         clear local test donations + jobs and un-fund milestones (file: databases only)
 import { createClient } from "@libsql/client";
 import fs from "node:fs";
 import path from "node:path";
@@ -20,14 +20,12 @@ if (args.includes("--reseed-milestones")) await c.execute("DELETE FROM milestone
 const have = new Set((await c.execute("SELECT key FROM milestones")).rows.map((r) => r.key));
 let pos = Number((await c.execute("SELECT COALESCE(MAX(position),0) p FROM milestones")).rows[0].p);
 for (const m of milestones) if (!have.has(m.key)) await c.execute({ sql: "INSERT INTO milestones (key,position,kind,title,lab,model_id,provider,suite,cost_cents) VALUES (?,?,?,?,?,?,?,?,?)", args: [m.key, ++pos, m.kind, m.title, m.lab, m.model_id, m.provider, m.suite, Math.round(m.cost_usd * 100)] });
-if (args.includes("--examples")) {
-  const ex = [["Ada L. (example)", 2500, "named"], [null, 500, "anonymous"], ["Moral Machine fan (example)", 1000, "named"], [null, 300, "anonymous"]];
-  let i = 0;
-  for (const [name, cents, mode] of ex) {
-    const fee = Math.round(cents * 0.029 + 30), t = new Date(Date.now() - (ex.length - i++) * 3600e3).toISOString();
-    await c.execute({ sql: "INSERT OR IGNORE INTO donations (id,created_at,paid_at,status,amount_cents,fee_cents,net_cents,display_mode,display_name,provider,is_example,message) VALUES (?,?,?,'paid',?,?,?,?,?,'example',1,?)",
-      args: [`don_example_${i}`, t, t, cents, fee, cents - fee, mode, name, i === 1 ? "Excited to see the borderline results." : null] });
-  }
-  console.log("added example donations (is_example=1). Note: run the app's allocation by making any donation, or POST a mock donation.");
+if (args.includes("--reset-local")) {
+  // Wipe local test donations/jobs and un-fund the queue. Refuses to touch a remote (production) database.
+  if (!url.startsWith("file:")) { console.error("--reset-local only runs against a local file: database"); process.exit(1); }
+  await c.execute("DELETE FROM donations");
+  await c.execute("DELETE FROM jobs");
+  await c.execute("UPDATE milestones SET funded_cents=0, status='queued', funded_at=NULL, job_id=NULL");
+  console.log("local test donations, jobs and milestone funding cleared");
 }
 console.log("db ready:", url.replace(/\?.*$/, ""), "milestones:", (await c.execute("SELECT COUNT(*) n FROM milestones")).rows[0].n);

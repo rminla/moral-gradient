@@ -5,8 +5,10 @@ import { Eyebrow } from "@/components/Brand";
 import FindingCard from "@/components/FindingCard";
 import LiveBudget from "@/components/LiveBudget";
 import Leaderboard from "@/components/Leaderboard";
+import { NextMilestoneCard } from "@/components/Milestone";
+import { HumanSlot } from "@/components/Human";
 import { getBundle, modelName, scenarioTitle } from "@/lib/bundle";
-import { getFunding, getLeaderboard, usd } from "@/lib/funding";
+import { getFunding, getLeaderboard } from "@/lib/funding";
 import { getSpend } from "@/lib/ledger";
 
 export const dynamic = "force-dynamic";
@@ -21,9 +23,6 @@ export default async function Home() {
   const scen = lead ? b.scenarios.find((x) => x.id === lead.scenario) : undefined;
   const n = sd?.do[0]?.n ?? sd?.judge.n ?? 20;
   const rows = lead ? lead.bars.slice(0, 3) : [];
-  const next = f.next;
-  const meterCells = next ? Math.round(next.cost_cents / 100) : 0;
-  const meterFilled = next ? Math.floor(next.funded_cents / 100) : 0;
 
   return (
     <main>
@@ -92,6 +91,7 @@ export default async function Home() {
                   </div>
                 );
               })}
+              <HumanSlot className="px-5 py-3 md:px-8" />
             </div>
           </div>
           <div className="grid bg-ink text-white md:grid-cols-[minmax(0,1fr)_auto]">
@@ -133,37 +133,9 @@ export default async function Home() {
           Every dollar in. <span className="text-ink/35">Every model call out.</span>
         </h2>
         <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink/65">Readers fund the runs. Each funded suite launches automatically with a hard spending cap, and every API call is priced on the <Link className="link" href="/costs">costs page</Link> within a minute.</p>
-        <div className="mt-10 grid gap-3 md:grid-cols-[1fr_1.15fr]">
+        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           <LiveBudget initial={{ raised_usd: f.raised_cents / 100, pool_usd: f.pool_cents / 100, spent_usd: spend?.total_usd ?? null, spend_source: spend?.source ?? null, spend_as_of: spend?.as_of ?? null, donors: f.donors }} />
-          <div className="flex flex-col bg-ink p-6 text-white md:p-8">
-            <div className="flex items-center justify-between">
-              <span className="kicker text-white/50">Next model</span>
-              {next && <span className="num text-[12px] text-white/50">{usd(next.funded_cents, 0)} / {usd(next.cost_cents, 0)}</span>}
-            </div>
-            {next ? (
-              <>
-                <div className="wide mt-6 text-[28px] font-bold leading-none tracking-[-0.03em] md:text-[34px]">{next.title}</div>
-                <div className="mt-3 text-[15px] text-white/65"><b className="num font-semibold text-vermilion">{usd(next.remaining_cents)}</b> left before the suite runs</div>
-                <div className="mt-6 grid grid-cols-[repeat(25,minmax(0,1fr))] gap-[3px]" aria-label={`${Math.round(next.progress * 100)}% funded`}>
-                  {Array.from({ length: meterCells }, (_, i) => <span key={i} className={`aspect-square ${i < meterFilled ? "bg-vermilion" : "bg-white/12"}`} />)}
-                </div>
-                <div className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.06em] text-white/40">one square = $1 · launches automatically when full</div>
-              </>
-            ) : (
-              <p className="mt-6 text-[17px] text-white/75">Every queued model is funded. Donations now build the general pool ({usd(f.pool_cents)}).</p>
-            )}
-            {f.queue.length > 1 && (
-              <ol className="mt-6 divide-y divide-white/10 border-y border-white/10 text-[14px]">
-                {f.queue.slice(1, 3).map((m, i) => (
-                  <li key={m.key} className="flex items-baseline gap-3 py-2"><span className="num text-[11px] text-white/35">{String(i + 2).padStart(2, "0")}</span><span className="flex-1 truncate text-white/75">{m.title}</span><span className="num text-white/50">{usd(m.cost_cents, 0)}</span></li>
-                ))}
-              </ol>
-            )}
-            <div className="mt-auto flex flex-wrap gap-3 pt-7">
-              <Link href="/donate" className="btn-money"><span className="h-2 w-2 bg-white" />Donate</Link>
-              <Link href="/costs#queue" className="btn border-white/20 text-white hover:border-white">Full queue</Link>
-            </div>
-          </div>
+          <NextMilestoneCard f={f} showQueue={2} />
         </div>
       </section>
 
