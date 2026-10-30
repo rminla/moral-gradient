@@ -1,57 +1,74 @@
 @import "tailwindcss";
 
-/* ───────────────────────── Moral Gradient brand system ─────────────────────────
-   Clean white, cool ink and one diverging scale (Prussian = says ↔ Vermilion = does). See BRAND.md.        */
+/* ───────────────────────── Moral Gradient · Direction A "Signal" ─────────────────────────
+   Framed grid, black/white cells, one signal red for what models DO. Archivo (incl. expanded
+   widths) for display, JetBrains Mono for every label and number. See BRAND.md.            */
 
 @theme inline {
-  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
-  --font-sans: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-serif: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-display), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-numeric), ui-monospace, Menlo, monospace;
 }
 
 @theme {
-  /* surfaces */
   --color-paper: #ffffff;
-  --color-panel: #f4f6f8;
-  --color-ink: #12161b;
-  --color-rule: #dde2e8;
-  /* the diverging scale: cool pole → neutral → warm pole */
-  --color-prussian: #1d4e6e;
-  --color-prussian-2: #6f93a8;
-  --color-neutral: #e6eaef;
-  --color-vermilion-2: #e2a48f;
-  --color-vermilion: #c23b1e;
-  --color-vermilion-dark: #9e2d14;
-  /* supporting */
-  --color-brass: #8f6a12;
-  --color-moss: #3d6b45;
-  --color-highlight: #fbe37d;
-  /* semantic aliases used across components */
-  --color-accent: #c23b1e;
-  --color-say: #1d4e6e;
-  --color-judge: #6f93a8;
-  --color-do: #c23b1e;
-  --color-money: #c23b1e;
+  --color-panel: #f4f4f3;
+  --color-ink: #0c0c0d;
+  --color-rule: #e3e3e1;
+  --color-neutral: #e3e3e1;
+  /* words (say) are grey; deeds (do) are signal red */
+  --color-prussian: #6c6f75;
+  --color-prussian-2: #a5a8ad;
+  --color-vermilion: #ff3d1f;
+  --color-vermilion-2: #ff8b74;
+  --color-vermilion-dark: #d42a0f;
+  --color-brass: #6c6f75;
+  --color-moss: #1f8a4c;
+  --color-highlight: #ffd8cf;
+  --color-accent: #ff3d1f;
+  --color-say: #6c6f75;
+  --color-judge: #a5a8ad;
+  --color-do: #ff3d1f;
+  --color-money: #ff3d1f;
 }
 
+:root { --font-plex-sans: var(--font-display); --font-plex-mono: var(--font-numeric); --font-newsreader: var(--font-display); }
 html { background: var(--color-paper); color: var(--color-ink); }
-body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-feature-settings: "kern"; }
-::selection { background: var(--color-highlight); color: var(--color-ink); }
-a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.serif { font-family: var(--font-serif); font-optical-sizing: auto; }
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+body { position: relative; font-family: var(--font-display); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--color-vermilion); color: #fff; }
+a { text-underline-offset: 3px; }
+.serif { font-family: var(--font-display); font-weight: 650; letter-spacing: -0.025em; }
+.num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.wide { font-stretch: 118%; }
 
-@utility card { @apply border border-ink/15 bg-panel; }
-@utility chip { @apply inline-flex items-center gap-1.5 border border-ink/25 px-1.5 py-px font-sans text-[10.5px] font-medium uppercase tracking-[0.09em] text-ink/70; }
-@utility kicker { @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em]; }
-@utility btn { @apply inline-flex items-center justify-center gap-2 border px-4 py-2.5 font-sans text-sm font-medium transition-colors; }
-@utility btn-primary { @apply btn border-ink bg-ink text-paper hover:border-vermilion hover:bg-vermilion; }
+@utility card { @apply border border-rule bg-paper; }
+@utility chip { @apply inline-flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/70; }
+@utility kicker { @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em]; }
+@utility btn { @apply inline-flex items-center justify-center gap-2.5 border px-5 py-3 font-mono text-[12px] font-medium uppercase tracking-[0.06em] transition-colors; }
+@utility btn-primary { @apply btn border-ink bg-ink text-white hover:bg-vermilion hover:border-vermilion; }
 @utility btn-money { @apply btn border-vermilion bg-vermilion text-white hover:border-vermilion-dark hover:bg-vermilion-dark; }
-@utility btn-ghost { @apply btn border-ink/35 bg-transparent text-ink hover:border-ink hover:bg-ink/[0.04]; }
-@utility input { @apply w-full border border-ink/25 bg-panel px-3 py-2.5 text-sm outline-none placeholder:text-ink/35 focus:border-ink focus:ring-2 focus:ring-highlight/70; }
-@utility label { @apply mb-1.5 block font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/55; }
-@utility rule-head { @apply border-t-2 border-ink pt-3; }
-@utility link { @apply underline decoration-ink/30 underline-offset-[3px] hover:decoration-vermilion; }
-.prose-muted p { @apply font-serif text-[18px] leading-[1.65] text-ink/85; }
+@utility btn-ghost { @apply btn border-rule bg-paper text-ink hover:border-ink; }
+@utility input { @apply w-full border border-rule bg-paper px-3 py-3 text-sm outline-none placeholder:text-ink/35 focus:border-ink; }
+@utility label { @apply mb-1.5 block font-mono text-[11px] uppercase tracking-[0.08em] text-ink/55; }
+@utility rule-head { @apply border-t border-rule pt-5; }
+@utility link { @apply underline decoration-ink/25 underline-offset-[3px] hover:decoration-vermilion; }
+.prose-muted p { @apply font-sans text-[17px] leading-[1.65] text-ink/80; }
 .prose-muted code { @apply font-mono text-[14px]; }
-.dropcap::first-letter { font-family: var(--font-serif); float: left; font-size: 4.1em; line-height: 0.85; padding: 0.06em 0.08em 0 0; color: var(--color-vermilion); }
+.dropcap::first-letter { color: var(--color-vermilion); font-weight: 700; }
+
+/* crop-mark corners on framed cells */
+.ticks { position: relative; }
+.ticks::before, .ticks::after { content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none; }
+.ticks::before { left: -1px; top: -1px; border-left: 1.5px solid currentColor; border-top: 1.5px solid currentColor; }
+.ticks::after { right: -1px; bottom: -1px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; }
+.hatch { background-image: repeating-linear-gradient(135deg, var(--color-rule) 0 1px, transparent 1px 7px); }
+.pixel-grid { background-image: linear-gradient(var(--color-rule) 1px, transparent 1px), linear-gradient(90deg, var(--color-rule) 1px, transparent 1px); background-size: 28px 28px; }
+.pixel-grid-dark { background-image: linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px); background-size: 28px 28px; }
+
+@keyframes cell-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }
+.cell-in { animation: cell-in 420ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 700ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.blink { animation: blink 1.6s steps(2, start) infinite; }
+@media (prefers-reduced-motion: reduce) { .cell-in, .rise, .blink { animation: none; } }
