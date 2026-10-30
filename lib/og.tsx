@@ -19,8 +19,8 @@ export async function ogFonts() {
 }
 
 export const OG = {
-  paper: "#f3eee4", panel: "#faf7f0", ink: "#1a1916", rule: "#d8d0c0", vermilion: "#c23b1e", prussian: "#1d4e6e", brass: "#a07a22",
-  scale: ["#1d4e6e", "#4f7a93", "#9db6c2", "#e9e2d3", "#e8b4a2", "#d6735a", "#c23b1e"],
+  paper: "#ffffff", panel: "#f4f6f8", ink: "#12161b", rule: "#dde2e8", vermilion: "#c23b1e", prussian: "#1d4e6e", brass: "#8f6a12",
+  scale: ["#1d4e6e", "#4f7a93", "#9db6c2", "#e6eaef", "#e8b4a2", "#d6735a", "#c23b1e"],
 };
 export const PILLAR_OG: Record<string, { name: string; color: string }> = {
   saydo: { name: "Say vs Do", color: OG.vermilion }, pressure: { name: "Under pressure", color: OG.prussian },

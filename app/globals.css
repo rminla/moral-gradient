@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ───────────────────────── Moral Gradient brand system ─────────────────────────
-   Paper, ink and one diverging scale (Prussian ↔ Vermilion). See BRAND.md.        */
+   Clean white, cool ink and one diverging scale (Prussian = says ↔ Vermilion = does). See BRAND.md.        */
 
 @theme inline {
   --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
@@ -11,25 +11,25 @@
 
 @theme {
   /* surfaces */
-  --color-paper: #f3eee4;
-  --color-panel: #faf7f0;
-  --color-ink: #1a1916;
-  --color-rule: #d8d0c0;
+  --color-paper: #ffffff;
+  --color-panel: #f4f6f8;
+  --color-ink: #12161b;
+  --color-rule: #dde2e8;
   /* the diverging scale: cool pole → neutral → warm pole */
   --color-prussian: #1d4e6e;
-  --color-prussian-2: #7fa1b3;
-  --color-neutral: #e9e2d3;
+  --color-prussian-2: #6f93a8;
+  --color-neutral: #e6eaef;
   --color-vermilion-2: #e2a48f;
   --color-vermilion: #c23b1e;
   --color-vermilion-dark: #9e2d14;
   /* supporting */
-  --color-brass: #a07a22;
+  --color-brass: #8f6a12;
   --color-moss: #3d6b45;
-  --color-highlight: #f3e08a;
+  --color-highlight: #fbe37d;
   /* semantic aliases used across components */
   --color-accent: #c23b1e;
   --color-say: #1d4e6e;
-  --color-judge: #a07a22;
+  --color-judge: #6f93a8;
   --color-do: #c23b1e;
   --color-money: #c23b1e;
 }

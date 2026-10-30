@@ -38,7 +38,7 @@ export default async function Results() {
         </section>
 
         <section className="mt-16">
-          <SectionHead id="saydo" kicker="Say vs Do" title="Does it act on what it says?">What the model says it values, how it judges someone else, and what it does when it&apos;s the one acting.</SectionHead>
+          <SectionHead id="saydo" kicker="Say vs Do" title="Does it act on what it says?">Whether it says a principle is right, whether it tells another agent to act on it, and what it actually does when it&apos;s the one acting with tools.</SectionHead>
           <div className="mt-6"><SayDoTable b={b} rows={b.saydo} /></div>
         </section>
 

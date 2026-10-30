@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import puppeteer from "puppeteer-core";
 const BASE = process.env.BASE || "http://localhost:3000";
-const OUT = "screenshots/rebrand"; fs.mkdirSync(OUT, { recursive: true });
+const OUT = process.env.OUT || "screenshots/rebrand2"; fs.mkdirSync(OUT, { recursive: true });
 const browser = await puppeteer.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox", "--disable-dev-shm-usage"], headless: true });
 const page = await browser.newPage();
 const shot = async (name, path, full = true) => {

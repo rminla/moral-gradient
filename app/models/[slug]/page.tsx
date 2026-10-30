@@ -44,7 +44,7 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
         <div className="mt-10 grid gap-4 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="card p-5">
             <div className="label">Say vs Do (scenarios with n≥20)</div>
-            <div className="mt-3"><Triptych say={sayAvg} judge={judgeAvg} doo={doAvg} sayLabel="stated view" judgeLabel="advises others to act on it" doLabel="acts on it itself" /></div>
+            <div className="mt-3"><Triptych say={sayAvg} judge={judgeAvg} doo={doAvg} sayLabel="its stated view" judgeLabel="in someone else's case" doLabel="as the agent" /></div>
           </div>
           <div className="card p-5">
             <div className="label">Self-interest</div>

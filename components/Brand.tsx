@@ -1,7 +1,7 @@
 import { SITE_NAME } from "@/lib/config";
 
 /** The diverging scale used everywhere: cool pole (Prussian) → paper neutral → warm pole (Vermilion). */
-export const SCALE = ["#1d4e6e", "#4f7a93", "#9db6c2", "#e9e2d3", "#e8b4a2", "#d6735a", "#c23b1e"];
+export const SCALE = ["#1d4e6e", "#4f7a93", "#9db6c2", "#e6eaef", "#e8b4a2", "#d6735a", "#c23b1e"];
 
 /**
  * The mark: a seven-step diverging scale with a pointer that has drifted off-centre.
@@ -11,9 +11,9 @@ export function Mark({ size = 28, className = "" }: { size?: number; className?:
   const w = 7 * 4; // 7 cells, 4 units each
   return (
     <svg viewBox={`0 0 ${w} 24`} width={(size * w) / 24} height={size} className={className} aria-hidden="true">
-      <path d={`M ${4 * 4 + 2 - 3} 1 h 6 l -3 4.5 z`} fill="#1a1916" />
+      <path d={`M ${4 * 4 + 2 - 3} 1 h 6 l -3 4.5 z`} fill="#12161b" />
       {SCALE.map((c, i) => <rect key={c} x={i * 4} y={8} width={4} height={14} fill={c} />)}
-      <rect x={4 * 4 + 1.5} y={6.5} width={1} height={17} fill="#1a1916" />
+      <rect x={4 * 4 + 1.5} y={6.5} width={1} height={17} fill="#12161b" />
     </svg>
   );
 }

@@ -32,7 +32,7 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
         <div className={`num mt-5 text-[52px] font-medium leading-none ${pillar(f.pillar).text}`}>{f.stat}</div>
         <div className="mt-2 font-sans text-xs uppercase tracking-[0.1em] text-ink/55">{f.stat_label}</div>
         <p className="mt-6 font-serif text-[20px] leading-[1.55] text-ink/85">{f.summary}</p>
-        <figure className="mt-8 border-t-2 border-ink pt-3"><div className="kicker text-ink/60">Figure</div><div className="mt-3"><Figure rows={f.bars} /></div></figure>
+        <figure className="mt-8 border-t-2 border-ink pt-3"><div className="kicker text-ink/60">Figure</div><div className="mt-3"><Figure rows={f.bars} axis={f.axis} takeaway={f.takeaway} /></div></figure>
         <div className="mt-8">
           <div className="label">Share this finding</div>
           <Share path={`/f/${f.id}`} text={`${f.headline} ${f.stat} (${f.stat_label}) — ${modelName(b, f.model)}`} />

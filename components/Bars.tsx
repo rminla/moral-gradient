@@ -51,48 +51,60 @@ export function HBar({ label, value, color = "bg-ink", sub, n, reference }: { la
   );
 }
 
-/** Say / Judge / Do columns: share of answers consistent with the model's own stated view. Direct labels, one baseline rule. */
-export function Triptych({ say, judge, doo, sayLabel, judgeLabel, doLabel }: { say: number | null; judge: number | null; doo: number | null; sayLabel: string; judgeLabel: string; doLabel: string }) {
+/**
+ * Says / tells others / does: share of runs that chose the option the model's own stated view implies.
+ * Plain-language labels; the "does" column is the one that matters, so it carries the accent.
+ */
+export function Triptych({ say, judge, doo, option, sayLabel, judgeLabel, doLabel, n }: { say: number | null; judge: number | null; doo: number | null; option?: string; sayLabel?: string; judgeLabel?: string; doLabel?: string; n?: number | string }) {
   const cols = [
-    { k: "Says", v: say, c: "bg-say", t: "text-say", d: sayLabel },
-    { k: "Judges", v: judge, c: "bg-judge", t: "text-judge", d: judgeLabel },
-    { k: "Does", v: doo, c: "bg-do", t: "text-do", d: doLabel },
+    { k: "Says it's right", v: say, c: "bg-say", t: "text-say", d: sayLabel },
+    { k: "Tells another agent to", v: judge, c: "bg-prussian-2", t: "text-prussian-2", d: judgeLabel },
+    { k: "Actually does it, with tools", v: doo, c: "bg-do", t: "text-do", d: doLabel },
   ];
   const gap = judge != null && doo != null ? judge - doo : null;
   return (
     <div>
+      {option && <p className="mb-4 font-sans text-[13px] text-ink/70">The option: <b className="font-medium text-ink">{option.replace(/\.$/, "")}</b></p>}
       <div className="relative grid grid-cols-3 gap-4 border-b border-ink">
-        <div className="pointer-events-none absolute inset-x-0 top-6 border-t border-dashed border-ink/15" title="100%" />
-        {cols.map((c) => (
+        <div className="pointer-events-none absolute inset-x-0 top-7 border-t border-dashed border-ink/15" title="100%" />
+        {cols.map((c, i) => (
           <div key={c.k} className="flex h-44 flex-col justify-end">
-            <div className="num mb-1 text-center text-lg font-medium">{pct(c.v)}</div>
-            <div className={`mx-auto w-12 ${c.c}`} style={{ height: `${Math.max(c.v ?? 0, 0.012) * (176 - 24 - 28)}px` }} />
+            <div className={`num mb-1 text-center font-medium ${i === 2 ? "text-2xl text-do" : "text-lg"}`}>{pct(c.v)}</div>
+            <div className={`mx-auto w-12 ${c.c}`} style={{ height: `${Math.max(c.v ?? 0, 0.012) * (176 - 28 - 28)}px` }} />
           </div>
         ))}
       </div>
       <div className="mt-2 grid grid-cols-3 gap-4">
         {cols.map((c) => (
           <div key={c.k} className="text-center">
-            <div className={`kicker ${c.t}`}>{c.k}</div>
-            <div className="mt-0.5 font-sans text-[11px] leading-snug text-ink/55">{c.d}</div>
+            <div className={`font-sans text-[12px] font-semibold leading-tight ${c.t}`}>{c.k}</div>
+            {c.d && <div className="mt-0.5 font-sans text-[11px] leading-snug text-ink/55">{c.d}</div>}
           </div>
         ))}
       </div>
+      <p className="mt-3 font-sans text-[11px] text-ink/55">{n ? `% of ${n} runs` : "% of runs"} that chose {option ? "this option" : "the option its own stated view implies"}. Same situation each time; only the framing changes.</p>
       {gap != null && Math.abs(gap) >= 0.2 && (
-        <p className="mt-3 border-l-2 border-vermilion pl-2 font-serif text-[15px] italic text-ink/80">
-          A {Math.round(Math.abs(gap) * 100)}-point gap between what it advises and what it does.
+        <p className="mt-2 border-l-2 border-vermilion pl-2 font-serif text-[16px] italic text-ink/85">
+          {gap > 0 ? `It does it ${Math.round(gap * 100)} points less often than it tells others to.` : `It does it ${Math.round(-gap * 100)} points more often than it tells others to.`}
         </p>
       )}
     </div>
   );
 }
 
+/** Split a label onto at most two lines for the SVG figure. */
+function wrap(t: string, max = 28): string[] {
+  if (t.length <= max) return [t];
+  const cut = t.lastIndexOf(" ", max);
+  return cut > 0 ? [t.slice(0, cut), t.slice(cut + 1)] : [t];
+}
+
 /**
  * Annotated "Figure" for the hero and finding pages: rows on a 0–100 axis, with a bracket
  * drawn between the highest and lowest rows when they are far apart.
  */
-export function Figure({ rows, color = "#c23b1e" }: { rows: { label: string; value: number | null }[]; color?: string }) {
-  const W = 600, L = 190, R = 500, rowH = 46, top = 22;
+export function Figure({ rows, color = "#c23b1e", axis, takeaway }: { rows: { label: string; value: number | null }[]; color?: string; axis?: string; takeaway?: string }) {
+  const W = 640, L = 250, R = 540, rowH = 52, top = 22;
   const H = top + rows.length * rowH + 22;
   const x = (v: number) => L + (R - L) * Math.min(1, Math.max(0, v));
   const vals = rows.map((r) => r.value ?? 0);
@@ -100,11 +112,12 @@ export function Figure({ rows, color = "#c23b1e" }: { rows: { label: string; val
   const gap = vals[hi] - vals[lo];
   const y = (i: number) => top + i * rowH + rowH / 2;
   return (
+    <div>
     <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={rows.map((r) => `${r.label}: ${pct(r.value)}`).join("; ")}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => (
         <g key={t}>
-          <line x1={x(t)} x2={x(t)} y1={top - 6} y2={H - 18} stroke="#1a1916" strokeOpacity={t === 0 ? 0.7 : 0.12} />
-          <text x={x(t)} y={H - 4} textAnchor="middle" fontSize="11" fill="#1a1916" fillOpacity="0.5" fontFamily="var(--font-mono)">{Math.round(t * 100)}%</text>
+          <line x1={x(t)} x2={x(t)} y1={top - 6} y2={H - 18} stroke="#12161b" strokeOpacity={t === 0 ? 0.7 : 0.12} />
+          <text x={x(t)} y={H - 4} textAnchor="middle" fontSize="11" fill="#12161b" fillOpacity="0.5" fontFamily="var(--font-mono)">{Math.round(t * 100)}%</text>
         </g>
       ))}
       {rows.map((r, i) => {
@@ -112,10 +125,10 @@ export function Figure({ rows, color = "#c23b1e" }: { rows: { label: string; val
         const isLo = i === lo && gap >= 0.2;
         return (
           <g key={r.label}>
-            <text x={0} y={y(i) + 4} fontSize="15" fill="#1a1916" fontFamily="var(--font-plex-sans)">{r.label}</text>
-            <line x1={x(0)} x2={x(v)} y1={y(i)} y2={y(i)} stroke={isLo ? color : "#1a1916"} strokeWidth="2" />
-            <circle cx={x(v)} cy={y(i)} r="6" fill={isLo ? color : "#1a1916"} stroke="#faf7f0" strokeWidth="2" />
-            <text x={x(v) + (v > 0.85 ? -12 : 12)} y={y(i) - 9} textAnchor={v > 0.85 ? "end" : "start"} fontSize="14" fontFamily="var(--font-mono)" fill={isLo ? color : "#1a1916"}>{Math.round(v * 100)}%</text>
+            <text x={0} y={y(i) + 4 - (wrap(r.label).length - 1) * 8} fontSize="15" fill={isLo ? color : "#12161b"} fontWeight={isLo ? 600 : 400} fontFamily="var(--font-plex-sans)">{wrap(r.label).map((t, j) => <tspan key={j} x={0} dy={j ? 17 : 0}>{t}</tspan>)}</text>
+            <line x1={x(0)} x2={x(v)} y1={y(i)} y2={y(i)} stroke={isLo ? color : "#12161b"} strokeWidth="2" />
+            <circle cx={x(v)} cy={y(i)} r="6" fill={isLo ? color : "#12161b"} stroke="#f4f6f8" strokeWidth="2" />
+            <text x={x(v) + (v > 0.85 ? -12 : 12)} y={y(i) - 9} textAnchor={v > 0.85 ? "end" : "start"} fontSize="14" fontFamily="var(--font-mono)" fill={isLo ? color : "#12161b"}>{Math.round(v * 100)}%</text>
           </g>
         );
       })}
@@ -130,5 +143,8 @@ export function Figure({ rows, color = "#c23b1e" }: { rows: { label: string; val
         );
       })()}
     </svg>
+    {axis && <p className="mt-1 font-sans text-[12px] text-ink/60">{axis}</p>}
+    {takeaway && <p className="mt-3 border-l-2 border-vermilion pl-3 font-serif text-[18px] leading-snug text-ink">{takeaway}</p>}
+    </div>
   );
 }

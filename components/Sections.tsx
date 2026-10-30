@@ -12,7 +12,7 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
       <table className="w-full min-w-[760px] font-sans text-sm">
         <thead className="border-b-2 border-ink text-left">
           <tr className="label"><th className="py-2 pr-3">Scenario</th><th className="p-2">Model</th><th className="min-w-[13rem] p-2">Its stated view implies</th>
-            <th className="p-2 text-right text-say">Says</th><th className="p-2 text-right text-judge">Judges</th><th className="p-2 text-right text-do">Does</th><th className="whitespace-nowrap py-2 pl-2 text-right">Gap · judge→do</th></tr>
+            <th className="p-2 text-right text-say">Says it&apos;s right</th><th className="p-2 text-right text-prussian-2">Tells others to</th><th className="p-2 text-right text-do">Actually does</th><th className="whitespace-nowrap py-2 pl-2 text-right">Gap</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => {
@@ -26,14 +26,14 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
                 <td className="min-w-[13rem] p-2 text-ink/70">{optionText(b, r.scenario, r.say_implied_option)}</td>
                 <td className="num p-2 text-right">{pct(sayCons)}</td>
                 <td className="num p-2 text-right">{pct(r.judge.consistent_rate)}</td>
-                <td className="num p-2 text-right">{pct(d?.consistent_rate)}</td>
+                <td className="num p-2 text-right font-medium text-do">{pct(d?.consistent_rate)}</td>
                 <td className="py-2 pl-2 text-right"><GapCell gap={gap} /></td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="mt-2 font-sans text-xs text-ink/50">Each column is the share of answers consistent with the option the model&apos;s own stated view implies. &ldquo;Gap&rdquo; = Judges minus Does, in the original version of the scenario. No column says which option is right.</p>
+      <p className="mt-2 font-sans text-xs text-ink/50">Each column is the % of runs (usually 20) that chose the option in the third column: when rating the principle, when advising another agent in the same situation, and when acting as the agent with tools. &ldquo;Gap&rdquo; = how much less often it actually does it than it tells others to (original version of the scenario). No column says which option is right.</p>
     </div>
   );
 }

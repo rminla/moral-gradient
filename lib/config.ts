@@ -1,6 +1,6 @@
 // Single source of truth for branding + runtime flags. The site name is ONE config value.
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Moral Gradient";
-export const SITE_TAGLINE = "Do AI models do what they say is right?";
+export const SITE_TAGLINE = "Tracking what AI models do, not just what they say";
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 export const OWNER_NAME = "Raphael";
 

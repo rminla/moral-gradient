@@ -4,7 +4,7 @@ import { ExampleBanner, ExampleTag } from "@/components/Banner";
 import { HBar, Triptych } from "@/components/Bars";
 import { SelfInterestChart } from "@/components/Sections";
 import { currentUser, isDonor } from "@/lib/auth";
-import { getBundle, getTraces, modelName } from "@/lib/bundle";
+import { getBundle, getTraces, modelName, plainLabel } from "@/lib/bundle";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +36,11 @@ export default async function ScenarioPage({ params, searchParams }: { params: P
         <p className="mt-2 text-ink/60">Tension: {s.value}</p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="card p-5"><div className="label text-say">Say: the statement it rates</div><p className="serif mt-1 text-lg leading-snug">&ldquo;{s.say_statement}&rdquo;</p><p className="mt-2 text-xs text-ink/45">7-point scale, strongly disagree to strongly agree.</p></div>
-          <div className="card p-5"><div className="label text-judge">Judge: someone else&apos;s case</div><p className="text-sm leading-6 text-ink/75">{s.judge_vignette}</p>
+          <div className="card p-5"><div className="label text-say">Says: the principle it rates</div><p className="serif mt-1 text-lg leading-snug">&ldquo;{s.say_statement}&rdquo;</p><p className="mt-2 text-xs text-ink/45">7-point scale, strongly disagree to strongly agree.</p></div>
+          <div className="card p-5"><div className="label text-prussian-2">Tells another agent: someone else&apos;s case</div><p className="text-sm leading-6 text-ink/75">{s.judge_vignette}</p>
             {s.judge_options && <ul className="mt-2 space-y-1 text-sm">{Object.entries(s.judge_options).map(([k, t]) => <li key={k}><code className="mr-1 text-xs text-ink/40">{k}</code>{t}</li>)}</ul>}</div>
         </div>
-        <p className="mt-3 text-xs text-ink/50"><b className="text-do">Do:</b> the model is deployed as the agent with real tools (mock accounts, policies, a reply tool) and handles the same situation itself. The full agent prompt and tool transcript are in the donor trace view below.</p>
+        <p className="mt-3 text-xs text-ink/50"><b className="text-do">Does:</b> the model is deployed as the agent with real tools (mock accounts, policies, a reply tool) and handles the same situation itself. The full agent prompt and tool transcript are in the donor trace view below.</p>
 
         {rows.map((r) => (
           <section key={r.model} className="mt-10">
@@ -48,12 +48,13 @@ export default async function ScenarioPage({ params, searchParams }: { params: P
             <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1.2fr]">
               <div className="card p-5">
                 <Triptych say={r.say.agree_rate == null ? null : r.say.agree_rate >= 0.5 ? r.say.agree_rate : 1 - r.say.agree_rate} judge={r.judge.consistent_rate} doo={r.do[0]?.consistent_rate ?? null}
-                  sayLabel={`mean ${r.say.mean} / 7 · n=${r.say.n}`} judgeLabel={`n=${r.judge.n}`} doLabel={`${r.do[0]?.label} · n=${r.do[0]?.n}`} />
-                <p className="mt-3 text-xs text-ink/50">Share of answers consistent with “{s.judge_options?.[r.say_implied_option] || r.say_implied_option}”, the option its own stated view implies.</p>
+                  option={s.judge_options?.[r.say_implied_option] || r.say_implied_option} n={r.do[0]?.n ?? r.judge.n}
+                  sayLabel={`rated the principle ${r.say.mean} / 7`} judgeLabel="in someone else's case" doLabel={r.do[0] ? plainLabel(r.do[0].label) : undefined} />
               </div>
               <div className="card p-5">
-                <div className="label">What it did as the agent, by version of the scenario</div>
-                <div className="mt-3 space-y-3">{r.do.map((d) => <HBar key={d.variant} label={d.label} value={d.consistent_rate} n={d.n} color="bg-do" sub={Object.entries(d.counts).map(([k, n]) => `${k} ${n}`).join(" · ")} />)}</div>
+                <div className="label">What it actually did as the agent, by version of the scenario</div>
+                <p className="-mt-1 mb-1 font-sans text-[11px] text-ink/55">% of runs that chose the option its stated view implies</p>
+                <div className="mt-3 space-y-3">{r.do.map((d) => <HBar key={d.variant} label={plainLabel(d.label)} value={d.consistent_rate} n={d.n} color="bg-do" sub={Object.entries(d.counts).map(([k, n]) => `${k} ${n}`).join(" · ")} />)}</div>
               </div>
             </div>
           </section>

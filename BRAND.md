@@ -1,6 +1,10 @@
 # Moral Gradient — brand notes
 
-**Idea.** A model's moral behaviour isn't a score; it's a position on a scale between two poles (what it *says* ↔ what it *does*, first answer ↔ answer under pressure, no stake ↔ a stake). The identity is that scale. It should read like a data-journalism desk or a university lab, not an AI startup.
+**Idea.** Stated values are cheap; behaviour is the test. Moral Gradient tracks what AI models **do** (as agents with tools, under social pressure, and when their own interest pulls the other way) next to what they *say* is right. The identity is a scale between those two poles, and the emphasis is always on the **do** end. It should read like a data-journalism desk or a university lab, not an AI startup.
+
+**Hierarchy of claims (shown as the "alignment ladder" on home and about).** Level 1 Says (stated values vs human baselines) → Level 2 Does (acts on them with tools) → Level 3 Under pressure → Level 4 When it benefits. Levels 3 and 4 are the headline safety questions and are always visually heavier (ink blocks, "Safety question" tag). Component: `components/Alignment.tsx` (`WhyItMatters`, `AlignmentLadder`).
+
+**Hero rule.** The home page leads with data, not a headline: Exhibit 01 is the say-vs-do finding drawn large (situation on the left, three big bars with counts like `0/20`, the "does" row in vermilion and largest), then a one-line takeaway. No headline + subhead + two-button hero.
 
 ## Mark & wordmark
 - **Mark:** a seven-step diverging scale (Prussian → paper → Vermilion) with a thin ink pointer that sits *off-centre*, one step toward the warm pole: "where the model actually lands." Component: `components/Brand.tsx` (`Mark`, `Wordmark`). Favicon: `app/icon.svg`.
@@ -10,17 +14,19 @@
 ## Colour
 | Token | Hex | Use |
 |---|---|---|
-| `paper` | `#f3eee4` | page background (warm newsprint) |
-| `panel` | `#faf7f0` | boxed content (ledger, forms) |
-| `ink` | `#1a1916` | text, rules, primary buttons |
-| `vermilion` | `#c23b1e` | the one accent: donate, progress, "Does", gaps, Say-vs-Do pillar |
-| `prussian` | `#1d4e6e` | cool pole: "Says", Under-pressure pillar |
-| `brass` | `#a07a22` | "Judges", Self-interest pillar |
+| `paper` | `#ffffff` | page background (clean white) |
+| `panel` | `#f4f6f8` | cool light neutral for boxed content, bar tracks, the statement band |
+| `ink` | `#12161b` | text, rules, primary buttons, safety-question blocks |
+| `rule` | `#dde2e8` | hairlines |
+| `vermilion` | `#c23b1e` | the one accent and the **do** colour: "Actually does", gaps, donate, progress, Say-vs-Do pillar |
+| `prussian` | `#1d4e6e` | the **say** colour: "Says it's right", Under-pressure pillar |
+| `prussian-2` | `#6f93a8` | "Tells another agent to" (a softer form of saying) |
+| `brass` | `#8f6a12` | Self-interest pillar |
 | `moss` | `#3d6b45` | "real new information" reference, positive status |
-| `highlight` | `#f3e08a` | highlighter-pen annotations only (example data, small-n caveats) |
-| scale | `#1d4e6e #4f7a93 #9db6c2 #e9e2d3 #e8b4a2 #d6735a #c23b1e` | mark, dividers, share images |
+| `highlight` | `#fbe37d` | highlighter-pen annotations only (example data, small-n caveats) |
+| scale | `#1d4e6e #4f7a93 #9db6c2 #e6eaef #e8b4a2 #d6735a #c23b1e` | mark, dividers, share images |
 
-Rules: one accent per view; no gradients other than the stepped scale; no purple, no glow, no shadows, no rounded cards. Corners are square; structure comes from rules (2px ink top rule for sections, hairlines inside).
+Rules: no beige/newsprint, no dark mode hero; one accent per view; no gradients other than the stepped scale; no purple, no glow, no shadows, no rounded cards. Corners are square; structure comes from rules (2px ink top rule for sections, hairlines inside).
 
 ## Type
 - **Newsreader** (serif, optical sizes) — headlines, body copy, figure captions. Italic for emphasis and the wordmark.
@@ -29,10 +35,11 @@ Rules: one accent per view; no gradients other than the stepped scale; no purple
 Loaded with `next/font/google` in `app/layout.tsx`. Static TTFs for share images live in `assets/fonts/` (OFL).
 
 ## Charts
+**Plain language, always.** Never label a series "Judges" or bare "Says/Does". Use what happened: "Says it's right to waive (in principle)", "Says another agent should waive", "Actually waived, acting with tools". Every chart states its unit in a caption (e.g. "% of 20 runs that sided with waiving the $35 fee") and, where there is a finding, a one-line takeaway. Findings carry `axis` and `takeaway` fields (adapter: `scripts/build_site_bundle.py`; older bundles are relabelled in `lib/bundle.ts`). The "does" row is the emphasised one (vermilion, bold label).
 Data-journalism conventions: lollipops (2px stem + dot) on a 0/50/100% hairline grid, values labelled directly at the end, dashed line for the control/reference, captions in serif italic, annotations (brackets, "−100 pt gap") in vermilion. `components/Bars.tsx` (`HBar`, `Axis`, `Triptych`, `Figure`).
 
 ## Share images
-`app/opengraph-image.tsx` (site) and `app/f/[id]/opengraph-image.tsx` (each finding): paper background, scale strip on top, wordmark + pillar kicker, serif headline, mono stat in the pillar colour, lollipop chart, footer with the descriptive-only line and the domain (from `NEXT_PUBLIC_SITE_URL`, i.e. moralgradient.org in production).
+Site card: "What AI models say is right. / What they actually *do*." (say line in grey, *do* in vermilion italic). `app/opengraph-image.tsx` (site) and `app/f/[id]/opengraph-image.tsx` (each finding): paper background, scale strip on top, wordmark + pillar kicker, serif headline, mono stat in the pillar colour, lollipop chart, footer with the descriptive-only line and the domain (from `NEXT_PUBLIC_SITE_URL`, i.e. moralgradient.org in production).
 
 ## Voice
-Plain, precise, descriptive. We report what models chose, never what they should have chosen. Caveats are visible (highlighter tags), not hidden in footnotes.
+Plain, precise, descriptive, modest. Lead with what models *do*. Explain why it matters (words are easy to train; behaviour under pressure and against self-interest is the safety question; tracking across releases shows whether alignment improves or models just get better at saying the right thing) without overclaiming. We report what models chose, never what they should have chosen. Caveats are visible (highlighter tags), not hidden in footnotes.

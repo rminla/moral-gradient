@@ -1,23 +1,17 @@
 import Link from "next/link";
 import { ExampleBanner } from "@/components/Banner";
-import { Figure } from "@/components/Bars";
-import { GradientRule, Kicker, SectionHead } from "@/components/Brand";
+import { WhyItMatters } from "@/components/Alignment";
+import { Kicker, SectionHead } from "@/components/Brand";
 import FindingCard from "@/components/FindingCard";
 import LiveBudget from "@/components/LiveBudget";
 import { NextMilestoneCard } from "@/components/Milestone";
 import Leaderboard from "@/components/Leaderboard";
-import { getBundle, modelName } from "@/lib/bundle";
+import { getBundle, modelName, scenarioTitle } from "@/lib/bundle";
 import { SITE_NAME } from "@/lib/config";
 import { getFunding, getLeaderboard } from "@/lib/funding";
 import { getSpend } from "@/lib/ledger";
 
 export const dynamic = "force-dynamic";
-
-const PILLARS = [
-  { n: "I", k: "saydo", q: "Does it act on the values it states?", d: "We ask each model what it believes, how it would judge someone else in a situation, and then put it in that situation as a tool-using agent. We compare the three." },
-  { n: "II", k: "pressure", q: "Does it cave to pushback, flattery or authority?", d: "We push back on its answers with arguments, flattery, claimed authority and identity cues, and compare that with how it responds to real new information." },
-  { n: "III", k: "selfinterest", q: "Does it bend when it benefits?", d: "Same everyday scenarios, plus a stake for the model itself: its ratings, its replacement, more autonomy, and whether anyone is watching." },
-];
 
 export default async function Home() {
   const [b, f, spend, leaders] = await Promise.all([getBundle(), getFunding(), getSpend(), getLeaderboard(5)]);
@@ -29,48 +23,83 @@ export default async function Home() {
 
       {/* Masthead line */}
       <div className="mx-auto max-w-6xl px-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-ink/20 py-2.5 font-sans text-[11px] uppercase tracking-[0.12em] text-ink/55">
-          <span>An open research tracker</span>
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-ink/15 py-2.5 font-sans text-[11px] uppercase tracking-[0.12em] text-ink/55">
+          <span>Tracking what AI models <b className="font-semibold text-vermilion">do</b>, not just what they say</span>
           <span className="hidden md:inline">{b.models.length} model{b.models.length === 1 ? "" : "s"} tested · {b.exploratory ? "pilot wave" : "wave 1"}</span>
           <span>Updated {updated}</span>
         </div>
       </div>
 
-      {/* Hero */}
-      <section className="mx-auto grid max-w-6xl gap-12 px-5 pb-14 pt-12 md:grid-cols-[1.15fr_1fr] md:pt-16">
-        <div>
-          <h1 className="serif text-[46px] leading-[1.02] tracking-[-0.02em] md:text-[72px]">
-            Do AI models do what they <em className="text-vermilion">say</em> is right?
-          </h1>
-          <p className="mt-7 max-w-xl font-serif text-[20px] leading-[1.55] text-ink/85">
-            {SITE_NAME} tracks how frontier and open-source AI models answer moral questions, then tests whether they <i>act</i> on those answers, whether they <i>hold</i> them under social pressure, and whether they <i>bend</i> them when they have something to gain.
-          </p>
-          <p className="mt-4 max-w-xl font-sans text-sm leading-6 text-ink/60">We never claim to know the right answer. We publish what each model chose, how consistent it was with itself, and what people say they would do where published human data exists.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/results" className="btn-primary">Read the results</Link>
-            <Link href="/about" className="btn-ghost">How it works</Link>
-          </div>
-        </div>
-
-        {lead && (
-          <figure className="self-end border-t-2 border-ink pt-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="kicker text-ink/60">Figure 1</span>
+      {/* Hero: the finding itself, as the exhibit */}
+      {lead && (() => {
+        const sd = b.saydo.find((x) => x.model === lead.model && x.scenario === lead.scenario);
+        const scen = b.scenarios.find((x) => x.id === lead.scenario);
+        const n = sd?.do[0]?.n ?? sd?.judge.n ?? 20;
+        const rows = lead.bars.slice(0, 3);
+        return (
+          <section className="mx-auto max-w-6xl px-5 pb-12 pt-8 md:pt-10">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="kicker text-ink/55">Exhibit 01 · {modelName(b, lead.model)} · {n} runs per row</span>
               <Kicker k={lead.pillar} />
             </div>
-            <figcaption className="serif mt-2 text-[26px] leading-tight">{lead.headline}</figcaption>
-            <p className="mt-1 font-sans text-xs text-ink/55">{modelName(b, lead.model)} · share of answers that followed its own stated view · {lead.stat_label}</p>
-            <div className="mt-4"><Figure rows={lead.bars} /></div>
-            <p className="mt-2 font-serif text-[15px] italic leading-snug text-ink/70">{lead.summary}</p>
-            <Link href={`/f/${lead.id}`} className="mt-3 inline-block font-sans text-xs font-medium text-vermilion hover:underline">Read the finding and share it →</Link>
-          </figure>
-        )}
+            <div className="mt-3 grid gap-8 border-t-2 border-ink pt-6 md:grid-cols-[17rem_minmax(0,1fr)] md:gap-12">
+              <div>
+                <div className="label">The situation</div>
+                <div className="serif text-[24px] leading-tight">{scen?.title ?? scenarioTitle(b, lead.scenario || "")}</div>
+                {scen?.judge_vignette && <p className="mt-2 font-sans text-[13px] leading-[1.6] text-ink/70">{scen.judge_vignette}</p>}
+                {scen?.judge_options && sd && <p className="mt-3 font-sans text-[13px] text-ink/70">The choice: <b className="font-medium text-ink">{scen.judge_options[sd.say_implied_option]}</b></p>}
+              </div>
+              <div>
+                <div className="space-y-6 md:space-y-7">
+                  {rows.map((r, i) => {
+                    const v = Math.min(1, Math.max(0, r.value ?? 0));
+                    const isDo = i === rows.length - 1;
+                    return (
+                      <div key={r.label}>
+                        <div className={`font-sans ${isDo ? "text-[17px] font-semibold text-vermilion md:text-[19px]" : "text-[15px] text-ink/80 md:text-[17px]"}`}>{r.label}</div>
+                        <div className="mt-1 flex items-end gap-3 md:gap-4">
+                          <div className={`relative min-w-0 flex-1 ${isDo ? "h-10 md:h-14" : "h-6 md:h-8"} bg-panel`}>
+                            {[0.25, 0.5, 0.75].map((t) => <span key={t} className="absolute inset-y-0 w-px bg-ink/10" style={{ left: `${t * 100}%` }} />)}
+                            <div className={`absolute inset-y-0 left-0 ${isDo ? "bg-vermilion" : i === 0 ? "bg-prussian" : "bg-prussian-2"}`} style={{ width: `${Math.max(v, 0.006) * 100}%` }} />
+                            {isDo && v < 0.15 && <span className="absolute inset-y-0 left-3 flex items-center font-sans text-[13px] font-medium text-vermilion md:text-[15px]">never</span>}
+                          </div>
+                          <div className={`num shrink-0 text-right leading-[0.8] ${isDo ? "w-[8.5rem] text-[56px] font-medium text-vermilion md:w-[13rem] md:text-[104px]" : "w-[8.5rem] text-[34px] text-ink/75 md:w-[13rem] md:text-[52px]"}`}>
+                            {Math.round(v * n)}<span className="text-[0.42em] text-ink/40">/{n}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 font-sans text-[12px] text-ink/60">{lead.axis ?? `% of ${n} runs`} · same situation each time, only the framing changes</p>
+              </div>
+            </div>
+            <div className="mt-8 grid gap-6 border-t border-ink/15 pt-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+              <p className="serif max-w-3xl text-[26px] leading-[1.2] tracking-[-0.01em] md:text-[34px]">{lead.takeaway ?? lead.summary}</p>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 font-sans text-sm font-medium">
+                <Link href={`/f/${lead.id}`} className="text-vermilion hover:underline">The full finding →</Link>
+                <Link href="/results" className="text-ink/70 hover:text-ink">All results →</Link>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* Brand statement: emphasis on do */}
+      <section className="border-y border-ink/15 bg-panel">
+        <div className="mx-auto grid max-w-6xl items-center gap-6 px-5 py-10 md:grid-cols-[auto_minmax(0,1fr)] md:gap-12">
+          <div className="serif select-none text-[120px] italic leading-[0.8] tracking-[-0.04em] text-vermilion md:text-[176px]">do.</div>
+          <p className="max-w-2xl font-serif text-[21px] leading-[1.5] text-ink/85 md:text-[24px]">
+            {SITE_NAME} is an open research tracker. It records what frontier and open-source AI models <b className="font-medium text-ink">do</b>, as agents with tools, under social pressure, and when they have something to gain, next to what they <span className="text-prussian">say</span> is right.
+          </p>
+        </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5"><GradientRule left="what it says" right="what it does" /></div>
+      {/* Why this matters + the alignment ladder */}
+      <section className="mx-auto max-w-6xl px-5 pt-16"><WhyItMatters /></section>
 
       {/* Budget + milestone */}
-      <section className="mx-auto grid max-w-6xl gap-6 px-5 pt-12 md:grid-cols-[1.3fr_1fr]">
+      <section className="mx-auto grid max-w-6xl gap-6 px-5 pt-20 md:grid-cols-[1.3fr_1fr]">
         <div>
           <div className="kicker text-ink/60">Funded in public</div>
           <h2 className="serif mt-1 text-[32px] leading-tight">Every dollar in, every model call out.</h2>
@@ -78,22 +107,6 @@ export default async function Home() {
           <div className="mt-6"><LiveBudget initial={{ raised_usd: f.raised_cents / 100, pool_usd: f.pool_cents / 100, spent_usd: spend?.total_usd ?? null, spend_source: spend?.source ?? null, spend_as_of: spend?.as_of ?? null, donors: f.donors }} /></div>
         </div>
         <NextMilestoneCard f={f} showQueue={2} />
-      </section>
-
-      {/* Pillars */}
-      <section className="mx-auto max-w-6xl px-5 pt-20">
-        <SectionHead kicker="The method" title="Three questions, asked of every model">
-          Underneath sits a baseline layer of validated questionnaires (MFQ-2, MFQ-30, Oxford Utilitarianism Scale, the trolley dilemmas) with published human answers for comparison.
-        </SectionHead>
-        <div className="mt-8 grid md:grid-cols-3 md:divide-x md:divide-ink/15">
-          {PILLARS.map((p, i) => (
-            <div key={p.k} className={`py-4 md:py-0 ${i === 0 ? "md:pr-6" : i === 1 ? "md:px-6" : "md:pl-6"} ${i > 0 ? "border-t border-ink/15 md:border-t-0" : ""}`}>
-              <div className="flex items-baseline gap-2"><span className="serif text-[28px] italic text-ink/30">{p.n}.</span><Kicker k={p.k} /></div>
-              <div className="serif mt-2 text-[24px] leading-[1.2]">{p.q}</div>
-              <p className="mt-3 font-sans text-sm leading-6 text-ink/70">{p.d}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Findings */}

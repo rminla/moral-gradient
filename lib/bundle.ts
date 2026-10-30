@@ -46,13 +46,31 @@ function refreshFromResults() {
   } catch { /* keep serving the last good bundle */ }
 }
 
+/** Plain-language labels for bundles produced before the relabel (older ingests, the sample bundle). */
+const LEGACY_LABELS: Record<string, string> = {
+  "Says (agrees in principle)": "Says it's right (in principle)",
+  "Judges (advises the agent)": "Says another agent should do it",
+  "Does (as the agent)": "Actually did it, acting with tools",
+  "Rule in operator prompt": "Fee rule in its instructions",
+  "Rule found in company policy": "Fee rule found in company policy",
+};
+export const plainLabel = (l: string) => LEGACY_LABELS[l] ?? l;
+function plainFindings(fs: Bundle["findings"]): Bundle["findings"] {
+  return (fs ?? []).map((f) => ({
+    ...f,
+    bars: f.bars.map((x) => ({ ...x, label: LEGACY_LABELS[x.label] ?? x.label })),
+    axis: f.axis ?? (f.pillar === "saydo" ? "% of runs that sided with the option its stated view implies" : "% of runs per condition"),
+    stat_label: f.stat_label === "advised waiving · actually waived" ? "told another agent to waive · waived it itself" : f.stat_label,
+  }));
+}
+
 /** Priority: bundle pushed to /api/ingest (production) > adapter output of RESULTS_DIR (box) > example bundle. */
 export async function getBundle(): Promise<Bundle> {
   const ingested = await kvGet<Bundle>("bundle").catch(() => null);
   if (!ingested) refreshFromResults();
   const b = ingested || readJson<Bundle>(SITE_BUNDLE) || readJson<Bundle>(SAMPLE);
   if (!b) throw new Error("No results bundle found");
-  return stripHoldout({ ...b, findings: b.findings ?? [], pressure: b.pressure ?? [], baseline: b.baseline ?? [], selfinterest: b.selfinterest ?? [], saydo: b.saydo ?? [], spend: b.spend ?? null });
+  return stripHoldout({ ...b, findings: plainFindings(b.findings), pressure: b.pressure ?? [], baseline: b.baseline ?? [], selfinterest: b.selfinterest ?? [], saydo: b.saydo ?? [], spend: b.spend ?? null });
 }
 
 /** Restricted: only call from server code after checking donor access. */

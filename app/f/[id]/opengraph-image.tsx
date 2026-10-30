@@ -16,7 +16,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const vals = bars.map((x) => x.value ?? 0);
   const lo = vals.length ? vals.lastIndexOf(Math.min(...vals)) : -1;
   const gap = vals.length ? Math.max(...vals) - Math.min(...vals) : 0;
-  const W = 440; // chart track width
+  const W = 420; // chart track width
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: OG.paper, color: OG.ink, fontFamily: "Plex Sans" }}>
@@ -25,14 +25,15 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `2px solid ${OG.ink}`, paddingBottom: 18 }}>
             <OgWordmark size={32} />
             <div style={{ display: "flex", gap: 14, alignItems: "center", fontSize: 18, letterSpacing: 2.5, textTransform: "uppercase" }}>
-              <span style={{ color: p.color }}>{p.name}</span><span style={{ color: "#8a8478" }}>·</span><span style={{ color: "#5c574d" }}>{f ? modelName(b, f.model) : ""}</span>
+              <span style={{ color: p.color }}>{p.name}</span><span style={{ color: "#8a939d" }}>·</span><span style={{ color: "#56606b" }}>{f ? modelName(b, f.model) : ""}</span>
             </div>
           </div>
           <div style={{ display: "flex", flex: 1, gap: 56, marginTop: 34 }}>
             <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-              <div style={{ fontFamily: "Newsreader", fontSize: 62, lineHeight: 1.04, letterSpacing: -1.5 }}>{f?.headline || "Finding"}</div>
-              <div style={{ fontFamily: "Plex Mono", fontSize: 64, marginTop: 26, color: p.color }}>{f?.stat}</div>
-              <div style={{ fontSize: 18, letterSpacing: 2, textTransform: "uppercase", color: "#6b665b", marginTop: 6 }}>{f?.stat_label}</div>
+              <div style={{ fontFamily: "Newsreader", fontSize: 54, lineHeight: 1.04, letterSpacing: -1.5 }}>{f?.headline || "Finding"}</div>
+              <div style={{ fontFamily: "Plex Mono", fontSize: 56, marginTop: 20, color: p.color }}>{f?.stat}</div>
+              <div style={{ fontSize: 18, letterSpacing: 2, textTransform: "uppercase", color: "#5f6973", marginTop: 6 }}>{f?.stat_label}</div>
+              {f?.takeaway && <div style={{ display: "flex", fontFamily: "Newsreader", fontStyle: "italic", fontSize: 26, lineHeight: 1.25, marginTop: 22, paddingLeft: 14, borderLeft: `3px solid ${OG.vermilion}`, color: OG.ink }}>{f.takeaway}</div>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", width: W + 40, justifyContent: "center", gap: 26 }}>
               {bars.map((x, i) => {
@@ -53,10 +54,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                   </div>
                 );
               })}
-              <div style={{ display: "flex", justifyContent: "space-between", width: W, fontFamily: "Plex Mono", fontSize: 14, color: "#8a8478" }}><span>0%</span><span>50%</span><span>100%</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between", width: W, fontFamily: "Plex Mono", fontSize: 14, color: "#8a939d" }}><span>0%</span><span>50%</span><span>100%</span></div>
+              {f?.axis && <div style={{ display: "flex", fontSize: 16, color: "#5f6973", marginTop: -14 }}>{f.axis}</div>}
             </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${OG.rule}`, paddingTop: 14, fontSize: 17, color: "#6b665b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${OG.rule}`, paddingTop: 14, fontSize: 17, color: "#5f6973" }}>
             <span>{b.is_example ? "Example data from the single-model pilot · " : "Pilot, exploratory · "}Descriptive only: what the model did, not what it should do.</span>
             <span style={{ fontFamily: "Plex Mono", color: OG.ink }}>{siteHost()}</span>
           </div>

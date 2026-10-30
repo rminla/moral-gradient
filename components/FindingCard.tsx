@@ -19,9 +19,10 @@ export default function FindingCard({ f, modelName, example }: { f: Finding; mod
       </Link>
       <div className={`num mt-3 text-[26px] font-medium ${p.text}`}>{f.stat}</div>
       <div className="font-sans text-[11px] uppercase tracking-[0.08em] text-ink/55">{f.stat_label}</div>
-      <p className="mt-3 font-serif text-[16px] leading-relaxed text-ink/80">{f.summary}</p>
+      <p className="mt-3 font-serif text-[16px] leading-relaxed text-ink/80">{f.takeaway ?? f.summary}</p>
       <div className="mb-5 mt-4 space-y-2.5">
         {f.bars.slice(0, 4).map((b) => <HBar key={b.label} label={b.label} value={b.value} color={p.color} />)}
+        {f.axis && <p className="font-sans text-[11px] text-ink/50">{f.axis}</p>}
       </div>
       <div className="mt-auto flex items-center justify-between border-t border-ink/10 pt-3">
         <Link href={`/f/${f.id}`} className="font-sans text-xs font-medium text-ink/70 hover:text-vermilion">Read the finding →</Link>
