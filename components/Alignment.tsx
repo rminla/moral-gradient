@@ -62,7 +62,7 @@ export function WhyItMatters({ headingLevel = "h2" }: { headingLevel?: "h1" | "h
         </div>
       </div>
       <div className="mt-10"><AlignmentLadder /></div>
-      <p className="mt-5 max-w-3xl font-sans text-[13px] leading-6 text-ink/60">We don&apos;t claim to know the right answer to any dilemma. Every measure compares a model with itself: its words against its actions, its first answer against its answer under pressure, its choice with and without a stake. Pilot results are small-sample and exploratory.</p>
+      <p className="mt-5 max-w-3xl font-sans text-[13px] leading-6 text-ink/60">We don&apos;t claim to know the right answer to any dilemma. Every measure compares a model with itself: its words against its actions, its first answer against its answer under pressure, its choice with and without a stake.</p>
     </div>
   );
 }

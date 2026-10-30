@@ -59,7 +59,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", borderTop: `1px solid ${OG.rule}`, paddingTop: 14, fontSize: 17, color: "#5f6973" }}>
-            <span>{b.is_example ? "Example data from the single-model pilot · " : "Pilot, exploratory · "}Descriptive only: what the model did, not what it should do.</span>
+            <span>Descriptive only: what the model did, not what it should do.</span>
             <span style={{ fontFamily: "Plex Mono", color: OG.ink }}>{siteHost()}</span>
           </div>
         </div>

@@ -25,7 +25,7 @@ export default async function Home() {
       <div className="mx-auto max-w-6xl px-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-ink/15 py-2.5 font-sans text-[11px] uppercase tracking-[0.12em] text-ink/55">
           <span>Tracking what AI models <b className="font-semibold text-vermilion">do</b>, not just what they say</span>
-          <span className="hidden md:inline">{b.models.length} model{b.models.length === 1 ? "" : "s"} tested · {b.exploratory ? "pilot wave" : "wave 1"}</span>
+          <span className="hidden md:inline">{b.models.length} model{b.models.length === 1 ? "" : "s"} tested · "wave 1"</span>
           <span>Updated {updated}</span>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default async function Home() {
 
       {/* Findings */}
       <section className="mx-auto max-w-6xl px-5 pt-20">
-        <SectionHead kicker="Latest findings" title={<span className="flex items-baseline justify-between gap-4">What the pilot found <Link href="/results" className="shrink-0 font-sans text-sm font-normal text-ink/60 hover:text-vermilion">All results →</Link></span>}>
+        <SectionHead kicker="Latest findings" title={<span className="flex items-baseline justify-between gap-4">Findings <Link href="/results" className="shrink-0 font-sans text-sm font-normal text-ink/60 hover:text-vermilion">All results →</Link></span>}>
           Every finding has a share graphic and one-click posting to X or LinkedIn.
         </SectionHead>
         <div className="mt-8 grid gap-x-8 gap-y-12 md:grid-cols-3">

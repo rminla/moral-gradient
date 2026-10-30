@@ -1,6 +1,10 @@
 import { paymentsMode } from "@/lib/config";
 
+/** Caveat banners/tags are hidden for now (pre-launch). Set NEXT_PUBLIC_SHOW_CAVEATS=1 to bring them back. */
+export const SHOW_CAVEATS = process.env.NEXT_PUBLIC_SHOW_CAVEATS === "1";
+
 export function ExampleBanner({ example, examplesInLedger, exploratory }: { example: boolean; examplesInLedger?: boolean; exploratory?: boolean }) {
+  if (!SHOW_CAVEATS) return null;
   const mock = paymentsMode() === "mock";
   if (!example && !mock && !examplesInLedger && !exploratory) return null;
   return (
@@ -20,6 +24,6 @@ export function ExampleBanner({ example, examplesInLedger, exploratory }: { exam
 
 /** Highlighter-style annotation tag, used for caveats (example data, small samples, in progress). */
 export function ExampleTag({ show = true, children = "Example data" }: { show?: boolean; children?: React.ReactNode }) {
-  if (!show) return null;
+  if (!show || !SHOW_CAVEATS) return null;
   return <span className="inline-flex items-center bg-highlight/80 px-1.5 py-px font-sans text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">{children}</span>;
 }

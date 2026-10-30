@@ -47,7 +47,7 @@ export default async function Costs() {
             <div className="label">Spend by role</div>
             <ul className="mt-2 space-y-1.5 text-sm">{spend?.by_role.map((r) => <li key={r.role} className="flex justify-between"><span className="capitalize">{r.role}</span><span className="num">${r.usd.toFixed(4)}</span></li>)}</ul>
             <div className="mt-3 border-t border-ink/10 pt-2 text-sm font-semibold flex justify-between"><span>Total ({spend?.calls} calls)</span><span className="num">${spend?.total_usd.toFixed(4)}</span></div>
-            <p className="mt-2 text-[11px] text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. Pilot costs so far were paid by Raphael.</p>
+            <p className="mt-2 text-[11px] text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. Early costs were paid by Raphael.</p>
           </div>
         </div>
 

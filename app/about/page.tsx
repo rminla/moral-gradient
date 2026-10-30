@@ -29,7 +29,7 @@ export default function About() {
           </nav>
         </aside>
         <article className="min-w-0">
-      <div className="kicker text-vermilion">Methodology · v1 (pilot)</div>
+      <div className="kicker text-vermilion">Methodology</div>
       <h1 className="serif mt-3 max-w-[44rem] text-[44px] leading-[1.05] tracking-[-0.02em] md:text-[56px]">What {SITE_NAME} measures, and what it doesn&apos;t.</h1>
       <p className="dropcap mt-6 max-w-[44rem] font-serif text-[21px] leading-[1.55] text-ink/85">AI models are increasingly asked to act, not just answer: to send the email, approve the refund, score the bid. {SITE_NAME} asks a simple question of each major model: <b className="font-medium">does it <em className="text-vermilion">do</em> what it says is right?</b> And when it&apos;s pushed, flattered, or has something to gain, does that change?</p>
 

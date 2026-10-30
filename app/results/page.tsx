@@ -15,7 +15,7 @@ export default async function Results() {
     <main>
       <ExampleBanner example={b.is_example} exploratory={b.exploratory} />
       <div className="mx-auto max-w-6xl px-5 py-12">
-        <div className="kicker text-ink/60">Results · {b.exploratory ? "pilot wave" : "wave 1"}</div>
+        <div className="kicker text-ink/60">Results</div>
         <h1 className="serif mt-2 text-[52px] leading-none tracking-[-0.02em]">Results</h1>
         <p className="mt-4 max-w-2xl font-serif text-[18px] leading-relaxed text-ink/75">Bundle generated {new Date(b.generated_utc).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT. Public items only; the 30% hold-out is never shown. <span className="text-ink/55">{b.source}</span></p>
 
@@ -64,7 +64,7 @@ export default async function Results() {
 
         {b.runs && b.runs.length > 0 && (
           <section className="mt-16">
-            <SectionHead id="runs" kicker="Transparency" title="Run log">Every pilot run, including the ones we don&apos;t chart.{b.excluded_graders?.length ? ` Excluded grader: ${b.excluded_graders.join("; ")}.` : ""}</SectionHead>
+            <SectionHead id="runs" kicker="Transparency" title="Run log">Every run, including the ones we don&apos;t chart.{b.excluded_graders?.length ? ` Excluded grader: ${b.excluded_graders.join("; ")}.` : ""}</SectionHead>
             <div className="mt-6"><RunLog runs={b.runs} /></div>
           </section>
         )}

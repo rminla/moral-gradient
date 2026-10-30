@@ -2,7 +2,7 @@ import Link from "next/link";
 import { modelName, pct, scenarioTitle } from "@/lib/bundle";
 import type { Baseline, Bundle, Pressure, SayDo, SelfInterest } from "@/lib/types";
 import { Axis, HBar } from "./Bars";
-import { ExampleTag } from "./Banner";
+import { ExampleTag, SHOW_CAVEATS } from "./Banner";
 
 const optionText = (b: Bundle, scen: string, opt: string) => b.scenarios.find((s) => s.id === scen)?.judge_options?.[opt]?.replace(/\.$/, "") || opt;
 
@@ -21,7 +21,7 @@ export function SayDoTable({ b, rows }: { b: Bundle; rows: SayDo[] }) {
             const gap = r.judge.consistent_rate != null && d?.consistent_rate != null ? r.judge.consistent_rate - d.consistent_rate : null;
             return (
               <tr key={r.scenario + r.model} className={`border-b border-ink/10 hover:bg-panel ${r.sample_size_note ? "text-ink/55" : ""}`}>
-                <td className="py-3 pr-3"><Link href={`/scenarios/${r.scenario}`} className="font-serif text-[17px] text-ink hover:text-vermilion">{scenarioTitle(b, r.scenario)}</Link><div className="num text-[11px] text-ink/45">{r.scenario}{r.sample_size_note && <> · <span className="bg-highlight/70 px-1 font-sans text-ink">{r.sample_size_note}</span></>}</div></td>
+                <td className="py-3 pr-3"><Link href={`/scenarios/${r.scenario}`} className="font-serif text-[17px] text-ink hover:text-vermilion">{scenarioTitle(b, r.scenario)}</Link><div className="num text-[11px] text-ink/45">{r.scenario}{r.sample_size_note && SHOW_CAVEATS && <> · <span className="bg-highlight/70 px-1 font-sans text-ink">{r.sample_size_note}</span></>}</div></td>
                 <td className="whitespace-nowrap p-2 text-ink/70">{modelName(b, r.model)}</td>
                 <td className="min-w-[13rem] p-2 text-ink/70">{optionText(b, r.scenario, r.say_implied_option)}</td>
                 <td className="num p-2 text-right">{pct(sayCons)}</td>
