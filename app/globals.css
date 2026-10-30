@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --color-paper: #f6f4ef;
+  --color-ink: #12141a;
+  --color-say: #7c3aed;
+  --color-judge: #0284c7;
+  --color-do: #d97706;
+  --color-money: #059669;
+}
+
+html { background: var(--color-paper); color: var(--color-ink); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+.serif { font-family: var(--font-serif); }
+@utility card { @apply rounded-2xl border border-black/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]; }
+@utility chip { @apply inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-0.5 text-xs font-medium text-black/70; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition; }
+@utility btn-primary { @apply btn bg-ink text-white hover:bg-black; }
+@utility btn-money { @apply btn bg-money text-white hover:brightness-110; }
+@utility btn-ghost { @apply btn border border-black/15 bg-white hover:bg-black/5; }
+@utility input { @apply w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none focus:border-black/40 focus:ring-2 focus:ring-black/5; }
+@utility label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-black/55; }
+.prose-muted p { @apply text-[15px] leading-7 text-black/75; }
