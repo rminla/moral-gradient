@@ -12,7 +12,7 @@ export default function NotFound() {
             {Array.from({ length: 15 }, (_, i) => <span key={i} className={`h-5 w-5 md:h-6 md:w-6 ${i === 12 ? "bg-vermilion" : [0, 2, 4, 5, 6, 7, 9, 14].includes(i) ? "bg-ink" : "bg-panel"}`} />)}
           </div>
           <h1 className="wide mt-8 text-[48px] font-bold leading-none tracking-[-0.045em] md:text-[80px]">Not <span className="text-vermilion">here.</span></h1>
-          <p className="mt-5 text-[17px] text-ink/65">That page doesn&apos;t exist, or it&apos;s a private hold-out item.</p>
+          <p className="mt-5 text-[17px] text-ink/65">That page doesn&apos;t exist.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/results" className="btn-primary">Back to results</Link><Link href="/" className="btn-ghost">Home</Link></div>
         </div>
       </section>

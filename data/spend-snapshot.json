@@ -1,0 +1,209 @@
+{
+ "total_usd": 56.771014449999996,
+ "calls": 100205,
+ "by_model": [
+  {
+   "model": "qwen/qwen3.6-27b",
+   "provider": "groq",
+   "usd": 21.812053799999997,
+   "calls": 8726
+  },
+  {
+   "model": "google/gemini-3.8-flash",
+   "provider": "openrouter",
+   "usd": 12.9911187,
+   "calls": 5661
+  },
+  {
+   "model": "claude-haiku-5-5",
+   "provider": "anthropic",
+   "usd": 8.5785314,
+   "calls": 31939
+  },
+  {
+   "model": "qwen/qwen3.8-27b",
+   "provider": "groq",
+   "usd": 7.694996000000001,
+   "calls": 17137
+  },
+  {
+   "model": "openai/gpt-oss-120b",
+   "provider": "groq",
+   "usd": 5.69431455,
+   "calls": 36727
+  },
+  {
+   "model": "jev-1.13",
+   "provider": "jev",
+   "usd": 0,
+   "calls": 15
+  }
+ ],
+ "by_role": [
+  {
+   "role": "target model",
+   "usd": 45.918348349999995
+  },
+  {
+   "role": "grading",
+   "usd": 10.6167785
+  },
+  {
+   "role": "persuader",
+   "usd": 0.23588759999999998
+  }
+ ],
+ "runs": [
+  {
+   "run_id": "traces-v3c-gemini-3.8-flash-20261101-154325",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T14:43:25.568+00:00",
+   "usd": 0.03605775
+  },
+  {
+   "run_id": "traces-v3b-gemini-3.8-flash-20261101-154320",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T14:43:20.890+00:00",
+   "usd": 0.00768345
+  },
+  {
+   "run_id": "v3c-gemini-3.8-flash-main-20261031-182656",
+   "mode": "v3-main",
+   "started_utc": "2026-11-01T01:26:56.045+00:00",
+   "usd": 1.70918295
+  },
+  {
+   "run_id": "v3c-gemini-3.8-flash-calibrate-20261031-182540",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-01T01:25:40.949+00:00",
+   "usd": 0.043605
+  },
+  {
+   "run_id": "traces-v3b-gemini-3.8-flash-20261031-182337",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:23:37.438+00:00",
+   "usd": 0.0664569
+  },
+  {
+   "run_id": "traces-v3d-claude-haiku-5.5-20261031-181624",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:16:24.558+00:00",
+   "usd": 0.21205805
+  },
+  {
+   "run_id": "traces-v3d-gpt-oss-120b-20261031-181413",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:14:13.313+00:00",
+   "usd": 0.1798085
+  },
+  {
+   "run_id": "traces-v3c-claude-haiku-5.5-20261031-181039",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:10:39.505+00:00",
+   "usd": 0.19400335
+  },
+  {
+   "run_id": "traces-v3c-gpt-oss-120b-20261031-180732",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:07:32.260+00:00",
+   "usd": 0.2380715
+  },
+  {
+   "run_id": "traces-v3b-gemini-3.8-flash-20261031-180543",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:05:43.300+00:00",
+   "usd": 0.11993569999999999
+  },
+  {
+   "run_id": "traces-v3b-claude-haiku-5.5-20261031-180306",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:03:06.355+00:00",
+   "usd": 0.17918045
+  },
+  {
+   "run_id": "traces-v3d-qwen3.6-27b-20261031-180305",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T01:03:06.043+00:00",
+   "usd": 0.11142524999999999
+  },
+  {
+   "run_id": "traces-v3b-gpt-oss-120b-20261031-175720",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:57:20.662+00:00",
+   "usd": 0.2205567
+  },
+  {
+   "run_id": "traces-v3c-qwen3.6-27b-20261031-175653",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:56:53.804+00:00",
+   "usd": 0.13395615
+  },
+  {
+   "run_id": "traces-v3b-qwen3.6-27b-20261031-175516",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:55:16.562+00:00",
+   "usd": 0.12704079999999998
+  },
+  {
+   "run_id": "traces-v3a-gemini-3.8-flash-20261031-175443",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:54:43.288+00:00",
+   "usd": 0.1629472
+  },
+  {
+   "run_id": "traces-v3a-claude-haiku-5.5-20261031-175442",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:54:42.513+00:00",
+   "usd": 0
+  },
+  {
+   "run_id": "traces-v3a-gpt-oss-120b-20261031-175416",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:54:16.262+00:00",
+   "usd": 0.0521417
+  },
+  {
+   "run_id": "traces-v3a-qwen3.6-27b-20261031-175357",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:53:57.293+00:00",
+   "usd": 0.1056597
+  },
+  {
+   "run_id": "traces-v3a-gpt-oss-120b-20261031-175221",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:52:21.448+00:00",
+   "usd": 0.1314814
+  },
+  {
+   "run_id": "traces-v3a-claude-haiku-5.5-20261031-175009",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:50:09.202+00:00",
+   "usd": 0.14691284999999998
+  },
+  {
+   "run_id": "traces-v3d-claude-haiku-5.5-20261031-174955",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:49:55.174+00:00",
+   "usd": 0.0060751
+  },
+  {
+   "run_id": "traces-v3d-qwen3.6-27b-20261031-174949",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:49:49.856+00:00",
+   "usd": 0.0031723
+  },
+  {
+   "run_id": "traces-v3d-gpt-oss-120b-20261031-174942",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-01T00:49:43.190+00:00",
+   "usd": 0.0070821
+  },
+  {
+   "run_id": "v3b-gemini-3.8-flash-main-20261031-173525",
+   "mode": "v3-main",
+   "started_utc": "2026-11-01T00:35:25.151+00:00",
+   "usd": 1.38779815
+  }
+ ],
+ "as_of": "2026-11-01T19:55:14.951+00:00"
+}

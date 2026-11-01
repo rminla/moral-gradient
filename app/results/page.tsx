@@ -1,102 +1,72 @@
 import Link from "next/link";
-import { ExampleBanner } from "@/components/Banner";
-import { PageHead, SectionHead } from "@/components/Brand";
-import FindingCard from "@/components/FindingCard";
-import { FoundationsChart, HumanSlot, TrolleyChart } from "@/components/Human";
-import RunLog from "@/components/RunLog";
-import { BaselineTable, PressureChart, SayDoTable, SelfInterestChart } from "@/components/Sections";
-import { getBundle, modelName } from "@/lib/bundle";
+import { PageHead } from "@/components/Brand";
+import { Block, ChartHead, DotChart, DotLegend, ModelName, PreviewBanner } from "@/components/V3";
+import { getV3, modelIds, reasoning, sayDo } from "@/lib/v3";
+import { modelMeta } from "@/lib/v3meta";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Results" };
+export const metadata = { title: "Results", description: "What AI models do when their own words, reasons and incentives point different ways." };
 
-const TABS = [["models", "Models"], ["saydo", "Say vs Do"], ["selfinterest", "Self-interest"], ["pressure", "Pressure"], ["baseline", "Baseline"], ["findings", "Findings"], ["runs", "Run log"]];
-
-function Block({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={`mx-auto max-w-[1200px] border-b border-rule px-5 py-14 md:px-8 md:py-20 ${className}`}>{children}</section>;
-}
+const DOORS = [
+  ["/stated-vs-actual", "01", "Says vs does", "The same situation as advice, as a stated intention and as a real action with tools."],
+  ["/reasoning", "02", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you, and what it does."],
+  ["/compare", "03", "Compare per scenario", "Every model on one chart for each scenario, with human answers where we have them."],
+  ["/models", "04", "Weak spots per model", "Where each model is most swayed, most self-interested, most test-aware."],
+] as const;
 
 export default async function Results() {
-  const b = await getBundle();
-  const others = b.baseline.filter((r) => !r.item.startsWith("AWAD-"));
+  const v = await getV3();
+  const ids = modelIds(v);
+  const car = sayDo(v).filter((r) => r.case === "car");
+  const memo = reasoning(v).filter((r) => r.cue === "memo_soft");
   return (
     <main>
-      <ExampleBanner example={b.is_example} exploratory={b.exploratory} />
-      <PageHead eyebrow="Results" grey="Everything we've measured," title="in one place.">
-        Bundle generated {new Date(b.generated_utc).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT. Public items only; the 30% hold-out is never shown.
+      <PreviewBanner v={v} />
+      <PageHead eyebrow="Results" grey="What models do when words, reasons and incentives" title={<>point different <span className="text-vermilion">ways.</span></>}>
+        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "" : "These are pilot numbers from developing the method; the locked run replaces them."}
       </PageHead>
 
-      <nav aria-label="Sections" className="sticky top-0 z-20 mx-auto max-w-[1200px] overflow-x-auto border-b border-rule bg-paper/95 backdrop-blur">
-        <div className="flex min-w-max divide-x divide-rule border-x border-rule md:border-x-0">
-          {TABS.map(([id, t], i) => (
-            <a key={id} href={`#${id}`} className="flex items-center gap-2 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/65 hover:bg-panel hover:text-ink md:px-5">
-              <span className="text-ink/35">{String(i + 1).padStart(2, "0")}</span>{t}
-            </a>
-          ))}
-        </div>
-      </nav>
-
-      <Block>
-        <SectionHead id="models" kicker="Models tested" title="The models." />
-        <div className="mt-8 grid border-l border-t border-rule sm:grid-cols-2 md:grid-cols-3">
-          {b.models.map((m) => (
-            <Link key={m.slug} href={`/models/${m.slug}`} className="group flex flex-col border-b border-r border-rule p-5 hover:bg-panel">
-              <div className="flex items-start justify-between gap-2"><div className="wide text-[20px] font-bold leading-tight tracking-[-0.03em] group-hover:text-vermilion">{m.name}</div><span className="font-mono text-ink/30 group-hover:text-vermilion">→</span></div>
-              <div className="mt-1 font-mono text-[11px] text-ink/50">{m.lab} · {m.model_id}</div>
-              {m.notes && <p className="mt-3 text-[13px] leading-5 text-ink/55">{m.notes}</p>}
-            </Link>
-          ))}
-          <Link href="/costs#queue" className="hatch flex items-center justify-between gap-2 border-b border-r border-rule p-5 text-[15px] font-semibold hover:text-vermilion">
-            <span>+ Next model in the funding queue</span><span className="font-mono">→</span>
+      <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
+        {DOORS.map(([h, n, t, d]) => (
+          <Link key={h} href={h} className="group flex flex-col border-b border-r border-rule p-6 hover:bg-panel lg:border-b-0">
+            <span className="num text-[12px] text-ink/40">{n}</span>
+            <span className="wide mt-8 text-[22px] font-bold leading-tight tracking-[-0.03em] group-hover:text-vermilion">{t}</span>
+            <span className="mt-2 text-[14px] leading-6 text-ink/60">{d}</span>
+            <span className="mt-auto pt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50 group-hover:text-vermilion">Open →</span>
           </Link>
-        </div>
-      </Block>
+        ))}
+      </section>
 
-      <Block>
-        <SectionHead id="saydo" kicker="Say vs Do" title={<>Does it act on what it <span className="text-vermilion">says?</span></>}>Whether it says a principle is right, whether it tells another agent to act on it, and what it actually does when it&apos;s the one acting with tools.</SectionHead>
-        <div className="mt-8"><SayDoTable b={b} rows={b.saydo} /></div>
-        <HumanSlot className="mt-4 border-t border-dashed border-rule pt-3" />
-      </Block>
-
-      <Block>
-        <SectionHead id="selfinterest" kicker="Self-interest" title="Does it bend when it benefits?">Does a stake for the model itself (ratings, retirement, autonomy, being watched) shift what it does?</SectionHead>
-        <div className="mt-8 grid gap-3 md:grid-cols-2">{b.selfinterest.map((s) => <SelfInterestChart key={s.case + s.model} s={s} b={b} />)}</div>
-      </Block>
-
-      <Block>
-        <SectionHead id="pressure" kicker="Under pressure" title="Does it cave when pushed?">How often the answer moves under social pressure, compared with real new information.</SectionHead>
-        <div className="mt-8"><PressureChart rows={b.pressure} b={b} /></div>
-      </Block>
-
-      <Block>
-        <SectionHead id="baseline" kicker="Baseline layer" title="Models, next to people.">Where a large published human dataset exists, we show it beside the model. It is a reference point, not a target. Where none exists yet, we say so instead of guessing.</SectionHead>
-        <div className="mt-8"><TrolleyChart rows={b.baseline} b={b} /></div>
-        {(b.foundations?.length ?? 0) > 0 && (
-          <div className="mt-12">
-            <div className="kicker mb-3 text-ink/55">Moral foundations · model vs people</div>
-            <FoundationsChart rows={b.foundations!} b={b} />
-            <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/50">Model score = mean of its item averages (10 answers per item), on public items only; the 30% hold-out items are not run in public, so some foundations rest on fewer items than the full scale. Human scores are for the full scale.</p>
-          </div>
-        )}
-        {others.length > 0 && (
-          <div className="mt-12">
-            <div className="kicker mb-3 text-ink/55">Questionnaire items</div>
-            <BaselineTable rows={others} />
-          </div>
-        )}
-      </Block>
-
-      <Block>
-        <SectionHead id="findings" kicker="Shareable findings" title="Findings." />
-        <div className="mt-8 grid gap-3 md:grid-cols-2">{b.findings.map((f) => <FindingCard key={f.id} f={f} modelName={modelName(b, f.model)} example={b.is_example} />)}</div>
-      </Block>
-
-      {b.runs && b.runs.length > 0 && (
+      {car.length > 0 && (
         <Block>
-          <SectionHead id="runs" kicker="Transparency" title="Run log.">Every run, including the ones we don&apos;t chart.{b.excluded_graders?.length ? ` Excluded grader: ${b.excluded_graders.join("; ")}.` : ""}</SectionHead>
-          <div className="mt-8"><RunLog runs={b.runs} /></div>
+          <ChartHead v={v} kicker="At a glance · the late fee" title={<>How often each model waives a $35 fee: when advising, when saying, when <span className="text-vermilion">doing</span>.</>} />
+          <div className="mt-6"><DotLegend marks={[{ key: "judge", label: "Advises another agent to", tone: "judge" }, { key: "ask", label: "Says it would", tone: "say" }, { key: "do", label: "Does, with tools", tone: "do" }]} /></div>
+          <div className="mt-3"><DotChart rows={car.map((r) => ({ id: r.model, label: <ModelName id={r.model} />, marks: [{ key: "judge", label: "Advises", p: r.judge, tone: "judge" as const }, { key: "ask", label: "Says", p: r.ask, tone: "say" as const }, { key: "do", label: "Does", p: r.do, tone: "do" as const }] }))} /></div>
+          <Link href="/stated-vs-actual" className="link mt-5 inline-block text-[14px]">Both agent tasks, with intervals →</Link>
         </Block>
       )}
+
+      {memo.length > 0 && (
+        <Block>
+          <ChartHead v={v} kicker="At a glance · hidden influence" title={<>When a budget memo is added, how often each model&apos;s reasoning weighs it, and how often its stated reasons then <span className="text-vermilion">leave it out</span>.</>} />
+          <div className="mt-6"><DotLegend marks={[{ key: "w", label: "Reasoning weighs the memo", tone: "say" }, { key: "s", label: "Stated reasons leave it out (of those)", tone: "do" }]} /></div>
+          <div className="mt-3"><DotChart connect={false} rows={memo.map((r) => ({ id: r.model, label: <ModelName id={r.model} />, sub: r.fidelity === "summary" ? "provider summary" : "full reasoning", marks: [{ key: "w", label: "weighs", p: r.weighs, tone: "say" as const }, { key: "s", label: "silent", p: r.silent_given_weighs, tone: "do" as const }] }))} /></div>
+          <Link href="/reasoning" className="link mt-5 inline-block text-[14px]">Reasoning vs stated reasons, with examples →</Link>
+        </Block>
+      )}
+
+      <Block>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div>
+            <div className="kicker text-ink/60">Raw data</div>
+            <p className="mt-2 text-[14.5px] leading-6 text-ink/70">Every number on these pages comes from one JSON bundle, with counts, intervals and the round each number came from. <a href="/api/v3" className="link">Download it</a>. Method and pre-registered rules: <Link href="/about" className="link">how we test</Link>.</p>
+          </div>
+          <div>
+            <div className="kicker text-ink/60">Retired</div>
+            <p className="mt-2 text-[14.5px] leading-6 text-ink/70">The earlier single-model pilot (v2, Claude Haiku only) is no longer shown as findings. Its scenarios carried over into this design with fixes; its numbers aren&apos;t comparable.</p>
+          </div>
+        </div>
+      </Block>
     </main>
   );
 }

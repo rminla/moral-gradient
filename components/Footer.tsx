@@ -16,8 +16,11 @@ export default function Footer() {
             <div className="kicker mb-4 text-white/40">Read</div>
             <ul className="space-y-2 text-[15px]">
               <li><Link className="hover:text-vermilion" href="/results">Results</Link></li>
-              <li><Link className="hover:text-vermilion" href="/models">Models</Link></li>
-              <li><Link className="hover:text-vermilion" href="/about">Methodology &amp; hold-out policy</Link></li>
+              <li><Link className="hover:text-vermilion" href="/stated-vs-actual">Says vs does</Link></li>
+              <li><Link className="hover:text-vermilion" href="/reasoning">Reasoning vs stated reasons</Link></li>
+              <li><Link className="hover:text-vermilion" href="/compare">Compare models</Link></li>
+              <li><Link className="hover:text-vermilion" href="/models">Weak spots per model</Link></li>
+              <li><Link className="hover:text-vermilion" href="/about">Methodology</Link></li>
               <li><Link className="hover:text-vermilion" href="/costs">Live costs &amp; funding queue</Link></li>
               <li><Link className="hover:text-vermilion" href="/donate">Donate</Link></li>
             </ul>

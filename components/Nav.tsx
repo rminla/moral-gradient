@@ -4,6 +4,7 @@ import { Wordmark } from "./Brand";
 
 const LINKS = [
   ["/results", "Results"],
+  ["/compare", "Compare"],
   ["/models", "Models"],
   ["/costs", "Funding"],
   ["/about", "Method"],
@@ -33,9 +34,9 @@ export default async function Nav() {
             <span className="blink h-2 w-2 bg-vermilion" />Donate
           </Link>
         </div>
-        <nav className="grid grid-cols-4 border-t border-rule md:hidden">
+        <nav className="grid grid-cols-5 border-t border-rule md:hidden">
           {LINKS.map(([h, t], i) => (
-            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.08em] text-ink/70 ${i < 3 ? "border-r border-rule" : ""}`}>{t}</Link>
+            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.08em] text-ink/70 ${i < 4 ? "border-r border-rule" : ""}`}>{t}</Link>
           ))}
         </nav>
       </header>

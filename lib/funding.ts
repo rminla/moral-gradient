@@ -1,9 +1,24 @@
+import fs from "node:fs";
+import path from "node:path";
 import { autoLaunch } from "./config";
 import { db, nowIso, q } from "./db";
 import { launchSuite, type MilestoneRow } from "./jobs";
 
+/** Donations paid directly (not through Stripe), from data/offline-donations.json. They count toward totals and the
+ *  leaderboard, but are already spent (pilot & methodology compute), so they never enter the pool or trigger a launch. */
+export type OfflineDonation = { id: string; name: string; amount_cents: number; paid_at: string; message?: string | null; covers?: string | null };
+export function getOfflineDonations(): OfflineDonation[] {
+  try {
+    const p = path.join(process.cwd(), "data", "offline-donations.json");
+    if (!fs.existsSync(p)) return [];
+    const j = JSON.parse(fs.readFileSync(p, "utf8"));
+    return (Array.isArray(j.donations) ? j.donations : []).filter((d: any) => d && d.name && Number(d.amount_cents) > 0);
+  } catch { return []; }
+}
+
 export type Funding = {
   raised_cents: number; fees_cents: number; net_cents: number; donors: number; donations: number;
+  direct_cents: number; // offline donations, already spent on pilot/methodology compute
   allocated_cents: number; pool_cents: number; has_examples: boolean;
   next: (MilestoneRow & { remaining_cents: number; progress: number }) | null;
   queue: MilestoneRow[]; done: MilestoneRow[];
@@ -17,8 +32,11 @@ export async function getFunding(): Promise<Funding> {
   const queue = ms.filter((m) => m.status === "queued");
   const done = ms.filter((m) => m.status !== "queued");
   const n = queue[0];
+  const off = getOfflineDonations();
+  const direct = off.reduce((s, x) => s + Number(x.amount_cents), 0);
   return {
-    raised_cents: Number(d.raised), fees_cents: Number(d.fees), net_cents: Number(d.net), donations: Number(d.n), donors: Number(d.donors),
+    raised_cents: Number(d.raised) + direct, fees_cents: Number(d.fees), net_cents: Number(d.net) + direct, donations: Number(d.n) + off.length,
+    donors: Number(d.donors) + new Set(off.map((x) => x.name)).size, direct_cents: direct,
     allocated_cents: allocated, pool_cents: Number(d.net) - allocated, has_examples: Number(d.ex) === 1,
     next: n ? { ...n, remaining_cents: Number(n.cost_cents) - Number(n.funded_cents), progress: Number(n.funded_cents) / Number(n.cost_cents) } : null,
     queue, done,
@@ -98,13 +116,21 @@ export async function getLeaderboard(limit = 20): Promise<LeaderRow[]> {
            SUM(d.amount_cents) AS total, COUNT(*) AS n, MAX(d.is_example) AS ex
     FROM donations d LEFT JOIN users u ON u.id=d.user_id
     WHERE d.status='paid' GROUP BY grp ORDER BY total DESC LIMIT ?`, [limit + 1]);
-  return rows.map((r) => ({ name: r.grp === "anon" ? `Anonymous donors (${r.n})` : r.name || "Supporter", link: r.link || null, total_cents: Number(r.total), count: Number(r.n), anonymous: r.grp === "anon", example: Number(r.ex) === 1 }));
+  const out: LeaderRow[] = rows.map((r) => ({ name: r.grp === "anon" ? `Anonymous donors (${r.n})` : r.name || "Supporter", link: r.link || null, total_cents: Number(r.total), count: Number(r.n), anonymous: r.grp === "anon", example: Number(r.ex) === 1 }));
+  for (const o of getOfflineDonations()) {
+    const hit = out.find((r) => !r.anonymous && r.name === o.name);
+    if (hit) { hit.total_cents += Number(o.amount_cents); hit.count += 1; }
+    else out.push({ name: o.name, link: null, total_cents: Number(o.amount_cents), count: 1, anonymous: false, example: false });
+  }
+  return out.sort((a, z) => z.total_cents - a.total_cents).slice(0, limit + 1);
 }
 
 export async function getRecentDonations(limit = 8) {
-  return q<any>(`SELECT d.amount_cents, d.paid_at, d.message, d.is_example,
+  const rows = await q<any>(`SELECT d.amount_cents, d.paid_at, d.message, d.is_example,
      CASE WHEN d.display_mode='named' THEN COALESCE(NULLIF(u.display_name,''), d.display_name) ELSE 'Anonymous' END AS name
      FROM donations d LEFT JOIN users u ON u.id=d.user_id WHERE d.status='paid' ORDER BY d.paid_at DESC LIMIT ?`, [limit]);
+  const off = getOfflineDonations().map((o) => ({ amount_cents: Number(o.amount_cents), paid_at: o.paid_at, message: o.message ?? null, is_example: 0, name: o.name }));
+  return [...rows, ...off].sort((a, z) => String(z.paid_at).localeCompare(String(a.paid_at))).slice(0, limit);
 }
 
 export async function getJobs() {

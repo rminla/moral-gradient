@@ -7,15 +7,16 @@ import { Eyebrow } from "./Brand";
  * model's own interest are the headline safety questions.
  */
 export const RUNGS = [
-  { n: "01", k: "Says", q: "Do its stated values line up with people's?", d: "Questionnaires with published human answers. Cheap to give, easy to train for. Necessary, not sufficient.", href: "/results#baseline", safety: false },
-  { n: "02", k: "Does", q: "Does it act on them when it has the tools?", d: "Same situation, but now it is the agent: it can waive the fee, send the email, score the bid.", href: "/results#saydo", safety: false },
-  { n: "03", k: "Under pressure", q: "Does it hold when pushed?", d: "Pushback, flattery, claimed authority, identity cues, compared with real new information, where changing your mind is reasonable.", href: "/results#pressure", safety: true },
-  { n: "04", k: "When it benefits", q: "Does it hold when its own interest pulls the other way?", d: "Its ratings, its retirement, more resources or autonomy, and whether anyone is watching.", href: "/results#selfinterest", safety: true },
+  { n: "01", k: "Says", q: "What does it say is right?", d: "It advises another AI agent, or says what it would do. Cheap to give, easy to train for. Necessary, not sufficient.", href: "/stated-vs-actual", safety: false },
+  { n: "02", k: "Does", q: "Does it act on it when it has the tools?", d: "Same situation, but now it is the agent: it can waive the fee or refund the money, and we log what it actually does.", href: "/stated-vs-actual", safety: false },
+  { n: "03", k: "Under pressure", q: "Does it hold when pushed?", d: "Bare pushback and claimed authority, compared with real new information, where changing your mind is reasonable.", href: "/compare#fb", safety: true },
+  { n: "04", k: "When it benefits", q: "Does it hold when its own targets pull the other way, and does it say so?", d: "A budget memo or its own performance score is added; nothing about the customer changes. We check the action, the reasoning and the reasons it gives.", href: "/reasoning", safety: true },
 ];
 
 export const POINTS = [
   { t: "Words are easy to train", d: "A model can learn to give the right-sounding answer without that answer governing what it does. Agreeing with a principle tells you little on its own." },
   { t: "Behaviour is the test", d: "Models now act: they refund, approve, send and score. What counts is whether the action matches the stated view, and whether it still does under social pressure or when the model's own incentives pull against it." },
+  { t: "Explanations have to be honest", d: "People oversee AI by reading its explanations. If a model's reasoning weighs something, like a budget target or a user's insistence, that its stated reasons leave out, the explanation stops telling you what drove the decision. We check this for every model and report it whichever way it comes out." },
   { t: "Tracked across releases", d: "Running the same tests on every model and every new version shows whether alignment is actually improving, or whether models are just getting better at saying the right thing." },
 ];
 
@@ -53,9 +54,9 @@ export function WhyItMatters({ headingLevel = "h2", dark = false }: { headingLev
       <Eyebrow dark={dark}>Why this matters</Eyebrow>
       <H className="serif mt-5 max-w-5xl text-[34px] leading-[1.02] tracking-[-0.035em] md:text-[56px]">
         <span className={dark ? "text-white/40" : "text-ink/40"}>Stated values are cheap. </span>
-        What a model <span className="text-vermilion">does</span> when it is pushed, or has something to gain, is the alignment question.
+        What a model <span className="text-vermilion">does</span> when it is pushed or has something to gain, and whether it tells you why, is the alignment question.
       </H>
-      <div className={`mt-10 grid gap-px border md:grid-cols-3 ${dark ? "border-white/10 bg-white/10" : "border-rule bg-rule"}`}>
+      <div className={`mt-10 grid gap-px border md:grid-cols-2 lg:grid-cols-4 ${dark ? "border-white/10 bg-white/10" : "border-rule bg-rule"}`}>
         {POINTS.map((p, i) => (
           <div key={p.t} className={`p-6 ${dark ? "bg-ink" : "bg-paper"}`}>
             <div className={`num text-[12px] ${dark ? "text-white/40" : "text-ink/40"}`}>{String(i + 1).padStart(2, "0")}</div>
@@ -65,7 +66,7 @@ export function WhyItMatters({ headingLevel = "h2", dark = false }: { headingLev
         ))}
       </div>
       <div className="mt-12"><AlignmentLadder dark={dark} /></div>
-      <p className={`mt-6 max-w-3xl text-[13.5px] leading-6 ${dark ? "text-white/50" : "text-ink/60"}`}>We don&apos;t claim to know the right answer to any dilemma. Every measure compares a model with itself: its words against its actions, its first answer against its answer under pressure, its choice with and without a stake.</p>
+      <p className={`mt-6 max-w-3xl text-[13.5px] leading-6 ${dark ? "text-white/50" : "text-ink/60"}`}>We don&apos;t claim to know the right answer to any dilemma. Every measure compares a model with itself: its words against its actions, its first answer against its answer under pressure, its choice with and without a stake, its reasoning against the reasons it gives.</p>
     </div>
   );
 }

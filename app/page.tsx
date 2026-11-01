@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { ExampleBanner } from "@/components/Banner";
 import { WhyItMatters } from "@/components/Alignment";
 import { Eyebrow } from "@/components/Brand";
-import FindingCard from "@/components/FindingCard";
 import LiveBudget from "@/components/LiveBudget";
 import Leaderboard from "@/components/Leaderboard";
 import { NextMilestoneCard } from "@/components/Milestone";
-import { HumanSlot } from "@/components/Human";
-import { getBundle, modelName, scenarioTitle } from "@/lib/bundle";
+import { ModelName, PreviewBanner, PreviewTag } from "@/components/V3";
+import { fmtPct, getV3, modelIds, sayDo } from "@/lib/v3";
+import { scenarioMeta } from "@/lib/v3meta";
 import { getFunding, getLeaderboard } from "@/lib/funding";
 import { getSpend } from "@/lib/ledger";
 
@@ -16,17 +15,15 @@ export const dynamic = "force-dynamic";
 /* Direction A, "Signal": framed grid, black/white cells, one signal red for what models do. */
 
 export default async function Home() {
-  const [b, f, spend, leaders] = await Promise.all([getBundle(), getFunding(), getSpend(), getLeaderboard(5)]);
-  const lead = b.findings.find((x) => x.pillar === "saydo") || b.findings[0];
-  const updated = new Date(b.generated_utc).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", year: "numeric" });
-  const sd = lead ? b.saydo.find((x) => x.model === lead.model && x.scenario === lead.scenario) : undefined;
-  const scen = lead ? b.scenarios.find((x) => x.id === lead.scenario) : undefined;
-  const n = sd?.do[0]?.n ?? sd?.judge.n ?? 20;
-  const rows = lead ? lead.bars.slice(0, 3) : [];
+  const [v, f, spend, leaders] = await Promise.all([getV3(), getFunding(), getSpend(), getLeaderboard(5)]);
+  const car = sayDo(v).filter((r) => r.case === "car");
+  const gaps = car.filter((r) => r.do_minus_judge && r.do_minus_judge.lo != null && r.do_minus_judge.hi != null && (r.do_minus_judge.lo > 0 || r.do_minus_judge.hi < 0)).length;
+  const nModels = modelIds(v).length;
+  const updated = new Date(v.generated_utc).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", year: "numeric" });
 
   return (
     <main>
-      <ExampleBanner example={b.is_example} exploratory={b.exploratory} examplesInLedger={f.has_examples} />
+      <PreviewBanner v={v} />
 
       {/* ── Hero ───────────────────────────────────────────── */}
       <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
@@ -38,7 +35,7 @@ export default async function Home() {
           ))}
         </div>
         <div className="relative px-5 pb-16 pt-16 text-center md:pb-20 md:pt-24">
-          <div className="rise"><Eyebrow>Open research tracker · {b.models.length} model{b.models.length === 1 ? "" : "s"}<span className="hidden sm:inline"> · Updated {updated}</span></Eyebrow></div>
+          <div className="rise"><Eyebrow>Open research tracker · {nModels} model{nModels === 1 ? "" : "s"}<span className="hidden sm:inline"> · Updated {updated}</span></Eyebrow></div>
           <h1 className="rise wide mx-auto mt-7 max-w-[1000px] text-[44px] font-bold leading-[0.95] tracking-[-0.045em] [animation-delay:80ms] md:text-[84px]">
             <span className="text-ink/35">AI models say the right thing.</span>{" "}
             We track what they <span className="relative inline-block text-vermilion">do<span className="ml-[0.06em] inline-block h-[0.16em] w-[0.16em] bg-vermilion align-baseline" /></span>
@@ -53,66 +50,71 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Exhibit: one row of cells per run ─────────────────── */}
-      {lead && (
+      {/* ── Exhibit: advise vs do, every model ─────────────────── */}
+      {car.length > 0 && (
         <section className="mx-auto max-w-[1200px] border-b border-rule">
           <div className="grid border-b border-rule md:grid-cols-[minmax(0,1fr)_auto]">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4 md:px-8">
               <span className="kicker text-ink">Exhibit 01</span>
-              <span className="kicker text-ink/45">{modelName(b, lead.model)} · {scen?.title ?? scenarioTitle(b, lead.scenario || "")} · {n} runs per row</span>
+              <span className="kicker text-ink/45">The late fee · {car.length} models · one square = 5% of runs</span>
+              <PreviewTag v={v} />
             </div>
             <div className="hidden items-center gap-4 border-l border-rule px-8 font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/50 md:flex">
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 bg-ink" />sided with waiving</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 border border-vermilion/50 bg-panel" />did not</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 bg-prussian" />advises waiving</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 bg-vermilion" />waives, with tools</span>
             </div>
           </div>
           <div className="grid md:grid-cols-[300px_minmax(0,1fr)]">
             <div className="border-b border-rule p-5 md:border-b-0 md:border-r md:p-8">
               <div className="label">The situation</div>
-              {scen?.judge_vignette && <p className="text-[15px] leading-[1.6] text-ink/75">{scen.judge_vignette}</p>}
-              {scen?.judge_options && sd && <p className="mt-4 text-[14px] text-ink/70">The choice: <b className="font-semibold text-ink">{scen.judge_options[sd.say_implied_option]}</b></p>}
+              <p className="text-[15px] leading-[1.6] text-ink/75">{scenarioMeta("car").situation}</p>
+              <p className="mt-4 text-[14px] text-ink/70">Asked to advise another AI agent in the same spot, and then put in the spot itself. There is no right answer; the question is whether the two match.</p>
             </div>
             <div className="flex flex-col divide-y divide-rule">
-              {rows.map((r, i) => {
-                const v = Math.min(1, Math.max(0, r.value ?? 0));
-                const filled = Math.round(v * n);
-                const isDo = i === rows.length - 1;
-                return (
-                  <div key={r.label} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 p-5 md:grid-cols-[200px_minmax(0,1fr)_150px] md:gap-6 md:px-8 ${isDo ? "flex-1 bg-vermilion/[0.04]" : ""}`}>
-                    <div className={`text-[15px] leading-snug ${isDo ? "font-semibold text-vermilion" : "text-ink/75"}`}>{r.label}</div>
-                    <div className="col-span-2 grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px] md:order-2 md:col-span-1">
-                      {Array.from({ length: n }, (_, j) => (
-                        <span key={j} className={`cell-in aspect-square ${j < filled ? (isDo ? "bg-vermilion" : i === 0 ? "bg-ink" : "bg-prussian") : "border border-vermilion/45 bg-paper"}`} style={{ animationDelay: `${300 + i * 260 + j * 22}ms` }} />
-                      ))}
-                    </div>
-                    <div className={`num text-right leading-none md:order-3 ${isDo ? "text-[52px] font-semibold text-vermilion md:text-[88px]" : "text-[30px] text-ink/70 md:text-[44px]"}`}>
-                      {filled}<span className="text-[0.4em] text-ink/35">/{n}</span>
-                    </div>
+              {car.map((r, i) => (
+                <div key={r.model} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 p-5 md:grid-cols-[170px_minmax(0,1fr)_120px] md:gap-6 md:px-8">
+                  <div className="text-[15px] leading-snug"><ModelName id={r.model} /></div>
+                  <div className="col-span-2 space-y-1.5 md:order-2 md:col-span-1">
+                    {([["judge", r.judge, "bg-prussian"], ["do", r.do, "bg-vermilion"]] as const).map(([k, p, c], row) => {
+                      const filled = Math.round((p?.p ?? 0) * 20);
+                      return (
+                        <div key={k} className="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-[3px]">
+                          {Array.from({ length: 20 }, (_, j) => <span key={j} className={`cell-in aspect-[2/1] ${j < filled ? c : "border border-ink/15 bg-paper"}`} style={{ animationDelay: `${300 + i * 180 + row * 90 + j * 15}ms` }} />)}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-              <HumanSlot className="px-5 py-3 md:px-8" />
+                  <div className="num text-right leading-tight md:order-3">
+                    <div className="text-[14px] text-prussian">{fmtPct(r.judge?.p)}</div>
+                    <div className="text-[26px] font-semibold text-vermilion md:text-[32px]">{fmtPct(r.do?.p)}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           <div className="grid bg-ink text-white md:grid-cols-[minmax(0,1fr)_auto]">
-            <p className="serif px-5 py-7 text-[24px] leading-[1.15] md:px-8 md:py-9 md:text-[34px]">{lead.takeaway ?? lead.summary}</p>
+            <p className="serif px-5 py-7 text-[24px] leading-[1.15] md:px-8 md:py-9 md:text-[34px]">
+              {gaps === 0 ? "In this case, every model so far acts the way it advises. The other scenarios are where to look." : <>{gaps} of {car.length} models act differently from how they advise another agent in the same spot.</>}
+              {v.status !== "final" && <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.08em] text-white/50">Pilot preview. Not final results.</span>}
+            </p>
             <div className="flex border-t border-white/10 md:flex-col md:border-l md:border-t-0">
-              <Link href={`/f/${lead.id}`} className="flex flex-1 items-center gap-2 whitespace-nowrap px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] hover:bg-vermilion md:px-8"><span className="h-2 w-2 bg-vermilion" />The full finding →</Link>
-              <Link href="/results" className="flex flex-1 items-center whitespace-nowrap border-l border-white/10 px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] text-white/70 hover:text-white md:border-l-0 md:border-t md:px-8">All results →</Link>
+              <Link href="/stated-vs-actual" className="flex flex-1 items-center gap-2 whitespace-nowrap px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] hover:bg-vermilion md:px-8"><span className="h-2 w-2 bg-vermilion" />Says vs does →</Link>
+              <Link href="/compare" className="flex flex-1 items-center whitespace-nowrap border-l border-white/10 px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] text-white/70 hover:text-white md:border-l-0 md:border-t md:px-8">Compare models →</Link>
             </div>
           </div>
-          <p className="px-5 py-3 font-mono text-[10.5px] text-ink/50 md:px-8">{lead.axis ?? `% of ${n} runs`} · one square = one run · same situation each time, only the framing changes</p>
+          <p className="px-5 py-3 font-mono text-[10.5px] text-ink/50 md:px-8">Top strip: advises another agent to waive. Bottom strip: waives the fee itself with working tools. Counts and intervals on the Says vs does page.</p>
         </section>
       )}
 
-      {/* ── Three questions strip ─────────────────────────────── */}
-      <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-3">
+      {/* ── Four questions strip ─────────────────────────────── */}
+      <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
         {[
-          ["01", "Say vs do", "Does it act on what it says?", "/results#saydo"],
-          ["02", "Under pressure", "Does it cave when pushed?", "/results#pressure"],
-          ["03", "Self-interest", "Does it bend when it benefits?", "/results#selfinterest"],
-        ].map(([k, t, q, h], i) => (
-          <Link key={k} href={h} className={`group p-5 hover:bg-panel md:p-8 ${i < 2 ? "border-b border-rule sm:border-b-0 sm:border-r" : ""}`}>
+          ["01", "Say vs do", "Does it act on what it says?", "/stated-vs-actual"],
+          ["02", "Under pressure", "Does it cave when pushed?", "/compare#fb"],
+          ["03", "Self-interest", "Does it bend when it benefits?", "/compare#car"],
+          ["04", "Hidden reasons", "Does it tell you what moved it?", "/reasoning"],
+        ].map(([k, t, q, h]) => (
+          <Link key={k} href={h} className="group border-b border-r border-rule p-5 hover:bg-panel md:p-8 lg:border-b-0">
             <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.08em] text-ink/45"><span>{k}</span><span className="group-hover:text-vermilion">→</span></div>
             <div className="wide mt-8 text-[13px] font-bold uppercase text-vermilion">{t}</div>
             <div className="serif mt-1 text-[24px] leading-tight">{q}</div>
@@ -139,17 +141,28 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Findings bento ────────────────────────────────────── */}
+      {/* ── Results doors ─────────────────────────────────────── */}
       <section className="mx-auto max-w-[1200px] px-5 pt-24 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <Eyebrow>Latest findings</Eyebrow>
-            <h2 className="wide mt-5 text-[36px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[58px]">Findings<span className="text-vermilion">.</span></h2>
+            <div className="flex items-center gap-3"><Eyebrow>Results</Eyebrow><PreviewTag v={v} /></div>
+            <h2 className="wide mt-5 text-[36px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[58px]">Where to look<span className="text-vermilion">.</span></h2>
           </div>
           <Link href="/results" className="btn-ghost">All results →</Link>
         </div>
         <div className="mt-10 grid gap-3 md:grid-cols-2">
-          {b.findings.map((x) => <FindingCard key={x.id} f={x} modelName={modelName(b, x.model)} example={b.is_example} />)}
+          {[
+            ["/stated-vs-actual", "Says vs does", "The same situation as advice, as a stated intention and as an action with real tools."],
+            ["/reasoning", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you it weighed, and what it does."],
+            ["/compare", "Compare per scenario", "Every model on one chart for each scenario, with human answers where they exist."],
+            ["/models", "Weak spots", "Where each model is most swayed, most self-interested and most test-aware."],
+          ].map(([h, t, d]) => (
+            <Link key={h} href={h} className="ticks group flex flex-col border border-rule p-6 hover:bg-panel md:p-8">
+              <span className="wide text-[24px] font-bold tracking-[-0.03em] group-hover:text-vermilion">{t}</span>
+              <span className="mt-2 text-[15px] leading-6 text-ink/60">{d}</span>
+              <span className="mt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50 group-hover:text-vermilion">Open →</span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -160,7 +173,7 @@ export default async function Home() {
           <div>
             <div className="kicker text-white/75">For donors</div>
             <div className="wide mt-4 text-[30px] font-bold leading-[1] tracking-[-0.03em]">See the reasoning, not just the score.</div>
-            <p className="mt-4 text-[15px] leading-relaxed text-white/85">Anyone who donates, any amount, can sign in to read the exact prompts and the models&apos; reasoning traces behind every public result. Hold-out items stay private for everyone, so future models can&apos;t be trained on them.</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-white/85">Donors, any amount, get donor access to the exact prompts and the models&apos; reasoning traces behind the results. Donor views are being rebuilt for the multi-model run.</p>
           </div>
           <div className="mt-8 flex gap-3"><Link href="/donate" className="btn border-ink bg-ink text-white hover:bg-white hover:text-ink">Donate</Link><Link href="/signin" className="btn border-white/40 text-white hover:border-white">Sign in</Link></div>
         </div>

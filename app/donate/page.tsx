@@ -15,7 +15,7 @@ export default async function Donate({ searchParams }: { searchParams: Promise<{
   const [f, user, sp, leaders] = await Promise.all([getFunding(), currentUser(), searchParams, getLeaderboard(8)]);
   return (
     <main>
-      <PageHead eyebrow="Support the work" grey="Fund the" title={<>next <span className="text-vermilion">model.</span></>}>{SITE_NAME} is free and open. Your donation pays for API calls, nothing else is taken out except the card fee, and every dollar and expense is public. Donors can read the prompts and reasoning traces behind every public result.</PageHead>
+      <PageHead eyebrow="Support the work" grey="Fund the" title={<>next <span className="text-vermilion">model.</span></>}>{SITE_NAME} is free and open. Your donation pays for API calls, nothing else is taken out except the card fee, and every dollar and expense is public. Donors get access to the prompts and reasoning traces behind the results (donor views are being rebuilt for the multi-model run).</PageHead>
       <section className="mx-auto grid max-w-[1200px] border-b border-rule md:grid-cols-[1.3fr_1fr] md:divide-x md:divide-rule">
       <div className="min-w-0 border-b border-rule p-5 md:border-b-0 md:p-8">
         {sp.error && <div className="mb-4 border border-vermilion bg-highlight/40 p-3 text-sm text-vermilion-dark">{ERR[sp.error] || "Something went wrong."}</div>}

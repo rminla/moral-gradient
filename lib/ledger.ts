@@ -5,7 +5,7 @@ import { kvGet } from "./db";
 import { getBundle } from "./bundle";
 import type { Spend } from "./types";
 
-export type LiveSpend = Spend & { source: "live-ledger" | "ingested" | "bundle"; as_of: string };
+export type LiveSpend = Spend & { source: "live-ledger" | "ingested" | "snapshot" | "bundle"; as_of: string };
 
 /** Live spend straight from the pilot's append-only cost ledger (read-only SELECTs). */
 async function readLedger(): Promise<LiveSpend | null> {
@@ -22,10 +22,23 @@ async function readLedger(): Promise<LiveSpend | null> {
   } catch { return null; } finally { c.close(); }
 }
 
+function readSnapshot(): LiveSpend | null {
+  try {
+    const p = path.join(process.cwd(), "data", "spend-snapshot.json");
+    if (!fs.existsSync(p)) return null;
+    const j = JSON.parse(fs.readFileSync(p, "utf8"));
+    return typeof j.total_usd === "number" ? { ...j, source: "snapshot" } : null;
+  } catch { return null; }
+}
+
 export async function getSpend(): Promise<LiveSpend | null> {
   const live = await readLedger();
   if (live) return live;
+  // Off the box: whichever is newer of the last /api/ingest push and the committed snapshot (scripts/snapshot_spend.mjs).
   const ing = await kvGet<LiveSpend>("spend").catch(() => null);
+  const snap = readSnapshot();
+  const t = (x: { as_of?: string } | null) => (x?.as_of ? Date.parse(x.as_of) || 0 : 0);
+  if (snap && (!ing || t(snap) > t(ing))) return snap;
   if (ing) return { ...ing, source: "ingested" };
   const b = await getBundle();
   return b.spend ? { ...b.spend, source: "bundle", as_of: b.generated_utc } : null;

@@ -27,7 +27,7 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
         <div className="border-b border-rule p-5 md:border-b-0 md:p-8"><div className="kicker mb-4 text-ink/55">Next milestone</div><MilestoneHeadline f={f} /><div className="mt-4"><ProgressBar value={f.next ? f.next.progress : 1} tall /></div></div>
         <div className="p-5 text-[15px] md:p-8">
           <div className="kicker mb-4 text-ink/55">Your donor access</div>
-          {user ? <p className="text-ink/70">You&apos;re signed in. Open any scenario to read its prompts and reasoning traces.</p>
+          {user ? <p className="text-ink/70">You&apos;re signed in. Donor views of prompts and reasoning traces are being rebuilt for the multi-model results; your access turns on automatically when they&apos;re live.</p>
             : <p className="text-ink/70">Sign in with {d?.email ? <b>{d.email}</b> : "the email you used"} to read prompts and reasoning traces. <Link className="link" href="/signin?next=/results">Sign in</Link></p>}
         </div>
       </section>

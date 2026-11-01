@@ -18,7 +18,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
       <section className="mx-auto grid max-w-[1200px] border-b border-rule md:grid-cols-[1fr_1.3fr] md:divide-x md:divide-rule">
       <div className="space-y-3 border-b border-rule p-5 md:border-b-0 md:p-8">
       <div className={`p-5 ${donor ? "bg-ink text-white" : "hatch border border-rule"}`}>
-        {donor ? <><div className="kicker flex items-center gap-2 text-white/60"><span className="h-2 w-2 bg-vermilion" />Donor access</div><div className="mt-3 text-[18px] font-semibold">Donor access is on.</div><p className="mt-1 text-sm text-white/70">Open any scenario on the <Link className="link" href="/results">results page</Link> to read its prompts and reasoning traces.</p></>
+        {donor ? <><div className="kicker flex items-center gap-2 text-white/60"><span className="h-2 w-2 bg-vermilion" />Donor access</div><div className="mt-3 text-[18px] font-semibold">Donor access is on.</div><p className="mt-1 text-sm text-white/70">Donor views of prompts and reasoning traces are being rebuilt for the multi-model <Link className="link" href="/results">results</Link>; your access turns on automatically when they&apos;re live.</p></>
           : <><div className="kicker text-ink/55">Donor access</div><div className="mt-3 text-[18px] font-semibold">No donations linked to this email yet.</div><p className="mt-1 text-sm text-ink/60">Donate any amount with this email to unlock prompts and reasoning traces. <Link href="/donate" className="link">Donate</Link></p></>}
       </div>
       {gifts.length > 0 && (
