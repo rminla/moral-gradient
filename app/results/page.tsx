@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHead } from "@/components/Brand";
+import Subscribe from "@/components/Subscribe";
 import { Block, ChartHead, DotChart, DotLegend, ModelName, PreviewBanner } from "@/components/V3";
 import { getV3, modelIds, reasoning, sayDo } from "@/lib/v3";
 import { modelMeta } from "@/lib/v3meta";
@@ -67,6 +68,8 @@ export default async function Results() {
           </div>
         </div>
       </Block>
+
+      <Block><Subscribe source="results" /></Block>
     </main>
   );
 }

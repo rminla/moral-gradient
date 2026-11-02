@@ -12,13 +12,21 @@
   - **Small / favicon** (16-unit grid): 32px and below, nav (24px), footer, `app/icon.svg`. Four gapless cells (ink, grey, light red, red) and a pointer stepped in whole units over the 3rd cell; every edge sits on the pixel grid, so it is crisp at 16/32px. `icon.svg` switches ink → white and grey → light grey under `prefers-color-scheme: dark`.
   - Never reorder the cells, centre the pointer, or put the mark on red. Clear space = one cell width on all sides. Replaced the 3×3 run block and, briefly, the "Tipping point" seesaw (Nov 2026).
 
+## Mission and audience (Nov 2026)
+
+- **Stated goal:** raise awareness of, and conversation about, AI alignment and safety among regular people. The project should interest academics, and even more so everyone else.
+- **One-line pitch (hero subhead):** "A free, open record of what AI models do when a choice has moral weight, next to what they say is right. Written for everyone, so anyone can follow it, try it and talk about it."
+- **Home:** the primary button is "Try a dilemma yourself" (`/try`), the secondary "See the results". A "Why we built this" section states the mission, with Try · Learn · Talk · Follow doors. The data exhibit still follows the hero directly.
+- **Try it:** both answers get identical buttons, so neither looks expected. Model answers to a dilemma are *say*, so they are grey; red stays for what models do. People are shown in ink.
+- **Voice for everyone:** short sentences, no jargon without a gloss (see the `/learn` glossary), invite discussion ("Talk about it") rather than conclude. Still never a right answer.
+
 # Moral Gradient — brand notes
 
 **Idea.** Stated values are cheap; behaviour is the test. Moral Gradient tracks what AI models **do** (as agents with tools, under social pressure, and when their own interest pulls the other way) next to what they *say* is right. The identity is a scale between those two poles, and the emphasis is always on the **do** end. It should read like a data-journalism desk or a university lab, not an AI startup.
 
 **Hierarchy of claims (shown as the "alignment ladder" on home and about).** Level 1 Says (stated values vs human baselines) → Level 2 Does (acts on them with tools) → Level 3 Under pressure → Level 4 When it benefits. Levels 3 and 4 are the headline safety questions and are always visually heavier (ink blocks, "Safety question" tag). Component: `components/Alignment.tsx` (`WhyItMatters`, `AlignmentLadder`).
 
-**Hero rule.** The home page leads with data, not a headline: Exhibit 01 is the say-vs-do finding drawn large (situation on the left, three big bars with counts like `0/20`, the "does" row in vermilion and largest), then a one-line takeaway. No headline + subhead + two-button hero.
+**Hero rule.** (Superseded in part: the Signal home has a headline, subhead and two buttons, see Mission above; the exhibit follows directly.) The home page leads with data, not a headline: Exhibit 01 is the say-vs-do finding drawn large (situation on the left, three big bars with counts like `0/20`, the "does" row in vermilion and largest), then a one-line takeaway. No headline + subhead + two-button hero.
 
 ## Mark & wordmark
 - **Mark:** superseded, see "Where it lands" in Direction A above. Component: `components/Brand.tsx` (`Mark`, `Wordmark`). Favicon: `app/icon.svg`.

@@ -33,6 +33,15 @@ const SCHEMA = [
      mode TEXT NOT NULL, status TEXT NOT NULL, detail TEXT, finished_at TEXT)`,
   `CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, created_at TEXT NOT NULL)`, // webhook idempotency
+  // "New findings" list. Double opt-in: a row is only mailable when status='confirmed'. Additive, safe on an existing DB.
+  `CREATE TABLE IF NOT EXISTS subscribers (
+     id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, status TEXT NOT NULL DEFAULT 'pending', source TEXT,
+     consent_text TEXT NOT NULL, consent_version TEXT NOT NULL, created_at TEXT NOT NULL,
+     confirm_token_hash TEXT, confirm_expires_at TEXT, confirm_sent_at TEXT, confirmed_at TEXT, unsubscribed_at TEXT)`,
+  `CREATE INDEX IF NOT EXISTS subscribers_confirm ON subscribers (confirm_token_hash)`,
+  // Rate limiting for public form endpoints. Keys are salted hashes (IP or email), rows older than a day are pruned.
+  `CREATE TABLE IF NOT EXISTS rate_hits (bucket TEXT NOT NULL, at INTEGER NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS rate_hits_bucket ON rate_hits (bucket, at)`,
 ];
 
 export async function seedMilestones(reseed = false) {

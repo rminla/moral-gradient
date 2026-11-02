@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ProgressBar, MilestoneHeadline } from "@/components/Milestone";
 import Share from "@/components/Share";
+import Subscribe from "@/components/Subscribe";
 import { Mark } from "@/components/Brand";
 import { currentUser } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/config";
@@ -31,9 +32,10 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
             : <p className="text-ink/70">Sign in with {d?.email ? <b>{d.email}</b> : "the email you used"} to read prompts and reasoning traces. <Link className="link" href="/signin?next=/results">Sign in</Link></p>}
         </div>
       </section>
+      <section className="mx-auto max-w-[1200px] border-b border-rule p-5 md:p-8"><Subscribe source="donate-thanks" /></section>
       <section className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 border-b border-rule px-5 py-12">
         <div className="kicker text-ink/55">Tell people</div>
-        <Share path="/donate" text={`I just helped fund ${SITE_NAME}, an open tracker of whether AI models act on the values they state.`} compact />
+        <Share path="/donate" text={`I just helped fund ${SITE_NAME}, an open tracker of whether AI models act on the values they state, written for everyone.`} compact />
         <Link href="/costs" className="mt-2 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/60 hover:text-vermilion">See where the money goes →</Link>
       </section>
     </main>

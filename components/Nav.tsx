@@ -3,6 +3,8 @@ import { currentUser } from "@/lib/auth";
 import { Wordmark } from "./Brand";
 
 const LINKS = [
+  ["/try", "Try it"],
+  ["/learn", "Learn"],
   ["/results", "Results"],
   ["/compare", "Compare"],
   ["/models", "Models"],
@@ -22,7 +24,7 @@ export default async function Nav() {
           <Link href="/" aria-label="Moral Gradient, home" className="flex shrink-0 items-center border-r border-rule px-5"><Wordmark /></Link>
           <nav className="hidden items-stretch md:flex">
             {LINKS.map(([h, t]) => (
-              <Link key={h} href={h} className="flex items-center border-r border-rule px-5 font-mono text-[12px] uppercase tracking-[0.08em] text-ink/70 transition-colors hover:bg-panel hover:text-ink">{t}</Link>
+              <Link key={h} href={h} className={`flex items-center border-r border-rule px-5 font-mono text-[12px] uppercase tracking-[0.08em] transition-colors hover:bg-panel hover:text-ink ${h === "/try" ? "gap-2 text-ink" : "text-ink/70"}`}>{h === "/try" && <span className="h-2 w-2 bg-vermilion" />}{t}</Link>
             ))}
           </nav>
           <div className="hatch hidden flex-1 md:block" />
@@ -34,9 +36,9 @@ export default async function Nav() {
             <span className="blink h-2 w-2 bg-vermilion" />Donate
           </Link>
         </div>
-        <nav className="grid grid-cols-5 border-t border-rule md:hidden">
-          {LINKS.map(([h, t], i) => (
-            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.08em] text-ink/70 ${i < 4 ? "border-r border-rule" : ""}`}>{t}</Link>
+        <nav className="grid grid-cols-4 border-t border-rule md:hidden">
+          {LINKS.filter(([h]) => !["/compare", "/models", "/costs"].includes(h)).map(([h, t], i) => (
+            <Link key={h} href={h} className={`py-2.5 text-center font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.08em] ${h === "/try" ? "bg-vermilion text-white" : "text-ink/70"} ${i < 3 ? "border-r border-rule" : ""}`}>{t}</Link>
           ))}
         </nav>
       </header>

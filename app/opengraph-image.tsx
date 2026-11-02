@@ -4,7 +4,7 @@ import { OG, OgCells, OgWordmark, ogFonts, siteHost } from "@/lib/og";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Moral Gradient: AI models say the right thing. We track what they do.";
+export const alt = "Moral Gradient: AI models say the right thing. We track what they do. Open data, written for everyone.";
 
 export default async function Image() {
   const fonts = await ogFonts();
@@ -32,7 +32,7 @@ export default async function Image() {
           <div style={{ ...head, gap: 22 }}><span>they</span><span style={{ color: OG.signal }}>do.</span></div>
           <div style={{ display: "flex", flex: 1 }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${OG.rule}`, paddingTop: 16, fontSize: 19, color: OG.grey }}>
-            <span>As agents with tools, under pressure, and when they gain.</span>
+            <span>Open data, written for everyone. Try it, learn, talk about it.</span>
             <span style={{ fontFamily: "JetBrains Mono", fontSize: 17, color: OG.ink }}>{siteHost()}</span>
           </div>
         </div>

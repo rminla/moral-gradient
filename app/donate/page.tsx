@@ -62,6 +62,7 @@ export default async function Donate({ searchParams }: { searchParams: Promise<{
             <span className="label">Email for your receipt and donor access</span>
             <input name="email" type="email" defaultValue={user?.email || ""} placeholder="you@example.com" className="input" />
             <p className="mt-1 text-xs text-ink/50">Never shown publicly. Sign in later with this email to read prompts and reasoning traces.</p>
+            <label className="mt-3 flex items-start gap-2 text-sm text-ink/70"><input type="checkbox" name="subscribe" className="mt-0.5 accent-ink" /><span>Also email me new findings. We&apos;ll send a link to confirm first; unsubscribe in one click. <Link href="/privacy" className="link">Privacy</Link></span></label>
           </div>
           <button className="btn-money w-full !py-4 !text-base"><span className="h-2 w-2 bg-white" />{paymentsMode() === "mock" ? "Continue to test checkout" : "Continue to secure checkout"}</button>
           <p className="text-center text-xs text-ink/45">{paymentsMode() === "mock" ? "Mock mode: no card will be charged." : "Payments by Stripe. Card fee (about 2.9% + 30¢) is shown publicly."} Donations are not tax-deductible.</p>

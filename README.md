@@ -2,7 +2,11 @@
 
 Private repo: [`rminla/moral-gradient`](https://github.com/rminla/moral-gradient). This folder is the repo root.
 
-An open tracker of whether AI models **act** on the values they **state**. It covers three pillars (Say vs Do, Values under pressure, Self-interest) plus a baseline layer (MFQ-2, MFQ-30, OUS, Awad 2020 trolley dilemmas) with human data where it exists. The site is descriptive only: it never publishes a "right answer".
+A free, open record of what AI models **do** when a choice has moral weight, next to what they **say** is right. Written for everyone, so anyone can follow it, try it and talk about it.
+
+**Mission.** Raise public awareness of, and conversation about, AI alignment and safety among regular people, not only researchers. Academics get open data and methods; everyone else gets plain-language results, dilemmas to try (`/try`), an explainer (`/learn`) and an email when there are new findings.
+
+It is an open tracker of whether AI models **act** on the values they **state**. It covers three pillars (Say vs Do, Values under pressure, Self-interest) plus a baseline layer (MFQ-2, MFQ-30, OUS, Awad 2020 trolley dilemmas) with human data where it exists. The site is descriptive only: it never publishes a "right answer".
 
 The name is one config value: `NEXT_PUBLIC_SITE_NAME` (default "Moral Gradient").
 
@@ -10,6 +14,10 @@ The name is one config value: `NEXT_PUBLIC_SITE_NAME` (default "Moral Gradient")
 
 | Area | Where |
 |---|---|
+| Try it: answer a dilemma (Switch, Footbridge), then see people (Awad 2020) and each model; the answer stays in the browser, never sent | `app/try`, `components/TryClient.tsx` |
+| Learn: plain-language explainer, discussion questions, glossary, curated outside reading | `app/learn` |
+| New findings by email: double opt-in signup (Learn, Try, Results, donate thanks, opt-in box on donate), confirm and one-click unsubscribe | `components/Subscribe.tsx`, `lib/subscribers.ts`, `app/api/subscribe/*`, `app/subscribe/*` |
+| Privacy | `app/privacy` |
 | Home: purpose, live budget, next-milestone progress bar ("$X left before running the full suite on …"), pillars, shareable findings, leaderboard | `app/page.tsx` |
 | Results: Say/Judge/Do table, self-interest charts, pressure flip rates, baseline vs human data, findings, run log (superseded and excluded runs listed, never charted) | `app/results` |
 | Per model / per scenario pages (donor-gated prompts and reasoning traces on scenario pages) | `app/models/[slug]`, `app/scenarios/[id]` |
@@ -94,7 +102,7 @@ This sends the bundle, the donor-only traces and the ledger spend summary.
 | `SESSION_SECRET` | sign-in tokens | long random string |
 | `STRIPE_SECRET_KEY` | payments | `sk_test_…` first; empty means mock mode |
 | `STRIPE_WEBHOOK_SECRET` | payments | `whsec_…` from the webhook endpoint |
-| `RESEND_API_KEY`, `EMAIL_FROM` | magic-link email | sender on a verified domain |
+| `RESEND_API_KEY`, `EMAIL_FROM` | magic-link and list-confirmation email | sender on a verified domain; without them, sign-ups are stored as pending and nothing is sent |
 | `ADMIN_EMAILS` | admin link on the account page | comma-separated |
 | `AUTO_LAUNCH` | auto-launch | on unless set to `0`; with `0`, funded milestones wait for a manual launch |
 | `JOB_RUNNER_MODE`, `JOB_RUNNER_CMD`, `JOB_WEBHOOK_URL`, `JOB_WEBHOOK_TOKEN` | runs | see above |
@@ -112,6 +120,15 @@ This sends the bundle, the donor-only traces and the ledger spend summary.
    - Test with card 4242 4242 4242 4242, then switch to live keys.
 6. **Resend**: verify the domain (DNS records), then set `RESEND_API_KEY` and `EMAIL_FROM`.
 7. **Results**: on the box, `npm run bundle && SITE=https://moralgradient.org INGEST_TOKEN=… npm run push:results`. Run it after every export, or call it at the end of the runner.
+
+## New findings list
+
+- Table `subscribers` (created automatically by the schema in `lib/db.ts`; `npm run db:init` also creates it). Additive only, safe on an existing database.
+- Double opt-in: sign-up stores a **pending** row and emails a confirmation link (POST button page, so mail scanners can't confirm). Only `status='confirmed'` rows may ever be mailed. The consent text and version are stored with each row.
+- Unsubscribe: signed link (`/subscribe/unsubscribe?id=…&sig=…`) plus RFC 8058 one-click headers on every email.
+- Abuse: hidden honeypot field and DB-backed rate limits (table `rate_hits`, salted hashes, pruned after 24h) on `/api/subscribe` and `/api/auth/request`.
+- If Resend isn't configured, sign-ups stay pending and the form says "we'll confirm soon". Once it is: `curl -X POST -H "authorization: Bearer $INGEST_TOKEN" https://moralgradient.org/api/subscribe/pending` sends the missing confirmations (GET shows counts). There is no findings-mail sender yet.
+- `/api/status` reports `email.provider` (`resend` or `none`) and the sender domain, never the key.
 
 ## Security notes
 

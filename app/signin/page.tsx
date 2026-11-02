@@ -2,7 +2,7 @@ import { Eyebrow } from "@/components/Brand";
 import { emailMode } from "@/lib/config";
 
 export const metadata = { title: "Sign in" };
-const ERR: Record<string, string> = { email: "That doesn't look like an email address.", expired: "That link has expired or was already used. Request a new one.", send: "We couldn't send the email. Try again in a minute." };
+const ERR: Record<string, string> = { email: "That doesn't look like an email address.", expired: "That link has expired or was already used. Request a new one.", send: "We couldn't send the email. Try again in a minute.", limited: "Too many sign-in requests. Please wait a few minutes and try again." };
 
 export default async function SignIn({ searchParams }: { searchParams: Promise<{ sent?: string; dev?: string; error?: string; next?: string }> }) {
   const sp = await searchParams;
@@ -28,6 +28,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
       ) : (
         <form action="/api/auth/request" method="post" className="ticks mt-8 space-y-5 border border-rule bg-paper p-6">
           <input type="hidden" name="next" value={sp.next || "/account"} />
+          <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden"><label>Leave this empty<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
           <div><span className="label">Email</span><input name="email" type="email" required className="input" placeholder="you@example.com" /></div>
           <button className="btn-primary w-full">Email me a sign-in link</button>
         </form>

@@ -11,7 +11,7 @@ const numeric = JetBrains_Mono({ subsets: ["latin"], variable: "--font-numeric",
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME}: ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
-  description: "An open, donation-funded tracker of how frontier and open AI models answer moral questions, whether they act on what they say, and whether pressure or self-interest moves them.",
+  description: "A free, open record of what AI models do when a choice has moral weight, next to what they say is right. Written for everyone: try the dilemmas, learn what AI alignment means, and talk about it.",
   openGraph: { siteName: SITE_NAME, type: "website" },
   twitter: { card: "summary_large_image" },
 };

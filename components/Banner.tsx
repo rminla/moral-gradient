@@ -12,8 +12,8 @@ export function ExampleBanner({ example, examplesInLedger, exploratory }: { exam
       <div className="mx-auto flex max-w-6xl items-baseline gap-3 px-5 py-2 font-sans text-xs text-ink/75">
         <span className="kicker shrink-0 bg-highlight px-1.5 py-0.5 text-ink">Preview</span>
         <span>
-          {example && "Results shown are EXAMPLE DATA built from the single-model pilot (Claude Haiku 5.5), not a published wave. "}
-          {!example && exploratory && "Pilot results: one model (Claude Haiku 5.5), exploratory and not yet preregistered. Superseded and excluded runs are listed but never charted. "}
+          {example && "Results shown are EXAMPLE DATA, not a published run. "}
+          {!example && exploratory && "Preliminary results from methodology-development runs, not yet preregistered. Superseded and excluded runs are listed but never charted. "}
           {examplesInLedger && "The donation leaderboard includes example donations. "}
           {mock && "Payments run in mock mode: no card is charged."}
         </span>

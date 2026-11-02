@@ -41,11 +41,11 @@ export default async function Home() {
             We track what they <span className="relative inline-block text-vermilion">do<span className="ml-[0.06em] inline-block h-[0.16em] w-[0.16em] bg-vermilion align-baseline" /></span>
           </h1>
           <p className="rise mx-auto mt-7 max-w-[620px] text-[17px] leading-relaxed text-ink/65 [animation-delay:160ms] md:text-[19px]">
-            An open, reader-funded record of how AI models act as agents with tools, under social pressure, and when they have something to gain, next to what they say is right.
+            A free, open record of what AI models do when a choice has moral weight, next to what they say is right. Written for everyone, so anyone can follow it, try it and talk about it.
           </p>
           <div className="rise mt-9 flex flex-wrap justify-center gap-3 [animation-delay:240ms]">
-            <Link href="/results" className="btn-primary"><span className="h-2 w-2 bg-vermilion" />See the results</Link>
-            <Link href="/donate" className="btn-ghost">Fund the next model</Link>
+            <Link href="/try" className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Try a dilemma yourself</Link>
+            <Link href="/results" className="btn-ghost">See the results</Link>
           </div>
         </div>
       </section>
@@ -120,6 +120,31 @@ export default async function Home() {
             <div className="serif mt-1 text-[24px] leading-tight">{q}</div>
           </Link>
         ))}
+      </section>
+
+      {/* ── Why we built this: the public mission ─────────────── */}
+      <section className="mx-auto mt-20 max-w-[1200px] px-5 md:px-8">
+        <Eyebrow>Why we built this</Eyebrow>
+        <div className="mt-5 grid gap-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:gap-14">
+          <h2 className="wide text-[34px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[52px]">AI is starting to make choices for people. <span className="text-ink/35">Everyone should be able to see how.</span></h2>
+          <div className="space-y-4 text-[17px] leading-relaxed text-ink/70">
+            <p>Whether AI reliably does what people intend, including when it&apos;s pushed or has something to gain, is what researchers call <b className="font-semibold text-ink">alignment</b>. It shouldn&apos;t be a conversation only specialists can follow.</p>
+            <p>So we publish open data for researchers, and plain-language results, dilemmas and explainers for everyone else, to help more people understand AI safety and talk about it. We never claim to know the right answer to a dilemma.</p>
+          </div>
+        </div>
+        <div className="mt-10 grid gap-px border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["Try", "Answer a dilemma, then see how people and models chose.", "/try"],
+            ["Learn", "AI alignment in plain language, in five minutes.", "/learn"],
+            ["Talk", "Questions to discuss with friends, a class or your team.", "/learn#talk"],
+            ["Follow", "An email when there are new findings. Nothing else.", "/subscribe"],
+          ].map(([t, d, h]) => (
+            <Link key={t} href={h} className="group bg-paper p-6 hover:bg-panel">
+              <div className="flex justify-between"><span className="wide text-[20px] font-bold tracking-[-0.03em] group-hover:text-vermilion">{t}</span><span className="font-mono text-[12px] text-ink/40 group-hover:text-vermilion">→</span></div>
+              <p className="mt-2 text-[15px] leading-6 text-ink/60">{d}</p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* ── Why it matters: dark full-bleed ───────────────────── */}

@@ -10,11 +10,13 @@ export default function Footer() {
         <div className="grid border-b border-white/10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="border-b border-white/10 p-6 md:border-b-0 md:border-r md:p-8">
             <Mark size={28} light />
-            <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-white/65">An independent, open project by {OWNER_NAME}. We publish what models choose and do. We never publish a &ldquo;right answer&rdquo;.</p>
+            <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-white/65">An independent, open project by {OWNER_NAME}, to help everyone, not only researchers, understand and talk about AI alignment and safety. We publish what models choose and do. We never publish a &ldquo;right answer&rdquo;.</p>
           </div>
           <div className="border-b border-white/10 p-6 md:border-b-0 md:border-r md:p-8">
             <div className="kicker mb-4 text-white/40">Read</div>
             <ul className="space-y-2 text-[15px]">
+              <li><Link className="hover:text-vermilion" href="/try">Try a dilemma</Link></li>
+              <li><Link className="hover:text-vermilion" href="/learn">Learn: AI alignment in plain language</Link></li>
               <li><Link className="hover:text-vermilion" href="/results">Results</Link></li>
               <li><Link className="hover:text-vermilion" href="/stated-vs-actual">Says vs does</Link></li>
               <li><Link className="hover:text-vermilion" href="/reasoning">Reasoning vs stated reasons</Link></li>
@@ -23,6 +25,8 @@ export default function Footer() {
               <li><Link className="hover:text-vermilion" href="/about">Methodology</Link></li>
               <li><Link className="hover:text-vermilion" href="/costs">Live costs &amp; funding queue</Link></li>
               <li><Link className="hover:text-vermilion" href="/donate">Donate</Link></li>
+              <li><Link className="hover:text-vermilion" href="/subscribe">New findings by email</Link></li>
+              <li><Link className="hover:text-vermilion" href="/privacy">Privacy</Link></li>
             </ul>
           </div>
           <div className="p-6 md:p-8">
