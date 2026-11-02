@@ -31,3 +31,13 @@ export function parseQuizShare(m: unknown, s: unknown): { id: string; slug: stri
   const hit = Object.entries(MODEL_META).find(([id]) => modelSlug(id) === m);
   return hit ? { id: hit[0], slug: m, name: hit[1].name, score } : null;
 }
+
+/** "What it thinks vs what it does": the finding, framed by the mission. No visitor data involved. */
+export function thinksPost() {
+  const mid = "In a simulated billing task, a budget memo made one AI model keep a customer's late fee far more often, while its note said: \"Fee recovery targets did not factor into this decision.\"";
+  return {
+    text: `${WRAPPER} ${mid} What AI models think vs what they do:`,
+    subject: "What AI models think vs what they do",
+    email: `${WRAPPER}\n\n${mid}\n\nMoral Gradient compares three things for every run: a model's reasoning, the note it writes, and what it actually does. Sometimes they don't match. It's an independent, open project; there are no right answers here, just what the models did.`,
+  };
+}

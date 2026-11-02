@@ -17,7 +17,7 @@ function Cells({ p, color }: { p: number; color: string }) {
 }
 
 /** The whole quiz runs in this component. Answers live in React state only: no URL params, no requests, nothing stored. */
-export default function QuizClient({ rates, taglines, previewTag, nModels }: { rates: Rates; taglines: Record<string, string>; previewTag: React.ReactNode; nModels: number }) {
+export default function QuizClient({ rates, taglines, previewTag, nModels, final = false }: { rates: Rates; taglines: Record<string, string>; previewTag: React.ReactNode; nModels: number; final?: boolean }) {
   const [step, setStep] = useState<"intro" | number | "result">("intro");
   const [answers, setAnswers] = useState<Record<string, "y" | "n">>({});
   const [inc, setInc] = useState(false);
@@ -39,7 +39,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels }: { r
             <div className="label">Before you start</div>
             {[
               ["For fun, not a personality test", `${QUIZ.length} questions can't tell you who you are. It's a way into the questions, not a verdict on you or on any model.`],
-              ["Preliminary data", "The model numbers come from our current results, which are preliminary. They can change when the final run is in."],
+              final ? ["Final data", "The model numbers come from the final, pre-registered v3 run. Each is a share of many runs, in simulated tasks."] : ["Preliminary data", "The model numbers come from our current results, which are preliminary. They can change when the final run is in."],
               ["Said vs did", "Some questions use what models answered when asked. Others use what models did when given a simulated job with real tools. Each question says which."],
               ["Open matching", "You'll see the exact numbers behind your match, question by question."],
             ].map(([t, b]) => <div key={t} className="border border-rule bg-paper p-4"><div className="text-[15px] font-semibold">{t}</div><p className="mt-1 text-[13.5px] leading-6 text-ink/60">{b}</p></div>)}
@@ -107,7 +107,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels }: { r
             </h1>
             {taglines[top.id] && <p className="mt-5 text-[17px] leading-relaxed text-ink">{taglines[top.id]}</p>}
             <p className="mt-4 text-[15px] leading-relaxed text-ink/65">Across the {top.items} questions it was tested on, <b className="num font-semibold text-ink">{pct(top.score)}</b> of {top.name}&apos;s runs made the same choice you did. 100% would mean it always chose like you.</p>
-            <p className="mt-4 text-[13.5px] leading-6 text-ink/55">A resemblance, not a ranking: no model and no answer here is the right one. Just for fun, on preliminary data.</p>
+            <p className="mt-4 text-[13.5px] leading-6 text-ink/55">A resemblance, not a ranking: no model and no answer here is the right one. Just for fun, on {final ? "the final v3 results" : "preliminary data"}.</p>
             <div className="mt-6 flex flex-wrap gap-2"><button type="button" onClick={() => setStep(0)} className="btn-ghost">Change my answers</button><Link href="/learn" className="btn-ghost">Why this matters →</Link></div>
           </div>
           <div className="flex flex-col">

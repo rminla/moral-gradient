@@ -10,7 +10,7 @@ const qs = (N: number) => [
   { n: "01", q: "What is AI alignment?", a: "Getting AI to reliably do what people intend, including when nobody is checking. Today's chat models are trained on answers people approve of, which makes them good at saying the right thing. Whether they also do it is a separate question." },
   { n: "02", q: "Why does say vs do matter?", a: "AI is starting to act for people: it answers customers, approves refunds, sends emails. If a model advises one thing and does another, reading its answers won't tell you what it will do." },
   { n: "03", q: "Why do its reasons matter?", a: "People check AI mostly by reading its explanations. If something swayed a decision, like a budget target or a user who kept pushing, and the explanation leaves it out, that check fails without anyone noticing." },
-  { n: "04", q: "What doesn't this show?", a: `That AI is evil, that it lies on purpose, or which model is "most moral". It's a handful of everyday scenarios and ${N} models so far, and the results are still preliminary. We show what models chose, never what they should have chosen.` },
+  { n: "04", q: "What doesn't this show?", a: `That AI is evil, that it lies on purpose, or which model is "most moral". It's a handful of everyday scenarios and ${N} models so far, from one pre-registered run, all in simulated tasks. We show what models chose, never what they should have chosen.` },
 ];
 
 const TERMS = [
@@ -28,7 +28,7 @@ const MORE_TERMS = [
   ["Test awareness", "When a model's reasoning says it suspects it's being tested, which can change how it behaves."],
   ["Human baseline", "How people answered the same question in published studies, shown for comparison, not as the right answer."],
   ["Open model", "A model whose weights are published, so anyone can run and inspect it."],
-  ["Preliminary results", "Numbers from small early runs while the method is being finalised. They can change when the full run is published."],
+  ["Final run", "The pre-registered locked run: the method was frozen first, then run once with larger samples. It replaced the earlier preliminary numbers."],
 ];
 
 const TALK = [

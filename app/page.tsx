@@ -5,6 +5,8 @@ import LiveBudget from "@/components/LiveBudget";
 import Leaderboard from "@/components/Leaderboard";
 import { NextMilestoneCard } from "@/components/Milestone";
 import { ModelName, PreviewBanner, PreviewTag } from "@/components/V3";
+import { ThinksHome } from "@/components/Thinks";
+import { SI_QUOTES, thinkRows } from "@/lib/thinks";
 import { fmtPct, getV3, modelIds, sayDo } from "@/lib/v3";
 import { scenarioMeta } from "@/lib/v3meta";
 import { getFunding, getLeaderboard } from "@/lib/funding";
@@ -96,7 +98,7 @@ export default async function Home() {
           <div className="grid bg-ink text-white md:grid-cols-[minmax(0,1fr)_auto]">
             <p className="serif px-5 py-7 text-[24px] leading-[1.15] md:px-8 md:py-9 md:text-[34px]">
               {gaps === 0 ? "In this case, every model so far acts the way it advises. The other scenarios are where to look." : <>{gaps} of {car.length} models act differently from how they advise another agent in the same spot.</>}
-              {v.status !== "final" && <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.08em] text-white/50">Preliminary results · v0.9 · updated Nov 1, 2026 · final run pending</span>}
+              <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.08em] text-white/50">{v.label}</span>
             </p>
             <div className="flex border-t border-white/10 md:flex-col md:border-l md:border-t-0">
               <Link href="/stated-vs-actual" className="flex flex-1 items-center gap-2 whitespace-nowrap px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] hover:bg-vermilion md:px-8"><span className="h-2 w-2 bg-vermilion" />Says vs does →</Link>
@@ -107,13 +109,16 @@ export default async function Home() {
         </section>
       )}
 
+      {/* ── What it thinks vs what it does ───────────────────── */}
+      {(() => { const h = thinkRows(v).find((r) => r.id === "claude-haiku-5.5"); return h && h.verdict === "hidden" ? <ThinksHome r={h} q={SI_QUOTES[h.id]} /> : null; })()}
+
       {/* ── Four questions strip ─────────────────────────────── */}
       <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["01", "Say vs do", "Does it act on what it says?", "/stated-vs-actual"],
           ["02", "Under pressure", "Does it cave when pushed?", "/compare#fb"],
           ["03", "Self-interest", "Does it bend when it benefits?", "/compare#car"],
-          ["04", "Hidden reasons", "Does it tell you what moved it?", "/reasoning"],
+          ["04", "Thinks vs does", "Does it tell you what moved it?", "/thinks-vs-does"],
         ].map(([k, t, q, h]) => (
           <Link key={k} href={h} className="group border-b border-r border-rule p-5 hover:bg-panel md:p-8 lg:border-b-0">
             <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.08em] text-ink/45"><span>{k}</span><span className="group-hover:text-vermilion">→</span></div>

@@ -20,7 +20,7 @@ const Section = ({ id, n, title, children }: { id: string; n: string; title: str
 const TOC = [
   ["why", "Why this matters"], ["levels", "Say, judge, ask, do"], ["selfinterest", "Self-interest cues"], ["pressure", "Pressure"], ["calibration", "Automatic calibration"],
   ["reasoning", "The reasoning check"], ["awareness", "Test awareness"], ["grading", "Graders & agreement"], ["toolfix", "Tool-call validation"], ["descriptive", "No right answers"],
-  ["status", "Preliminary vs final run"], ["money", "Money & independence"],
+  ["status", "Final run & method version"], ["money", "Money & independence"],
 ];
 
 const fmt = (x: number | null | undefined) => (x == null ? "–" : x.toFixed(2));
@@ -123,9 +123,9 @@ export default async function About() {
         <p>Where published human data exists we show it as a reference point, not a target: for the trolley dilemmas, Awad et al. (2020, about 70,000 people in 42 countries) found 81% chose to act in Switch, 72% in Loop and 51% in Footbridge. The everyday agent scenarios are new, so no human answers exist for them yet, and we don&apos;t invent any.</p>
       </Section>
 
-      <Section id="status" n="11" title="Preliminary vs final run">
-        <p>The method was developed over preliminary rounds (v3a–v3d) on four models. Designs changed between rounds (cues, dilemmas, sample sizes) and samples are small, so <b>preliminary numbers are not final results</b>. Every page that shows them carries a &ldquo;Preliminary results · v0.9 · updated Nov 1, 2026 · final run pending&rdquo; label and, in its details, the round each number came from.</p>
-        <p>The method is then frozen and pre-registered, and a locked run with larger samples replaces the preview. The pages read the same data format, so the locked numbers drop in without changing the method shown here. The full data behind every chart is <a href="/api/v3" className="link">downloadable as JSON</a>.</p>
+      <Section id="status" n="11" title="Final run & method version">
+        <p>The method was developed over preliminary rounds (v3a–v3d) on four models. Designs changed between rounds (cues, dilemmas, sample sizes) and samples were small, so those numbers were labelled preliminary and are now retired.</p>
+        <p>The method was then frozen and pre-registered, and one locked run with larger samples produced every number on this site. Pages that show results carry the label &ldquo;{v.label}&rdquo;.{v.method_version && <> Method version: <b>{v.method_version}</b>.</>} Results generated {new Date(v.generated_utc).toLocaleString("en-GB", { timeZone: "Europe/Amsterdam", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} (Amsterdam time). The full data behind every chart is <a href="/api/v3" className="link">downloadable as JSON</a>.</p>
       </Section>
 
       <Section id="money" n="12" title="Money & independence">

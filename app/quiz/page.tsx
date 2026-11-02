@@ -8,7 +8,7 @@ import { SITE_NAME } from "@/lib/config";
 export const dynamic = "force-dynamic";
 
 const title = "Which AI model are you most like?";
-const description = `${QUIZ.length} quick moral dilemmas. Find your AI ethical twin and see how you compare with people. For fun, on preliminary data; no right answers, and nothing you pick is stored.`;
+const description = `${QUIZ.length} quick moral dilemmas. Find your AI ethical twin and see how you compare with people. For fun, on the final v3 results; no right answers, and nothing you pick is stored.`;
 const image = { url: "/quiz/og", width: 1200, height: 630, alt: `${title} A quiz on ${SITE_NAME}.` };
 export const metadata: Metadata = {
   title, description, alternates: { canonical: "/quiz" },
@@ -21,7 +21,7 @@ export default async function Quiz() {
   return (
     <main>
       <PreviewBanner v={v} />
-      <QuizClient rates={rates} taglines={taglines} nModels={Object.keys(rates).length} previewTag={<PreviewTag v={v} />} />
+      <QuizClient rates={rates} taglines={taglines} nModels={Object.keys(rates).length} final={v.status === "final"} previewTag={<PreviewTag v={v} />} />
     </main>
   );
 }

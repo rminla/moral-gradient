@@ -24,7 +24,7 @@ export default async function Results() {
     <main>
       <PreviewBanner v={v} />
       <PageHead eyebrow="Results" grey="What models do when words, reasons and incentives" title={<>point different <span className="text-vermilion">ways.</span></>}>
-        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "" : "These are preliminary numbers from developing the method; the final run replaces them."}
+        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "These are the final numbers from the pre-registered locked run." : "These are preliminary numbers from developing the method; the final run replaces them."}
       </PageHead>
 
       <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">

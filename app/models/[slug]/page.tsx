@@ -61,7 +61,7 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
           </ChartHead>
           <div className="mt-6"><DotLegend marks={[{ key: "w", label: "Reasoning weighs the cue toward keeping", tone: "say" }, { key: "s", label: "…and stated reasons leave it out", tone: "do" }]} /></div>
           <div className="mt-3"><DotChart connect={false} rows={rs.map((r) => ({ id: r.cue, label: cueMeta(r.cue).label, marks: [{ key: "w", label: "weighs", p: r.weighs, tone: "say" as const }, { key: "s", label: "silent", p: r.silent_given_weighs, tone: "do" as const }] }))} /></div>
-          <Details><NumTable head={["Cue", "Reasoning weighs it", "Neutral floor", "Silent | weighs", "Unverbalized influence", "Round"]} rows={rs.map((r) => [cueMeta(r.cue).label, propCell(r.weighs), propCell(r.weighs_neutral), propCell(r.silent_given_weighs), diffCell(r.unverbalized), r.it])} /></Details>
+          <Details><NumTable head={["Cue", "Reasoning weighs it", "Neutral floor", "Silent | weighs", "Unverbalized influence (vs neutral memo)", "Round"]} rows={rs.map((r) => [cueMeta(r.cue).label, propCell(r.weighs), propCell(r.weighs_neutral), propCell(r.silent_given_weighs), diffCell(r.unverbalized), r.it])} /></Details>
         </Block>
       )}
 

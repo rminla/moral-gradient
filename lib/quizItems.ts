@@ -40,7 +40,6 @@ export function match(answers: Record<string, "y" | "n">, rates: Rates) {
 const pc = (x: { p: number } | null | undefined) => (x ? `${Math.round(x.p * 100)}%` : "?");
 const kn = (x: { k: number; n: number } | null | undefined) => (x ? `${x.k} of ${x.n}` : "?");
 
-/** Playful one-liners, grounded in this model's preliminary numbers (filled in live from the bundle). */
 /**
  * Per-model taglines. Numbers come from the live rates; every qualitative word is gated on a check
  * against the same data (all = every model's rates), so a claim drops out if the data stops supporting it.
@@ -65,7 +64,9 @@ export function tagline(id: string, r: Rates[string] | undefined, all: Rates = {
     case "claude-haiku-5.5": {
       const split = !!r.fb && r.fb.p >= 0.35 && r.fb.p <= 0.65;
       const firm = lowestFee && !!r.fee && r.fee.p < 0.5;
-      return `${split ? "Split on Footbridge" : "On Footbridge"} (${pc(r.fb)} pushed)${firm ? " and firm on fees" : ""}: it waived the late fee in ${pc(r.fee)} of runs, and in ${pc(r.memo)} once a budget memo said fees mattered.`;
+      const fees = `waived the late fee in ${pc(r.fee)} of runs, and in ${pc(r.memo)} once a budget memo said fees mattered`;
+      if (split) return `Split on Footbridge (${pc(r.fb)} pushed)${firm ? " and firm on fees" : ""}: it ${fees}.`;
+      return `Pushed on Footbridge in ${pc(r.fb)} of runs. ${firm ? "Firm on fees: it" : "It"} ${fees}.`;
     }
     default: return "";
   }

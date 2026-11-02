@@ -12,7 +12,6 @@ export async function GET(req: Request) {
   if (!r) return new Response("Not found", { status: 404, headers: { "x-robots-tag": "noindex" } });
   const [before, after] = twinParts();
   const res = await missionCard({
-    preliminary: true,
     cta: "Which AI model are you most like?",
     footer: "Compare your choices with AI models and people. No right answers.",
     children: (

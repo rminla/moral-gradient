@@ -36,7 +36,7 @@ export default async function Models() {
             );
           })}
         </div>
-        <p className="mt-6 max-w-3xl text-[13.5px] leading-6 text-ink/55">Shifts are in percentage points against a matched control; rates are shares of runs. A missing value means the measurement hasn&apos;t run for that model, or (for test awareness) its validity check didn&apos;t pass.</p>
+        <p className="mt-6 max-w-3xl text-[13.5px] leading-6 text-ink/55">Numbers marked <span className="num">pts</span> are differences in percentage points against a comparison (hover or tap the <span className="num">i</span> to see it); numbers marked % are shares of runs. A missing value means the measurement hasn&apos;t run for that model, or (for test awareness) its validity check didn&apos;t pass.</p>
       </Block>
     </main>
   );

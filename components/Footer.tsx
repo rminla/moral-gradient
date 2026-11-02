@@ -16,6 +16,7 @@ export default function Footer() {
             <div className="kicker mb-4 text-white/40">Read</div>
             <ul className="space-y-2 text-[15px]">
               <li><Link className="hover:text-vermilion" href="/try">Try a dilemma</Link></li>
+              <li><Link className="hover:text-vermilion" href="/thinks-vs-does">Thinks vs does</Link></li>
               <li><Link className="hover:text-vermilion" href="/quiz">Which AI model are you most like?</Link></li>
               <li><Link className="hover:text-vermilion" href="/learn">Learn: AI alignment in plain language</Link></li>
               <li><Link className="hover:text-vermilion" href="/results">Results</Link></li>

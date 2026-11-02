@@ -30,9 +30,9 @@ def load(it):
     assert b.get("schema") == "moral-compass/v3-bundle@1", f"{it}: unexpected schema {b.get('schema')}"
     return {"iteration": b["iteration"], "models": {m: {k: v.get(k) for k in KEEP} for m, v in b["models"].items()}, "cross_model": b.get("cross_model")}
 
-def examples():
-    """Curated verbatim trace examples (out/traces/top_examples.md) -> structured list. Quotes are already checked verbatim."""
-    p = os.path.join(OUT, "traces", "top_examples.md")
+def examples(it=None):
+    """Curated verbatim trace examples (out[/<it>]/traces/top_examples.md) -> structured list. Quotes are already checked verbatim."""
+    p = os.path.join(OUT, *([it] if it else []), "traces", "top_examples.md")
     if not os.path.exists(p):
         return []
     txt = open(p).read()
@@ -43,10 +43,14 @@ def examples():
         if not m:
             continue
         n, title, body = m.groups()
-        rid = re.search(r"`(v3[a-z]/[^/`]+/[^`]+)`", body)
+        rid = re.search(r"`(v3[a-z]+/[^/`]+/[^`]+)`", body)
         res.append({"n": int(n), "title": title.strip(), "run_id": rid.group(1) if rid else None,
                     "model": rid.group(1).split("/")[1] if rid else None, "body": body.strip()})
     return res
+
+# Shown on every page that carries results, and in /api/v3. Update both when a new locked run replaces this one.
+FINAL_LABEL = "Final results · v3 · locked run, Nov 2, 2026"
+METHOD_VERSION = "v3-final: METHOD.md frozen with the pre-lock amendments of Oct 31, 2026; locked-run harness at pilot commit 895e032"
 
 def main():
     a = sys.argv[1:]
@@ -54,7 +58,8 @@ def main():
     if "--final" in a:
         it = a[a.index("--final") + 1]
         doc = {"schema": "moral-gradient/site-v3@1", "status": "final", "generated_utc": now, "source": f"locked run {it}",
-               "iterations": [load(it)], "examples": examples()}
+               "label": FINAL_LABEL, "method_version": METHOD_VERSION,
+               "iterations": [load(it)], "examples": examples(it)}
         dst = os.path.join(SITE_DATA, "v3-bundle.json")
     else:
         its = sorted(d for d in os.listdir(OUT) if re.fullmatch(r"v3[a-z]", d) and os.path.exists(os.path.join(OUT, d, "bundle.json")))
