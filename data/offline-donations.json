@@ -1,13 +1,12 @@
 {
-  "_comment": "Donations paid outside Stripe (no card fee). Shown in totals, leaderboard and recent donations; counted as already spent on methodology development compute, so they never enter the milestone pool or trigger a launch.",
+  "_comment": "Donations received outside Stripe (no card fee). Shown in totals, leaderboard, recent donations and the unallocated pool; actual methodology compute spend (ledger total) is deducted. Never auto-allocated to milestones: allocateAndLaunch reads only the donations table.",
   "donations": [
     {
       "id": "offline-raphael-2026-11-01",
       "name": "Raphael Morozov",
       "amount_cents": 50000,
       "paid_at": "2026-11-01T12:00:00.000Z",
-      "message": "Covers the methodology development compute so far.",
-      "covers": "Methodology development compute"
+      "message": null
     }
   ]
 }

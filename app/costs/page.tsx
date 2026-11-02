@@ -36,7 +36,7 @@ export default async function Costs() {
             <div className="flex justify-between"><dt>Donations (gross)</dt><dd className="num">{usd(f.raised_cents)}</dd></div>
             <div className="flex justify-between text-ink/55"><dt>Card fees</dt><dd className="num">−{usd(f.fees_cents)}</dd></div>
             <div className="flex justify-between border-t border-rule pt-2 font-semibold"><dt>Net</dt><dd className="num">{usd(f.net_cents)}</dd></div>
-            {f.direct_cents > 0 && <div className="flex justify-between text-ink/55"><dt>Methodology development compute (paid directly)</dt><dd className="num">−{usd(f.direct_cents)}</dd></div>}
+            {f.methodology_spent_cents > 0 && <div className="flex justify-between text-ink/55"><dt>Methodology development compute (spent)</dt><dd className="num">−{usd(f.methodology_spent_cents)}</dd></div>}
             <div className="flex justify-between text-ink/55"><dt>Committed to funded runs</dt><dd className="num">−{usd(f.allocated_cents)}</dd></div>
             <div className="flex justify-between font-semibold text-vermilion"><dt>Unallocated pool</dt><dd className="num">{usd(f.pool_cents)}</dd></div>
           </dl>
@@ -49,7 +49,7 @@ export default async function Costs() {
           <div className="kicker text-ink">Spend by role</div>
           <ul className="mt-4 space-y-2 text-[14px]">{spend?.by_role.map((r) => <li key={r.role} className="flex justify-between"><span className="capitalize">{r.role}</span><span className="num">${r.usd.toFixed(4)}</span></li>)}</ul>
           <div className="mt-3 flex justify-between border-t border-rule pt-2 text-[14px] font-semibold"><span>Total ({spend?.calls} calls)</span><span className="num">${spend?.total_usd.toFixed(4)}</span></div>
-          <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. The methodology development compute so far is covered by a $500 donation from Raphael Morozov, paid directly (no card fee).</p>
+          <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. Methodology development compute so far is paid from the pool; the remainder stays unallocated.</p>
         </div>
       </section>
 

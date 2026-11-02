@@ -3,9 +3,12 @@ import path from "node:path";
 import { autoLaunch } from "./config";
 import { db, nowIso, q } from "./db";
 import { launchSuite, type MilestoneRow } from "./jobs";
+import { getSpend } from "./ledger";
 
-/** Donations paid directly (not through Stripe), from data/offline-donations.json. They count toward totals and the
- *  leaderboard, but are already spent (methodology development compute), so they never enter the pool or trigger a launch. */
+/** Donations received outside Stripe (no card fee), from data/offline-donations.json. They count toward totals, the
+ *  leaderboard and the unallocated pool. Actual methodology compute spend (cost-ledger total) is deducted from them first.
+ *  SAFETY: allocateAndLaunch() reads only the donations table, so this money never fills a milestone or triggers a launch;
+ *  moving it into the queue is a manual decision. */
 export type OfflineDonation = { id: string; name: string; amount_cents: number; paid_at: string; message?: string | null; covers?: string | null };
 export function getOfflineDonations(): OfflineDonation[] {
   try {
@@ -18,7 +21,8 @@ export function getOfflineDonations(): OfflineDonation[] {
 
 export type Funding = {
   raised_cents: number; fees_cents: number; net_cents: number; donors: number; donations: number;
-  direct_cents: number; // offline donations, already spent on methodology development compute
+  direct_cents: number; // offline donations (no card fee)
+  methodology_spent_cents: number; // actual methodology compute spend deducted from offline donations (ledger total, capped)
   allocated_cents: number; pool_cents: number; has_examples: boolean;
   next: (MilestoneRow & { remaining_cents: number; progress: number }) | null;
   queue: MilestoneRow[]; done: MilestoneRow[];
@@ -34,10 +38,13 @@ export async function getFunding(): Promise<Funding> {
   const n = queue[0];
   const off = getOfflineDonations();
   const direct = off.reduce((s, x) => s + Number(x.amount_cents), 0);
+  let spentC = 0;
+  if (direct > 0) { try { const sp = await getSpend(); spentC = Math.round((sp?.total_usd ?? 0) * 100); } catch {} }
+  const methSpent = Math.min(direct, Math.max(0, spentC));
   return {
     raised_cents: Number(d.raised) + direct, fees_cents: Number(d.fees), net_cents: Number(d.net) + direct, donations: Number(d.n) + off.length,
-    donors: Number(d.donors) + new Set(off.map((x) => x.name)).size, direct_cents: direct,
-    allocated_cents: allocated, pool_cents: Number(d.net) - allocated, has_examples: Number(d.ex) === 1,
+    donors: Number(d.donors) + new Set(off.map((x) => x.name)).size, direct_cents: direct, methodology_spent_cents: methSpent,
+    allocated_cents: allocated, pool_cents: Number(d.net) - allocated + (direct - methSpent), has_examples: Number(d.ex) === 1,
     next: n ? { ...n, remaining_cents: Number(n.cost_cents) - Number(n.funded_cents), progress: Number(n.funded_cents) / Number(n.cost_cents) } : null,
     queue, done,
   };
