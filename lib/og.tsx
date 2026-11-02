@@ -25,13 +25,16 @@ export const PILLAR_OG: Record<string, { name: string; color: string }> = {
 };
 export const siteHost = () => { try { return new URL(SITE_URL).host; } catch { return "moralgradient.org"; } };
 
-/** The 3×3 Signal mark: eight squares, centre grey, one red. */
+/** The "Tipping point" mark (full drawing; share images are large). Paths mirror MARK_FULL in components/Brand.tsx. */
 export function OgMark({ size = 34, light = false }: { size?: number; light?: boolean }) {
-  const c = size * (6.5 / 22), g = size * (1 / 22);
+  const fg = light ? "#fff" : OG.ink;
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", width: size, height: size, gap: g }}>
-      {Array.from({ length: 9 }, (_, i) => <div key={i} style={{ width: c, height: c, background: i === 8 ? OG.signal : i === 4 ? OG.grey2 : light ? "#fff" : OG.ink }} />)}
-    </div>
+    <svg width={size} height={size} viewBox="0 0 48 48">
+      <path d="M7.26 11.49 L15.99 13.67 L13.81 22.4 L5.08 20.22 Z" fill={light ? OG.grey2 : OG.grey} />
+      <path d="M33.45 13.9 L46.06 17.04 L42.92 29.66 L30.31 26.51 Z" fill={OG.signal} />
+      <path d="M24 29 L33 44 L15 44 Z" fill={fg} />
+      <path d="M3.14 19.74 L45.83 30.38 L44.86 34.26 L2.17 23.62 Z" fill={fg} />
+    </svg>
   );
 }
 

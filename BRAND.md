@@ -7,7 +7,10 @@
 - **Layout:** a 1200px framed column. Hairline rails run the full page height. Sections are bordered cells with crop-mark corners, and some sections are full-bleed black. The nav is segmented cells ending in a black Donate cell.
 - **Charts:** square cells. A bar is 20 cells at 5% each. In the hero exhibit, one square is one run, and outlined red squares are runs where the model didn't act. The funding meter uses one square per $1.
 - **Motion:** headline rise, cells popping in one after another, and a blinking dot on Donate. All of it respects prefers-reduced-motion.
-- **Mark:** a 3×3 block of runs, eight ink cells and one red.
+- **Mark — "Tipping point":** a beam on a fulcrum, tipped down by one red block (the pressure or self-interest that flips a model's choice); the grey block left up on the high end is what the model *says*. Grey = say, red = do, ink = structure. Two drawings, both in `components/Brand.tsx` (`MARK_FULL`, `MARK_SMALL`; `Mark` picks by size):
+  - **Full** (48-unit grid, beam and both blocks tilted 14°): anything larger than 32px, share images (`lib/og.tsx` `OgMark`), `app/apple-icon.png`.
+  - **Small / favicon** (16-unit grid): 32px and below, nav (24px), footer, `app/icon.svg`. Blocks are axis-aligned on whole units and tuck under the beam; only the thick beam and the fulcrum are slanted, so it stays crisp at 16/32px. `icon.svg` switches to white/light grey under `prefers-color-scheme: dark`.
+  - Never rotate, outline, recolour the blocks, or put the mark on red. Clear space = the red block's width on all sides. Replaced the 3×3 run block (Nov 2026).
 
 # Moral Gradient — brand notes
 
@@ -18,7 +21,7 @@
 **Hero rule.** The home page leads with data, not a headline: Exhibit 01 is the say-vs-do finding drawn large (situation on the left, three big bars with counts like `0/20`, the "does" row in vermilion and largest), then a one-line takeaway. No headline + subhead + two-button hero.
 
 ## Mark & wordmark
-- **Mark:** a seven-step diverging scale (Prussian → paper → Vermilion) with a thin ink pointer that sits *off-centre*, one step toward the warm pole: "where the model actually lands." Component: `components/Brand.tsx` (`Mark`, `Wordmark`). Favicon: `app/icon.svg`.
+- **Mark:** superseded, see "Tipping point" in Direction A above. Component: `components/Brand.tsx` (`Mark`, `Wordmark`). Favicon: `app/icon.svg`.
 - **Wordmark:** "Moral *Gradient*" in Newsreader, the second word italic. Never set it in all caps, never on a gradient background.
 - **Signature divider:** `GradientRule` — the same seven steps as a full-width strip with "← what it says / what it does →" labels. Use at most once per page.
 

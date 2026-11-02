@@ -4,14 +4,34 @@ import { SITE_NAME } from "@/lib/config";
 export const SCALE = ["#0c0c0d", "#3a3b3e", "#6c6f75", "#a5a8ad", "#ff8b74", "#ff5a3d", "#ff3d1f"];
 
 /**
- * The mark (direction A): a 3×3 block of runs. Eight are filled ink; one, bottom-right, is signal red:
- * the one thing we watch, what the model actually did.
+ * The mark: "Tipping point". A beam on a fulcrum, tipped by one red block (the pressure or self-interest
+ * that flips a model's choice); the grey block on the high end is what it says.
+ * Two drawings: the full mark (48-unit grid, everything tilted) above 32px, and a favicon-optimised one
+ * (16-unit grid, blocks axis-aligned on whole units, only the beam and fulcrum slanted) at 32px and below.
  */
+export const MARK_FULL = {
+  say: "M7.26 11.49 L15.99 13.67 L13.81 22.4 L5.08 20.22 Z",
+  do: "M33.45 13.9 L46.06 17.04 L42.92 29.66 L30.31 26.51 Z",
+  beam: "M3.14 19.74 L45.83 30.38 L44.86 34.26 L2.17 23.62 Z",
+  base: "M24 29 L33 44 L15 44 Z",
+};
+export const MARK_SMALL = {
+  say: "M1 3h4v6h-4Z",
+  do: "M10 4h5v8h-5Z",
+  base: "M8 11L12 15H4Z",
+  beam: "M0 7L16 10V13L0 10Z",
+};
 export function Mark({ size = 22, className = "", light = false }: { size?: number; className?: string; light?: boolean }) {
-  const cells = Array.from({ length: 9 }, (_, i) => i);
+  const small = size <= 32;
+  const p = small ? MARK_SMALL : MARK_FULL;
+  const fg = light ? "#ffffff" : "#0c0c0d";
+  const say = light ? "#a5a8ad" : "#6c6f75";
   return (
-    <svg viewBox="0 0 22 22" width={size} height={size} className={className} aria-hidden="true">
-      {cells.map((i) => <rect key={i} x={(i % 3) * 7.5} y={Math.floor(i / 3) * 7.5} width={6.5} height={6.5} fill={i === 8 ? "#ff3d1f" : i === 4 ? "#a5a8ad" : light ? "#ffffff" : "#0c0c0d"} />)}
+    <svg viewBox={small ? "0 0 16 16" : "0 0 48 48"} width={size} height={size} className={className} aria-hidden="true">
+      <path d={p.say} fill={say} />
+      <path d={p.do} fill="#ff3d1f" />
+      <path d={p.base} fill={fg} />
+      <path d={p.beam} fill={fg} />
     </svg>
   );
 }
@@ -19,7 +39,7 @@ export function Mark({ size = 22, className = "", light = false }: { size?: numb
 export function Wordmark({ className = "", size = "text-[17px]" }: { className?: string; size?: string }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <Mark size={20} />
+      <Mark size={24} />
       <span className={`wide ${size} font-bold uppercase leading-none tracking-[-0.01em]`}>{SITE_NAME}</span>
     </span>
   );
