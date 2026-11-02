@@ -1,15 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_NAME } from "@/lib/config";
 import { ModelName, PreviewBanner, PreviewTag } from "@/components/V3";
 import { TRY_DILEMMAS } from "@/components/TryIt";
 import TryClient, { type TryData } from "@/components/TryClient";
-import { SITE_URL } from "@/lib/config";
 import { baseline, getV3, pressure } from "@/lib/v3";
 import { scenarioMeta } from "@/lib/v3meta";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Try it yourself", description: "Answer a classic moral dilemma, then see how people and AI models answered. There is no right answer, and nothing you pick is stored." };
 
 const ORDER = Object.keys(TRY_DILEMMAS);
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ d?: string }> }): Promise<Metadata> {
+  const sp = await searchParams;
+  const id = sp.d && TRY_DILEMMAS[sp.d] ? sp.d : ORDER[0];
+  const d = TRY_DILEMMAS[id];
+  const title = `${d.q} Try it yourself`;
+  const description = "Answer a classic moral dilemma, then see how people and AI models chose. There is no right answer, and your answer isn't stored.";
+  const image = { url: `/try/og?d=${id}`, width: 1200, height: 630, alt: `${d.q} A moral dilemma on ${SITE_NAME}.` };
+  return {
+    title, description,
+    alternates: { canonical: `/try?d=${id}` },
+    openGraph: { type: "website", siteName: SITE_NAME, url: `/try?d=${id}`, title, description, images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
+  };
+}
 
 /** The visitor's answer is held in client state only; it never reaches the server (no query string, no request). */
 export default async function Try({ searchParams }: { searchParams: Promise<{ d?: string }> }) {
@@ -46,7 +61,7 @@ export default async function Try({ searchParams }: { searchParams: Promise<{ d?
           <div className="hatch hidden flex-1 md:block" />
         </div>
       </section>
-      <TryClient key={id} d={data} shareUrl={`${SITE_URL}/try?d=${id}`} previewTag={<PreviewTag v={v} />} />
+      <TryClient key={id} d={data} sharePath={`/try?d=${id}`} previewTag={<PreviewTag v={v} />} />
     </main>
   );
 }

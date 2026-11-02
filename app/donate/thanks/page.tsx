@@ -35,7 +35,7 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
       <section className="mx-auto max-w-[1200px] border-b border-rule p-5 md:p-8"><Subscribe source="donate-thanks" /></section>
       <section className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 border-b border-rule px-5 py-12">
         <div className="kicker text-ink/55">Tell people</div>
-        <Share path="/donate" text={`I just helped fund ${SITE_NAME}, an open tracker of whether AI models act on the values they state, written for everyone.`} compact />
+        <Share path="/" text={`I just helped fund ${SITE_NAME}, a free, open record of what AI models do when a choice has moral weight, written for everyone.`} subject={`${SITE_NAME}: what AI models do, not just what they say`} emailBody={`I just helped fund ${SITE_NAME}. It's a free, open record of what AI models do when a choice has moral weight, next to what they say is right. You can try the dilemmas yourself.`} />
         <Link href="/costs" className="mt-2 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/60 hover:text-vermilion">See where the money goes →</Link>
       </section>
     </main>

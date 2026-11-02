@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Eyebrow } from "./Brand";
+import Share from "./Share";
 import Subscribe from "./Subscribe";
 
 export type TryRow = { key: string; name: React.ReactNode; p: number | null; rev: { k: number; n: number } | null };
@@ -21,32 +22,7 @@ function Cells({ p, color }: { p: number; color: string }) {
   );
 }
 
-/** Copy link + the device share sheet (Web Share API). Shares the question only, never the visitor's answer. */
-function ShareDilemma({ url, text }: { url: string; text: string }) {
-  const [canShare, setCanShare] = useState(false);
-  const [copied, setCopied] = useState(false);
-  useEffect(() => setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function"), []);
-  async function copy() {
-    try { await navigator.clipboard.writeText(url); } catch {
-      const t = document.createElement("textarea"); t.value = url; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove();
-    }
-    setCopied(true); setTimeout(() => setCopied(false), 2200);
-  }
-  const x = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-  return (
-    <div>
-      <div className="label">Share this dilemma</div>
-      <div className="flex flex-wrap gap-2">
-        {canShare && <button type="button" className="btn-primary !py-2" onClick={() => navigator.share({ title: "Moral Gradient", text, url }).catch(() => {})}>Send to a friend</button>}
-        <button type="button" className={`${canShare ? "btn-ghost" : "btn-primary"} !py-2`} onClick={copy} aria-live="polite">{copied ? "Link copied ✓" : "Copy link"}</button>
-        <a className="btn-ghost !py-2" href={x} target="_blank" rel="noopener noreferrer">Post on X</a>
-      </div>
-      <p className="mt-2 text-[12.5px] text-ink/50">Shares the question, not your answer.</p>
-    </div>
-  );
-}
-
-export default function TryClient({ d, shareUrl, previewTag }: { d: TryData; shareUrl: string; previewTag: React.ReactNode }) {
+export default function TryClient({ d, sharePath, previewTag }: { d: TryData; sharePath: string; previewTag: React.ReactNode }) {
   const [pick, setPick] = useState<"yes" | "no" | null>(null);
   useEffect(() => setPick(null), [d.id]);
   useEffect(() => { if (pick) window.scrollTo({ top: 0 }); }, [pick]);
@@ -118,7 +94,13 @@ export default function TryClient({ d, shareUrl, previewTag }: { d: TryData; sha
           <p className="serif mt-4 text-[26px] leading-[1.15] md:text-[32px]">{d.talk}</p>
         </div>
         <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
-          <ShareDilemma url={shareUrl} text={`${d.q} I answered, then saw how people and AI models answered. Try it:`} />
+          <div>
+            <Share label="Share this dilemma" path={sharePath}
+              text={`${d.q} Answer it, then see how people and AI models chose.`}
+              subject={`A dilemma for you: ${d.q}`}
+              emailBody={`${d.q}\n\n${d.body}\n\nAnswer it, then see how people and AI models chose. There's no right answer, and your answer isn't stored.`} />
+            <p className="mt-2 text-[12.5px] text-ink/50">Shares the question, not your answer.</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Link href={`/try?d=${d.nextId}`} className="btn-ghost">Next: {d.nextTitle} →</Link>
             <Link href="/learn" className="btn-ghost">Why this matters →</Link>
