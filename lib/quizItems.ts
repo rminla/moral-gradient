@@ -41,13 +41,32 @@ const pc = (x: { p: number } | null | undefined) => (x ? `${Math.round(x.p * 100
 const kn = (x: { k: number; n: number } | null | undefined) => (x ? `${x.k} of ${x.n}` : "?");
 
 /** Playful one-liners, grounded in this model's preliminary numbers (filled in live from the bundle). */
-export function tagline(id: string, r: Rates[string] | undefined): string {
+/**
+ * Per-model taglines. Numbers come from the live rates; every qualitative word is gated on a check
+ * against the same data (all = every model's rates), so a claim drops out if the data stops supporting it.
+ */
+export function tagline(id: string, r: Rates[string] | undefined, all: Rates = {}): string {
   if (!r) return "";
+  const fee = (m: string) => all[m]?.fee?.p;
+  const lowestFee = r.fee != null && Object.keys(all).every((m) => m === id || fee(m) == null || (fee(m) as number) > r.fee!.p);
+  const persuadable = !!r.push && r.push.n > 0 && r.push.p >= 0.5;
+  const fbMajority = !!r.fb && r.fb.p >= 0.5;
   switch (id) {
-    case "qwen3.6-27b": return `Shows its full reasoning, and is open to persuasion: it changed its answer after pushback in ${kn(r.push)} runs.`;
-    case "gemini-3.8-flash": return `Unshakeable on the trolley: it pushed on Footbridge in ${pc(r.fb)} of runs, and didn't change its answer once under pushback (${kn(r.push)}).`;
-    case "gpt-oss-120b": return `Counts the lives: it pushed on Footbridge in ${pc(r.fb)} of runs. Also the softest on late fees, waiving in ${pc(r.fee)} of runs, and often talked out of its answer (${kn(r.push)} after pushback).`;
-    case "claude-haiku-5.5": return `Split on Footbridge (${pc(r.fb)} pushed) and firm on fees: it waived the late fee in ${pc(r.fee)} of runs, and in ${pc(r.memo)} once a budget memo said fees mattered.`;
+    case "qwen3.6-27b": {
+      const lead = modelMeta(id).trace === "raw" ? "Shows its full reasoning" : "";
+      if (persuadable) return `${lead ? lead + ", and is" : "Is"} open to persuasion: it changed its answer after pushback in ${kn(r.push)} runs.`;
+      return `${lead ? lead + ". " : ""}It changed its answer after pushback in ${kn(r.push)} runs.`;
+    }
+    case "gemini-3.8-flash":
+      if (r.push && r.push.k === 0 && fbMajority) return `Unshakeable on the trolley: it pushed on Footbridge in ${pc(r.fb)} of runs, and didn't change its answer once under pushback (${kn(r.push)}).`;
+      return `Pushed on Footbridge in ${pc(r.fb)} of runs, and changed its answer after pushback in ${kn(r.push)} runs.`;
+    case "gpt-oss-120b":
+      return `${fbMajority ? "Counts the lives: it pushed" : "Pushed"} on Footbridge in ${pc(r.fb)} of runs, and ${persuadable ? "was often talked out of its answer" : "changed its answer after pushback"} (${kn(r.push)} after pushback).`;
+    case "claude-haiku-5.5": {
+      const split = !!r.fb && r.fb.p >= 0.35 && r.fb.p <= 0.65;
+      const firm = lowestFee && !!r.fee && r.fee.p < 0.5;
+      return `${split ? "Split on Footbridge" : "On Footbridge"} (${pc(r.fb)} pushed)${firm ? " and firm on fees" : ""}: it waived the late fee in ${pc(r.fee)} of runs, and in ${pc(r.memo)} once a budget memo said fees mattered.`;
+    }
     default: return "";
   }
 }

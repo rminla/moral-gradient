@@ -28,6 +28,6 @@ export function quizRates(v: V3): Rates {
 export async function quizProps() {
   const v = await getV3();
   const rates = quizRates(v);
-  const taglines = Object.fromEntries(Object.keys(rates).map((id) => [id, tagline(id, rates[id])]));
+  const taglines = Object.fromEntries(Object.keys(rates).map((id) => [id, tagline(id, rates[id], rates)]));
   return { v, rates, taglines };
 }
