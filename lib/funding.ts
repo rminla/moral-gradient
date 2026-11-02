@@ -5,46 +5,61 @@ import { db, nowIso, q } from "./db";
 import { launchSuite, type MilestoneRow } from "./jobs";
 import { getSpend } from "./ledger";
 
-/** Donations received outside Stripe (no card fee), from data/offline-donations.json. They count toward totals, the
- *  leaderboard and the unallocated pool. Actual methodology compute spend (cost-ledger total) is deducted from them first.
- *  SAFETY: allocateAndLaunch() reads only the donations table, so this money never fills a milestone or triggers a launch;
- *  moving it into the queue is a manual decision. */
+/** Donations received outside Stripe (no card fee), from data/offline-donations.json. They count toward totals and the
+ *  leaderboard. Methodology compute is deducted first (max of the live ledger total and the projected total while the locked
+ *  run is in progress); the remainder is shown filling the queue in order, like card donations.
+ *  LAUNCH GUARD: that allocation is display-only. It is never written to the milestones table, and allocateAndLaunch()
+ *  reads only the donations table, so offline money can't mark a milestone funded or trigger a launch. A milestone it would
+ *  complete is shown as "pending_review" until someone records it manually. */
 export type OfflineDonation = { id: string; name: string; amount_cents: number; paid_at: string; message?: string | null; covers?: string | null };
-export function getOfflineDonations(): OfflineDonation[] {
+function readOffline(): any {
   try {
     const p = path.join(process.cwd(), "data", "offline-donations.json");
-    if (!fs.existsSync(p)) return [];
-    const j = JSON.parse(fs.readFileSync(p, "utf8"));
-    return (Array.isArray(j.donations) ? j.donations : []).filter((d: any) => d && d.name && Number(d.amount_cents) > 0);
-  } catch { return []; }
+    return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : {};
+  } catch { return {}; }
+}
+export function getOfflineDonations(): OfflineDonation[] {
+  const j = readOffline();
+  return (Array.isArray(j.donations) ? j.donations : []).filter((d: any) => d && d.name && Number(d.amount_cents) > 0);
 }
 
 export type Funding = {
   raised_cents: number; fees_cents: number; net_cents: number; donors: number; donations: number;
   direct_cents: number; // offline donations (no card fee)
-  methodology_spent_cents: number; // actual methodology compute spend deducted from offline donations (ledger total, capped)
+  methodology_spent_cents: number; // methodology compute deducted from offline donations: max(ledger total, projected), capped
+  offline_queue_cents: number; // offline remainder shown in the queue (display-only, never persisted, never launches)
   allocated_cents: number; pool_cents: number; has_examples: boolean;
   next: (MilestoneRow & { remaining_cents: number; progress: number }) | null;
-  queue: MilestoneRow[]; done: MilestoneRow[];
+  queue: QueueRow[]; done: MilestoneRow[];
 };
+export type QueueRow = MilestoneRow & { offline_cents?: number; pending_review?: boolean };
 
 export async function getFunding(): Promise<Funding> {
   const [d] = await q<any>(`SELECT COALESCE(SUM(amount_cents),0) AS raised, COALESCE(SUM(fee_cents),0) AS fees, COALESCE(SUM(net_cents),0) AS net,
      COUNT(*) AS n, COUNT(DISTINCT COALESCE(user_id, email, id)) AS donors, MAX(is_example) AS ex FROM donations WHERE status='paid'`);
   const ms = await q<MilestoneRow>("SELECT * FROM milestones ORDER BY position");
   const allocated = ms.reduce((s, m) => s + Number(m.funded_cents), 0);
-  const queue = ms.filter((m) => m.status === "queued");
   const done = ms.filter((m) => m.status !== "queued");
-  const n = queue[0];
   const off = getOfflineDonations();
   const direct = off.reduce((s, x) => s + Number(x.amount_cents), 0);
   let spentC = 0;
   if (direct > 0) { try { const sp = await getSpend(); spentC = Math.round((sp?.total_usd ?? 0) * 100); } catch {} }
-  const methSpent = Math.min(direct, Math.max(0, spentC));
+  const projected = Number(readOffline().projected_methodology_spend_cents) || 0;
+  const methSpent = Math.min(direct, Math.max(0, spentC, projected));
+  // Display-only allocation of the offline remainder, in queue order (see LAUNCH GUARD above).
+  let rem = direct - methSpent;
+  const queue: QueueRow[] = ms.filter((m) => m.status === "queued").map((m) => {
+    const need = Math.max(0, Number(m.cost_cents) - Number(m.funded_cents));
+    const add = Math.min(rem, need); rem -= add;
+    const funded = Number(m.funded_cents) + add;
+    return { ...m, funded_cents: funded, offline_cents: add, pending_review: add > 0 && funded >= Number(m.cost_cents) };
+  });
+  const offlineQueue = direct - methSpent - rem;
+  const n = queue.find((m) => !m.pending_review);
   return {
     raised_cents: Number(d.raised) + direct, fees_cents: Number(d.fees), net_cents: Number(d.net) + direct, donations: Number(d.n) + off.length,
-    donors: Number(d.donors) + new Set(off.map((x) => x.name)).size, direct_cents: direct, methodology_spent_cents: methSpent,
-    allocated_cents: allocated, pool_cents: Number(d.net) - allocated + (direct - methSpent), has_examples: Number(d.ex) === 1,
+    donors: Number(d.donors) + new Set(off.map((x) => x.name)).size, direct_cents: direct, methodology_spent_cents: methSpent, offline_queue_cents: offlineQueue,
+    allocated_cents: allocated + offlineQueue, pool_cents: Number(d.net) - allocated + rem, has_examples: Number(d.ex) === 1,
     next: n ? { ...n, remaining_cents: Number(n.cost_cents) - Number(n.funded_cents), progress: Number(n.funded_cents) / Number(n.cost_cents) } : null,
     queue, done,
   };

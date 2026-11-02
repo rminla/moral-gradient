@@ -1,7 +1,7 @@
 import type { RunInfo } from "@/lib/types";
 
 const BADGE: Record<string, string> = { exploratory: "border-ink bg-ink text-white", superseded: "border-rule text-ink/60", excluded: "border-rule text-ink/40 line-through" };
-const pt = (s: string) => new Date(s).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " PT";
+const pt = (s: string) => new Date(s).toLocaleString("en-US", { timeZone: "UTC", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " UTC";
 
 /** Every run, including ones we don't chart. superseded = replaced by a fixed rerun; excluded = probe or aborted. */
 export default function RunLog({ runs }: { runs: RunInfo[] }) {

@@ -130,7 +130,7 @@ export default async function About() {
 
       <Section id="money" n="12" title="Money & independence">
         <p>{SITE_NAME} is run by {OWNER_NAME} and funded by readers. Every model call is priced and shown on the <Link href="/costs" className="link">costs page</Link>. Donations fill a public queue of models; when a model&apos;s bar reaches 100%, its suite launches with a hard spending cap equal to the funded amount. Donations never influence methods or results; gifts from AI labs or their staff are disclosed.</p>
-        <p>Methodology development compute so far is paid from donations, starting with a $500 donation from {OWNER_NAME}; what is left sits in the unallocated pool and is shown on the <Link href="/costs" className="link">costs page</Link>.</p>
+        <p>Methodology development compute, including the locked run, is paid from a $200 donation from {OWNER_NAME}; what is left counts toward the funding queue, as shown on the <Link href="/costs" className="link">costs page</Link>.</p>
       </Section>
         </article>
       </div>

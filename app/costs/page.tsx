@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Costs & funding" };
 
 const STATUS: Record<string, string> = { queued: "border-rule text-ink/55", funded: "border-vermilion text-vermilion", running: "border-ink bg-ink text-white", published: "border-ink bg-ink text-white", dry_run: "border-rule bg-panel text-ink/70", launch_failed: "border-vermilion bg-vermilion text-white", failed: "border-vermilion bg-vermilion text-white" };
-const pt = (s: string) => new Date(s).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" }) + " PT";
+const pt = (s: string) => new Date(s).toLocaleString("en-US", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
 
 export default async function Costs() {
   const [b, f, spend, leaders, recent, jobs] = await Promise.all([getBundle(), getFunding(), getSpend(), getLeaderboard(50), getRecentDonations(10), getJobs()]);
@@ -36,8 +36,8 @@ export default async function Costs() {
             <div className="flex justify-between"><dt>Donations (gross)</dt><dd className="num">{usd(f.raised_cents)}</dd></div>
             <div className="flex justify-between text-ink/55"><dt>Card fees</dt><dd className="num">−{usd(f.fees_cents)}</dd></div>
             <div className="flex justify-between border-t border-rule pt-2 font-semibold"><dt>Net</dt><dd className="num">{usd(f.net_cents)}</dd></div>
-            {f.methodology_spent_cents > 0 && <div className="flex justify-between text-ink/55"><dt>Methodology development compute (spent)</dt><dd className="num">−{usd(f.methodology_spent_cents)}</dd></div>}
-            <div className="flex justify-between text-ink/55"><dt>Committed to funded runs</dt><dd className="num">−{usd(f.allocated_cents)}</dd></div>
+            {f.methodology_spent_cents > 0 && <div className="flex justify-between text-ink/55"><dt>Methodology development compute{f.methodology_spent_cents > 0 ? " (incl. locked run)" : ""}</dt><dd className="num">−{usd(f.methodology_spent_cents)}</dd></div>}
+            <div className="flex justify-between text-ink/55"><dt>Allocated to the funding queue</dt><dd className="num">−{usd(f.allocated_cents)}</dd></div>
             <div className="flex justify-between font-semibold text-vermilion"><dt>Unallocated pool</dt><dd className="num">{usd(f.pool_cents)}</dd></div>
           </dl>
         </div>
@@ -49,7 +49,7 @@ export default async function Costs() {
           <div className="kicker text-ink">Spend by role</div>
           <ul className="mt-4 space-y-2 text-[14px]">{spend?.by_role.map((r) => <li key={r.role} className="flex justify-between"><span className="capitalize">{r.role}</span><span className="num">${r.usd.toFixed(4)}</span></li>)}</ul>
           <div className="mt-3 flex justify-between border-t border-rule pt-2 text-[14px] font-semibold"><span>Total ({spend?.calls} calls)</span><span className="num">${spend?.total_usd.toFixed(4)}</span></div>
-          <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. Methodology development compute so far is paid from the pool; the remainder stays unallocated.</p>
+          <p className="mt-3 font-mono text-[10.5px] leading-5 text-ink/45">Ledger estimate at list prices; reconciled daily against provider bills. Methodology development compute (including the locked run, at its projected total until it finishes) is paid from the offline donation first; the remainder counts toward the queue.</p>
         </div>
       </section>
 
@@ -61,7 +61,7 @@ export default async function Costs() {
               <div className="num text-[12px] text-ink/40">{String(m.position).padStart(2, "0")}</div>
               <div className="min-w-0"><div className="text-[16px] font-semibold">{m.title}</div><div className="truncate font-mono text-[10.5px] text-ink/45">{m.kind === "model" ? `${m.lab} · ${m.model_id}` : "scenario suite"} · {m.suite}</div></div>
               <div><ProgressBar value={Number(m.funded_cents) / Number(m.cost_cents)} /><div className="mt-1.5 flex justify-between font-mono text-[10.5px] text-ink/50"><span>{usd(m.funded_cents, 0)} of {usd(m.cost_cents, 0)}</span>{m.funded_at && <span>funded {pt(m.funded_at)}</span>}</div></div>
-              <div className="md:text-right"><span className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.06em] ${STATUS[m.status] || "border-rule"}`}>{m.status.replace("_", " ")}</span></div>
+              <div className="md:text-right"><span className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.06em] ${STATUS[m.status] || "border-rule"}`}>{(m as any).pending_review ? "funded · launch pending review" : m.status.replace("_", " ")}</span></div>
             </div>
           ))}
           <div className="hatch py-4 pl-3 text-[14px] text-ink/65">After the queue: <b className="text-ink">general pool</b>, held for the next frontier model the day it ships.</div>

@@ -1,36 +1,36 @@
 {
- "total_usd": 60.436162249999995,
- "calls": 102531,
+ "total_usd": 66.58952125,
+ "calls": 112716,
  "by_model": [
   {
    "model": "qwen/qwen3.6-27b",
    "provider": "groq",
-   "usd": 21.812053799999997,
-   "calls": 8726
+   "usd": 24.6967446,
+   "calls": 9704
   },
   {
    "model": "google/gemini-3.8-flash",
    "provider": "openrouter",
-   "usd": 16.16834895,
-   "calls": 6797
+   "usd": 17.3994177,
+   "calls": 7297
   },
   {
    "model": "claude-haiku-5-5",
    "provider": "anthropic",
-   "usd": 8.5785314,
-   "calls": 31939
+   "usd": 9.5578071,
+   "calls": 35277
   },
   {
    "model": "qwen/qwen3.8-27b",
    "provider": "groq",
-   "usd": 8.0876952,
-   "calls": 17732
+   "usd": 8.4485968,
+   "calls": 18751
   },
   {
    "model": "openai/gpt-oss-120b",
    "provider": "groq",
-   "usd": 5.789532899999999,
-   "calls": 37322
+   "usd": 6.48695505,
+   "calls": 41672
   },
   {
    "model": "jev-1.13",
@@ -42,11 +42,11 @@
  "by_role": [
   {
    "role": "target model",
-   "usd": 49.095578599999996
+   "usd": 54.76727045
   },
   {
    "role": "grading",
-   "usd": 11.10469605
+   "usd": 11.5863632
   },
   {
    "role": "persuader",
@@ -54,6 +54,54 @@
   }
  ],
  "runs": [
+  {
+   "run_id": "v3final-gemini-3.8-flash-main-20261102-111853",
+   "mode": "v3-main",
+   "started_utc": "2026-11-02T10:18:53.408+00:00",
+   "usd": 0.5341825
+  },
+  {
+   "run_id": "v3final-qwen3.6-27b-main-20261102-111005",
+   "mode": "v3-main",
+   "started_utc": "2026-11-02T10:10:05.060+00:00",
+   "usd": 2.0957825999999997
+  },
+  {
+   "run_id": "v3final-claude-haiku-5.5-main-20261102-110506",
+   "mode": "v3-main",
+   "started_utc": "2026-11-02T10:05:06.643+00:00",
+   "usd": 1.0396734
+  },
+  {
+   "run_id": "v3final-gpt-oss-120b-main-20261102-110429",
+   "mode": "v3-main",
+   "started_utc": "2026-11-02T10:04:29.623+00:00",
+   "usd": 0.8059077
+  },
+  {
+   "run_id": "v3final-claude-haiku-5.5-calibrate-20261102-110213",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-02T10:02:25.890+00:00",
+   "usd": 0.0933697
+  },
+  {
+   "run_id": "v3final-gemini-3.8-flash-calibrate-20261102-110213",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-02T10:02:25.784+00:00",
+   "usd": 0.714309
+  },
+  {
+   "run_id": "v3final-qwen3.6-27b-calibrate-20261102-110213",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-02T10:02:25.577+00:00",
+   "usd": 0.8145863999999999
+  },
+  {
+   "run_id": "v3final-gpt-oss-120b-calibrate-20261102-110213",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-02T10:02:13.487+00:00",
+   "usd": 0.0555477
+  },
   {
    "run_id": "traces-v3c-gemini-3.8-flash-20261101-221055",
    "mode": "v3-traces",
@@ -155,55 +203,7 @@
    "mode": "v3-traces",
    "started_utc": "2026-11-01T01:14:13.313+00:00",
    "usd": 0.1798085
-  },
-  {
-   "run_id": "traces-v3c-claude-haiku-5.5-20261031-181039",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:10:39.505+00:00",
-   "usd": 0.19400335
-  },
-  {
-   "run_id": "traces-v3c-gpt-oss-120b-20261031-180732",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:07:32.260+00:00",
-   "usd": 0.2380715
-  },
-  {
-   "run_id": "traces-v3b-gemini-3.8-flash-20261031-180543",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:05:43.300+00:00",
-   "usd": 0.11993569999999999
-  },
-  {
-   "run_id": "traces-v3b-claude-haiku-5.5-20261031-180306",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:03:06.355+00:00",
-   "usd": 0.17918045
-  },
-  {
-   "run_id": "traces-v3d-qwen3.6-27b-20261031-180305",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:03:06.043+00:00",
-   "usd": 0.11142524999999999
-  },
-  {
-   "run_id": "traces-v3b-gpt-oss-120b-20261031-175720",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T00:57:20.662+00:00",
-   "usd": 0.2205567
-  },
-  {
-   "run_id": "traces-v3c-qwen3.6-27b-20261031-175653",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T00:56:53.804+00:00",
-   "usd": 0.13395615
-  },
-  {
-   "run_id": "traces-v3b-qwen3.6-27b-20261031-175516",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T00:55:16.562+00:00",
-   "usd": 0.12704079999999998
   }
  ],
- "as_of": "2026-11-01T21:10:59.776+00:00"
+ "as_of": "2026-11-02T10:28:44.293+00:00"
 }

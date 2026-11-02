@@ -1,12 +1,13 @@
 {
-  "_comment": "Donations received outside Stripe (no card fee). Shown in totals, leaderboard, recent donations and the unallocated pool; actual methodology compute spend (ledger total) is deducted. Never auto-allocated to milestones: allocateAndLaunch reads only the donations table.",
+  "_comment": "Donations received outside Stripe (no card fee). Methodology compute is deducted first: max(live ledger total, projected_methodology_spend_cents while the locked run is in progress), capped at the donation. The remainder is shown as allocated to the funding queue in order, like card donations, but DISPLAY-ONLY: it is never written to the milestones table, so allocateAndLaunch() never sees it and it cannot trigger a launch. A milestone it would complete is shown as 'funded, launch pending review'.",
   "donations": [
     {
       "id": "offline-raphael-2026-11-01",
       "name": "Raphael Morozov",
-      "amount_cents": 50000,
+      "amount_cents": 20000,
       "paid_at": "2026-11-01T12:00:00.000Z",
       "message": null
     }
-  ]
+  ],
+  "projected_methodology_spend_cents": 8100
 }

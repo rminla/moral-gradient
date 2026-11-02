@@ -34,7 +34,7 @@ export default function LiveBudget({ initial }: { initial: S }) {
           </div>
         ))}
       </dl>
-      {s.spend_as_of && <div className="border-t border-rule px-5 py-2.5 font-mono text-[10.5px] text-ink/45">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })} PT</div>}
+      {s.spend_as_of && <div className="border-t border-rule px-5 py-2.5 font-mono text-[10.5px] text-ink/45">Last model call: {new Date(s.spend_as_of).toLocaleString("en-US", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" })} UTC</div>}
     </div>
   );
 }

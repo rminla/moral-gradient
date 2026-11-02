@@ -19,7 +19,7 @@ export default async function Home() {
   const car = sayDo(v).filter((r) => r.case === "car");
   const gaps = car.filter((r) => r.do_minus_judge && r.do_minus_judge.lo != null && r.do_minus_judge.hi != null && (r.do_minus_judge.lo > 0 || r.do_minus_judge.hi < 0)).length;
   const nModels = modelIds(v).length;
-  const updated = new Date(v.generated_utc).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", year: "numeric" });
+  const updated = new Date(v.generated_utc).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" });
 
   return (
     <main>
