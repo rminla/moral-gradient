@@ -8,7 +8,7 @@ import { SITE_NAME } from "@/lib/config";
 export const dynamic = "force-dynamic";
 
 const title = "Which AI model are you most like?";
-const description = `${QUIZ.length} quick moral dilemmas. Find your AI ethical twin and see how you compare with people. For fun, on the final v3 results; no right answers, and nothing you pick is stored.`;
+const description = `${QUIZ.length} quick moral dilemmas. Find your AI ethical twin among 4 AI models. For fun, on the final v3 results; no right answers, and nothing you pick is stored.`;
 const image = { url: "/quiz/og", width: 1200, height: 630, alt: `${title} A quiz on ${SITE_NAME}.` };
 export const metadata: Metadata = {
   title, description, alternates: { canonical: "/quiz" },

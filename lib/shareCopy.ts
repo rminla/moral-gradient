@@ -1,4 +1,4 @@
-import { TWIN_HEADLINE } from "./quizItems";
+import { QUIZ, TWIN_HEADLINE } from "./quizItems";
 import { MODEL_META, modelSlug } from "./v3meta";
 
 /** Mission framing that leads every share (text, email and card). Always on. */
@@ -7,7 +7,7 @@ export const WRAPPER = "I'm helping more people understand how AI makes moral ch
 export type QuizShare = { model: string; score: number };
 
 export function quizPost(res: QuizShare | null) {
-  const mid = res ? `I answered 7 moral dilemmas. ${TWIN_HEADLINE(res.model)} (${res.score}% match).` : "7 quick moral dilemmas: see which AI model makes choices most like yours, and how you compare with people.";
+  const mid = res ? `I answered ${QUIZ.length} moral dilemmas. ${TWIN_HEADLINE(res.model)} (${res.score}% match).` : `${QUIZ.length} quick moral dilemmas: see which AI model makes choices most like yours.`;
   return {
     text: `${WRAPPER} ${mid} Which AI model are you most like? No right answers.`,
     subject: res ? `${TWIN_HEADLINE(res.model)}. Who's yours?` : "Which AI model are you most like?",

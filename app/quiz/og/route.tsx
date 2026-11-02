@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   return missionCard({
-    footer: "Compare your choices with AI models and people. No right answers.",
+    footer: "Compare your choices with AI models. No right answers.",
     children: (
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ ...OG_MONO, color: OG.grey, display: "flex" }}>{QUIZ.length} dilemmas · about 2 minutes</div>

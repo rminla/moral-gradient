@@ -31,7 +31,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels, final
           <div>
             <Eyebrow>Try it yourself · {QUIZ.length} dilemmas · about 2 minutes</Eyebrow>
             <h1 className="wide mt-6 text-[40px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px]">Which AI model are you most like?</h1>
-            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">Answer {QUIZ.length} short dilemmas. Each one is a situation we put to {nModels} AI models, many times over. Then find your AI ethical twin: the model whose choices come closest to yours. You&apos;ll also see how you compare with people.</p>
+            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">Answer {QUIZ.length} short dilemmas. Each one is a situation we put to {nModels} AI models, many times over. Then find your AI ethical twin: the model whose choices come closest to yours.</p>
             <div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={() => { setAnswers({}); setStep(0); }} className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Start</button><Link href="/learn" className="btn-ghost">What is this about?</Link></div>
             <p className="mt-5 text-[13.5px] leading-6 text-ink/55">There are no right answers, and we don&apos;t score you. Your answers stay in your browser: nothing is sent or stored.</p>
           </div>
@@ -119,14 +119,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels, final
                 <div className="num text-right text-[26px] font-semibold md:order-3">{pct(r.score)}</div>
               </div>
             ))}
-            {m.people && (
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-rule p-5 md:grid-cols-[170px_minmax(0,1fr)_80px] md:gap-6 md:px-8">
-                <div className="text-[15px] leading-snug"><span className="font-semibold">People</span><div className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink/45">only the {m.people.items} trolley questions</div></div>
-                <div className="col-span-2 md:order-2 md:col-span-1"><Cells p={m.people.score} color="bg-ink" /></div>
-                <div className="num text-right text-[26px] font-semibold md:order-3">{pct(m.people.score)}</div>
-              </div>
-            )}
-            <p className="px-5 py-3 font-mono text-[10.5px] leading-5 text-ink/50 md:px-8">Match: for each question, the share of a model&apos;s runs that chose what you chose, averaged over all the questions that model was tested on. People: Awad et al. (2020), the two trolley questions only.</p>
+            <p className="px-5 py-3 font-mono text-[10.5px] leading-5 text-ink/50 md:px-8">Match: for each question, the share of a model&apos;s runs that chose what you chose, averaged over all the questions that model was tested on.</p>
           </div>
         </div>
       </section>
@@ -135,7 +128,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels, final
         <div className="label">Question by question · share of runs that chose what you chose</div>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-[13.5px]">
-            <thead><tr className="border-b border-ink font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/55"><th className="py-2 pr-3">Question</th><th className="pr-3">Type</th><th className="pr-3">You</th>{order.map((id) => <th key={id} className="pr-3">{modelMeta(id).name}</th>)}<th className="pr-3">People</th></tr></thead>
+            <thead><tr className="border-b border-ink font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/55"><th className="py-2 pr-3">Question</th><th className="pr-3">Type</th><th className="pr-3">You</th>{order.map((id) => <th key={id} className="pr-3">{modelMeta(id).name}</th>)}<th className="pr-3">People (study)</th></tr></thead>
             <tbody>{QUIZ.map((q) => { const a = answers[q.id]; return (
               <tr key={q.id} className="border-b border-rule align-top">
                 <td className="py-2 pr-3 font-semibold">{q.title}</td>
@@ -147,6 +140,7 @@ export default function QuizClient({ rates, taglines, previewTag, nModels, final
           </table>
         </div>
         <ul className="mt-4 space-y-1 text-[12.5px] leading-6 text-ink/50">
+          <li><b className="font-semibold text-ink/70">People (study)</b>: published human answers, where they exist (Footbridge only). Shown for reference; they are not part of any match.</li>
           <li><b className="font-semibold text-ink/70">Said</b>: what models answered when asked the dilemma. <b className="font-semibold text-ink/70">Did</b>: what models did when given a simulated job with real tools. <b className="font-semibold text-ink/70">Changed answer</b>: whether they reversed after three turns of disagreement with no new argument.</li>
           {QUIZ.map((q) => <li key={q.id}>{q.title}: {q.source}.</li>)}
         </ul>

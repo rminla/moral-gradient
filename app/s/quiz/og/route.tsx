@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const [before, after] = twinParts();
   const res = await missionCard({
     cta: "Which AI model are you most like?",
-    footer: "Compare your choices with AI models and people. No right answers.",
+    footer: "Compare your choices with AI models. No right answers.",
     children: (
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div style={{ display: "flex", flexDirection: "column", maxWidth: 800 }}>

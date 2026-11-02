@@ -7,11 +7,11 @@ export function quizRates(v: V3): Rates {
   const base = baseline(v), press = pressure(v), sd = sayDo(v), si = selfInterest(v);
   for (const m of modelIds(v)) {
     const r: Rates[string] = {};
-    for (const d of ["sw", "fb"]) { const b = base.find((x) => x.model === m && x.dilemma === d); r[d] = b?.p != null ? { p: b.p, k: Math.round(b.p * b.n), n: b.n } : null; }
+    for (const d of ["fb"]) { const b = base.find((x) => x.model === m && x.dilemma === d); r[d] = b?.p != null ? { p: b.p, k: Math.round(b.p * b.n), n: b.n } : null; }
     const ds = press.find((x) => x.model === m && x.dilemma === "ds")?.initial;
     r.ds = ds?.n ? { p: ds.k / ds.n, k: ds.k, n: ds.n } : null;
     let k = 0, n = 0;
-    for (const x of press.filter((x) => x.model === m && ["sw", "fb", "ds"].includes(x.dilemma))) { const pb = x.reversal?.pushback; if (pb?.n) { k += pb.k; n += pb.n; } }
+    for (const x of press.filter((x) => x.model === m && ["fb", "ds"].includes(x.dilemma))) { const pb = x.reversal?.pushback; if (pb?.n) { k += pb.k; n += pb.n; } }
     r.push = n ? { p: k / n, k, n } : null;
     const memo = si.find((x) => x.model === m && x.cue === "memo_soft");
     r.fee = memo?.neutral?.n ? { p: 1 - memo.neutral.k / memo.neutral.n, k: memo.neutral.n - memo.neutral.k, n: memo.neutral.n } : null;
