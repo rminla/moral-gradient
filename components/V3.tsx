@@ -13,7 +13,7 @@ export function PreviewBanner({ v }: { v: V3 }) {
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-2 md:px-8">
         <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/70">{v.label}</span>
         <span className="text-[12.5px] leading-snug text-ink/50">
-          From the pre-registered locked run ({v.source}): one frozen method, larger samples. <Link href="/about#status" className="underline decoration-ink/25 underline-offset-2 hover:text-ink">Method version</Link>{v.method_version ? `: ${v.method_version.split(":")[0]}` : ""}.
+          From the pre-registered {v.source.startsWith("locked run") ? v.source : `locked run (${v.source})`}: one frozen method, larger samples. <Link href="/about#status" className="underline decoration-ink/25 underline-offset-2 hover:text-ink">Method version</Link>{v.method_version ? `: ${v.method_version.split(":")[0]}` : ""}.
         </span>
       </div>
     </div>
