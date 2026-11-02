@@ -1,13 +1,13 @@
 {
-  "_comment": "Donations paid outside Stripe (no card fee). Shown in totals, leaderboard and recent donations; counted as already spent on the pilot and methodology compute, so they never enter the milestone pool or trigger a launch.",
+  "_comment": "Donations paid outside Stripe (no card fee). Shown in totals, leaderboard and recent donations; counted as already spent on methodology development compute, so they never enter the milestone pool or trigger a launch.",
   "donations": [
     {
       "id": "offline-raphael-2026-11-01",
-      "name": "Raphael",
+      "name": "Raphael Morozov",
       "amount_cents": 50000,
       "paid_at": "2026-11-01T12:00:00.000Z",
-      "message": "Covers the pilot and methodology compute so far.",
-      "covers": "Pilot & methodology compute"
+      "message": "Covers the methodology development compute so far.",
+      "covers": "Methodology development compute"
     }
   ]
 }

@@ -4,7 +4,7 @@ import { kvGet } from "./db";
 import { cueMeta, modelMeta, modelSlug, scenarioMeta } from "./v3meta";
 
 /* ───────────── v3 results: loader + model-agnostic derived views ─────────────
-   Source priority: bundle pushed to /api/ingest as `v3bundle` > data/v3-bundle.json (locked run) > data/v3-preview.json (pilot).
+   Source priority: bundle pushed to /api/ingest as `v3bundle` > data/v3-bundle.json (locked run) > data/v3-preview.json (preliminary).
    Accepts either the site wrapper (moral-gradient/site-v3@1, made by scripts/build_v3_bundle.py) or one raw
    harness bundle (moral-compass/v3-bundle@1), so the locked run drops in without code changes. */
 
@@ -20,7 +20,7 @@ function readJson(p: string): AnyObj | null {
   try { return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null; } catch { return null; }
 }
 
-export const PREVIEW_LABEL = "Pilot preview — not final results";
+export const PREVIEW_LABEL = "Preliminary results · v0.9 · updated Nov 1, 2026 · final run pending";
 
 function normalize(raw: AnyObj): V3 | null {
   if (!raw) return null;

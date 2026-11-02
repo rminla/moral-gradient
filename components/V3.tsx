@@ -6,15 +6,15 @@ import { modelMeta, modelSlug, TRACE_LABEL } from "@/lib/v3meta";
 /* Shared v3 chart language (Signal): mono labels, square marks, words grey, deeds signal red.
    Every chart is a plain row-per-model figure; CIs are drawn as thin whiskers and listed in the expandable details. */
 
-/** Always visible while the bundle is a pilot preview (independent of NEXT_PUBLIC_SHOW_CAVEATS). */
+/** Always visible while the bundle is preliminary (independent of NEXT_PUBLIC_SHOW_CAVEATS). */
 export function PreviewBanner({ v }: { v: V3 }) {
   if (v.status === "final") return null;
   return (
-    <div className="border-b border-ink bg-ink text-white">
-      <div className="mx-auto flex max-w-[1200px] flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 md:px-8">
-        <span className="inline-flex items-center gap-2 bg-vermilion px-2 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em]"><span className="h-1.5 w-1.5 bg-white" />{v.label}</span>
-        <span className="text-[13.5px] leading-snug text-white/75">
-          These charts use data from our methodology-development runs ({v.source}). Designs changed between rounds and samples are small, so treat every number as provisional. The locked run will replace them.
+    <div className="border-b border-rule bg-paper">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-2 md:px-8">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/60">{v.label}</span>
+        <span className="text-[12.5px] leading-snug text-ink/50">
+          From methodology-development runs ({v.source}). Samples are small and designs changed between rounds, so treat numbers as provisional; the final run will replace them.
         </span>
       </div>
     </div>
@@ -23,7 +23,7 @@ export function PreviewBanner({ v }: { v: V3 }) {
 
 export function PreviewTag({ v }: { v: V3 }) {
   if (v.status === "final") return null;
-  return <span className="inline-flex items-center gap-1.5 border border-vermilion px-1.5 py-px font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-vermilion"><span className="h-1.5 w-1.5 bg-vermilion" />Pilot preview</span>;
+  return <span className="inline-flex items-center font-mono text-[10px] uppercase tracking-[0.08em] text-ink/45">{v.label}</span>;
 }
 
 export function ModelName({ id, link = true, className = "" }: { id: string; link?: boolean; className?: string }) {

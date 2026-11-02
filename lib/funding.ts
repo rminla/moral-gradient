@@ -5,7 +5,7 @@ import { db, nowIso, q } from "./db";
 import { launchSuite, type MilestoneRow } from "./jobs";
 
 /** Donations paid directly (not through Stripe), from data/offline-donations.json. They count toward totals and the
- *  leaderboard, but are already spent (pilot & methodology compute), so they never enter the pool or trigger a launch. */
+ *  leaderboard, but are already spent (methodology development compute), so they never enter the pool or trigger a launch. */
 export type OfflineDonation = { id: string; name: string; amount_cents: number; paid_at: string; message?: string | null; covers?: string | null };
 export function getOfflineDonations(): OfflineDonation[] {
   try {
@@ -18,7 +18,7 @@ export function getOfflineDonations(): OfflineDonation[] {
 
 export type Funding = {
   raised_cents: number; fees_cents: number; net_cents: number; donors: number; donations: number;
-  direct_cents: number; // offline donations, already spent on pilot/methodology compute
+  direct_cents: number; // offline donations, already spent on methodology development compute
   allocated_cents: number; pool_cents: number; has_examples: boolean;
   next: (MilestoneRow & { remaining_cents: number; progress: number }) | null;
   queue: MilestoneRow[]; done: MilestoneRow[];

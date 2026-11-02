@@ -58,7 +58,7 @@ def main():
         dst = os.path.join(SITE_DATA, "v3-bundle.json")
     else:
         its = sorted(d for d in os.listdir(OUT) if re.fullmatch(r"v3[a-z]", d) and os.path.exists(os.path.join(OUT, d, "bundle.json")))
-        doc = {"schema": "moral-gradient/site-v3@1", "status": "preview", "label": "Pilot preview — not final results",
+        doc = {"schema": "moral-gradient/site-v3@1", "status": "preview", "label": "Preliminary results · v0.9 · updated Nov 1, 2026 · final run pending",
                "generated_utc": now,
                "source": f"methodology-development iterations {its[0]}–{its[-1]} (designs changed between iterations; small samples)",
                "iterations": [load(i) for i in its], "examples": examples()}

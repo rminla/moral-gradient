@@ -23,7 +23,7 @@ export default async function Results() {
     <main>
       <PreviewBanner v={v} />
       <PageHead eyebrow="Results" grey="What models do when words, reasons and incentives" title={<>point different <span className="text-vermilion">ways.</span></>}>
-        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "" : "These are pilot numbers from developing the method; the locked run replaces them."}
+        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "" : "These are preliminary numbers from developing the method; the final run replaces them."}
       </PageHead>
 
       <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
@@ -63,7 +63,7 @@ export default async function Results() {
           </div>
           <div>
             <div className="kicker text-ink/60">Retired</div>
-            <p className="mt-2 text-[14.5px] leading-6 text-ink/70">The earlier single-model pilot (v2, Claude Haiku only) is no longer shown as findings. Its scenarios carried over into this design with fixes; its numbers aren&apos;t comparable.</p>
+            <p className="mt-2 text-[14.5px] leading-6 text-ink/70">The earlier single-model study (v2, Claude Haiku only) is no longer shown as findings. Its scenarios carried over into this design with fixes; its numbers aren&apos;t comparable.</p>
           </div>
         </div>
       </Block>

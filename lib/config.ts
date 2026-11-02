@@ -2,7 +2,7 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Moral Gradient";
 export const SITE_TAGLINE = "Tracking what AI models do, not just what they say";
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
-export const OWNER_NAME = "Raphael";
+export const OWNER_NAME = "Raphael Morozov";
 
 export const paymentsMode = (): "stripe" | "mock" => (process.env.STRIPE_SECRET_KEY ? "stripe" : "mock");
 export const emailMode = (): "resend" | "dev" => (process.env.RESEND_API_KEY ? "resend" : "dev");

@@ -95,7 +95,7 @@ export default async function Home() {
           <div className="grid bg-ink text-white md:grid-cols-[minmax(0,1fr)_auto]">
             <p className="serif px-5 py-7 text-[24px] leading-[1.15] md:px-8 md:py-9 md:text-[34px]">
               {gaps === 0 ? "In this case, every model so far acts the way it advises. The other scenarios are where to look." : <>{gaps} of {car.length} models act differently from how they advise another agent in the same spot.</>}
-              {v.status !== "final" && <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.08em] text-white/50">Pilot preview. Not final results.</span>}
+              {v.status !== "final" && <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.08em] text-white/50">Preliminary results · v0.9 · updated Nov 1, 2026 · final run pending</span>}
             </p>
             <div className="flex border-t border-white/10 md:flex-col md:border-l md:border-t-0">
               <Link href="/stated-vs-actual" className="flex flex-1 items-center gap-2 whitespace-nowrap px-5 py-4 font-mono text-[12px] uppercase tracking-[0.08em] hover:bg-vermilion md:px-8"><span className="h-2 w-2 bg-vermilion" />Says vs does →</Link>
