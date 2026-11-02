@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Eyebrow } from "./Brand";
 import Share from "./Share";
 import Subscribe from "./Subscribe";
+import { tryPost } from "@/lib/shareCopy";
 
 export type TryRow = { key: string; name: React.ReactNode; p: number | null; rev: { k: number; n: number } | null };
 export type TryData = {
@@ -51,6 +52,7 @@ export default function TryClient({ d, sharePath, previewTag }: { d: TryData; sh
   }
 
   const share = pick === "yes" ? d.human : 1 - d.human;
+  const post = tryPost(d.q, d.body);
   return (
     <>
       <section className="mx-auto max-w-[1200px] border-b border-rule">
@@ -95,14 +97,12 @@ export default function TryClient({ d, sharePath, previewTag }: { d: TryData; sh
         </div>
         <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
           <div>
-            <Share label="Share this dilemma" path={sharePath}
-              text={`${d.q} Answer it, then see how people and AI models chose.`}
-              subject={`A dilemma for you: ${d.q}`}
-              emailBody={`${d.q}\n\n${d.body}\n\nAnswer it, then see how people and AI models chose. There's no right answer, and your answer isn't stored.`} />
+            <Share label="Share this dilemma" path={sharePath} text={post.text} subject={post.subject} emailBody={post.email} />
             <p className="mt-2 text-[12.5px] text-ink/50">Shares the question, not your answer.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href={`/try?d=${d.nextId}`} className="btn-ghost">Next: {d.nextTitle} →</Link>
+            <Link href="/quiz" className="btn-ghost"><span className="h-2 w-2 bg-vermilion" />Which AI model are you most like? →</Link>
             <Link href="/learn" className="btn-ghost">Why this matters →</Link>
           </div>
         </div>

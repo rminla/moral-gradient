@@ -57,7 +57,7 @@ export default async function Try({ searchParams }: { searchParams: Promise<{ d?
               <span className="num text-[11px] opacity-60">{String(i + 1).padStart(2, "0")}</span>{TRY_DILEMMAS[k].title}
             </Link>
           ))}
-          <span className="flex items-center border-r border-rule px-5 py-4 font-mono text-[11.5px] uppercase tracking-[0.08em] text-ink/30 md:px-8"><span className="num mr-3 text-[11px]">03</span>The late fee · soon</span>
+          <Link href="/quiz" className="flex items-center gap-3 border-r border-rule px-5 py-4 font-mono text-[11.5px] uppercase tracking-[0.08em] text-ink hover:bg-panel md:px-8"><span className="h-2 w-2 bg-vermilion" />Quiz: which AI model are you most like?</Link>
           <div className="hatch hidden flex-1 md:block" />
         </div>
       </section>
