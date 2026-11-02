@@ -25,15 +25,14 @@ export const PILLAR_OG: Record<string, { name: string; color: string }> = {
 };
 export const siteHost = () => { try { return new URL(SITE_URL).host; } catch { return "moralgradient.org"; } };
 
-/** The "Tipping point" mark (full drawing; share images are large). Paths mirror MARK_FULL in components/Brand.tsx. */
+/** The "Where it lands" mark (full drawing; share images are large). Geometry mirrors MARK_FULL in components/Brand.tsx. */
 export function OgMark({ size = 34, light = false }: { size?: number; light?: boolean }) {
   const fg = light ? "#fff" : OG.ink;
+  const fills = [fg, light ? "#d4d5d8" : "#3a3b3e", light ? OG.grey2 : OG.grey, "#ff8b74", OG.signal];
   return (
     <svg width={size} height={size} viewBox="0 0 48 48">
-      <path d="M7.26 11.49 L15.99 13.67 L13.81 22.4 L5.08 20.22 Z" fill={light ? OG.grey2 : OG.grey} />
-      <path d="M33.45 13.9 L46.06 17.04 L42.92 29.66 L30.31 26.51 Z" fill={OG.signal} />
-      <path d="M24 29 L33 44 L15 44 Z" fill={fg} />
-      <path d="M3.14 19.74 L45.83 30.38 L44.86 34.26 L2.17 23.62 Z" fill={fg} />
+      {[4, 12.25, 20.5, 28.75, 37].map((x, i) => <rect key={i} x={x} y={20} width={7.25} height={24} fill={fills[i]} />)}
+      <path d="M25.875 4H38.875L32.375 15Z" fill={fg} />
     </svg>
   );
 }

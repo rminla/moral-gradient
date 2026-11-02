@@ -4,34 +4,30 @@ import { SITE_NAME } from "@/lib/config";
 export const SCALE = ["#0c0c0d", "#3a3b3e", "#6c6f75", "#a5a8ad", "#ff8b74", "#ff5a3d", "#ff3d1f"];
 
 /**
- * The mark: "Tipping point". A beam on a fulcrum, tipped by one red block (the pressure or self-interest
- * that flips a model's choice); the grey block on the high end is what it says.
- * Two drawings: the full mark (48-unit grid, everything tilted) above 32px, and a favicon-optimised one
- * (16-unit grid, blocks axis-aligned on whole units, only the beam and fulcrum slanted) at 32px and below.
+ * The mark: "Where it lands". A stepped scale from words (ink, grey) to deeds (red), with a pointer marking
+ * where a model actually lands: off-centre, one step short of full red.
+ * Two drawings: the full mark (48-unit grid, five cells, triangular pointer) above 32px, and a favicon-optimised
+ * one (16-unit grid, four gapless cells, pointer stepped in whole units, every edge on the pixel grid) at 32px and below.
  */
 export const MARK_FULL = {
-  say: "M7.26 11.49 L15.99 13.67 L13.81 22.4 L5.08 20.22 Z",
-  do: "M33.45 13.9 L46.06 17.04 L42.92 29.66 L30.31 26.51 Z",
-  beam: "M3.14 19.74 L45.83 30.38 L44.86 34.26 L2.17 23.62 Z",
-  base: "M24 29 L33 44 L15 44 Z",
+  cells: [4, 12.25, 20.5, 28.75, 37].map((x) => ({ x, y: 20, w: 7.25, h: 24 })),
+  pointer: "M25.875 4H38.875L32.375 15Z",
 };
 export const MARK_SMALL = {
-  say: "M1 3h4v6h-4Z",
-  do: "M10 4h5v8h-5Z",
-  base: "M8 11L12 15H4Z",
-  beam: "M0 7L16 10V13L0 10Z",
+  cells: [0, 4, 8, 12].map((x) => ({ x, y: 8, w: 4, h: 8 })),
+  pointer: "M6 2h8v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1Z",
 };
 export function Mark({ size = 22, className = "", light = false }: { size?: number; className?: string; light?: boolean }) {
   const small = size <= 32;
-  const p = small ? MARK_SMALL : MARK_FULL;
   const fg = light ? "#ffffff" : "#0c0c0d";
-  const say = light ? "#a5a8ad" : "#6c6f75";
+  const fills = small
+    ? [fg, light ? "#a5a8ad" : "#6c6f75", "#ff8b74", "#ff3d1f"]
+    : [fg, light ? "#d4d5d8" : "#3a3b3e", light ? "#a5a8ad" : "#6c6f75", "#ff8b74", "#ff3d1f"];
+  const p = small ? MARK_SMALL : MARK_FULL;
   return (
     <svg viewBox={small ? "0 0 16 16" : "0 0 48 48"} width={size} height={size} className={className} aria-hidden="true">
-      <path d={p.say} fill={say} />
-      <path d={p.do} fill="#ff3d1f" />
-      <path d={p.base} fill={fg} />
-      <path d={p.beam} fill={fg} />
+      {p.cells.map((c, i) => <rect key={i} x={c.x} y={c.y} width={c.w} height={c.h} fill={fills[i]} />)}
+      <path d={p.pointer} fill={fg} />
     </svg>
   );
 }
