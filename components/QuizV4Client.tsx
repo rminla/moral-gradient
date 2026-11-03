@@ -11,7 +11,7 @@ import { WRAPPER } from "@/lib/shareCopy";
 type Profile = Record<Foundation, number>;
 const N = QUIZ_V4.length;
 
-/** Foundation profile 0-100 from slider answers (0-100 toward each item's right pole). */
+/** Foundation profile 0-100. Input per item: 0-100 toward the right option (visitor: 0 or 100; model: share of samples x 100). */
 function profile(vals: Record<string, number>): Profile {
   const out = {} as Profile;
   for (const f of FOUNDATIONS) {
@@ -28,21 +28,22 @@ function profile(vals: Record<string, number>): Profile {
 }
 const dist = (a: Profile, b: Profile) => FOUNDATIONS.reduce((s, f) => s + Math.abs(a[f.id] - b[f.id]), 0) / FOUNDATIONS.length;
 const topF = (p: Profile) => FOUNDATIONS.reduce((best, f) => (p[f.id] > p[best.id] ? f : best), FOUNDATIONS[0]);
-const side = (v: number) => (v > 50 ? "R" : v < 50 ? "L" : null);
+const sayRate = (id: string, it: string) => { const d = V4_PLACEHOLDER[id][it].say; return d.k / d.n; };
+const modelSide = (r: number) => (r > 0.5 ? 1 : r < 0.5 ? 0 : null);
 
-type Hook = { it: QuizV4Item; kind: "gap" | "flip" | "walk"; u: number; m: number; k: number; n: number; ak: number; an: number; gap: number };
-function hooks(answers: Record<string, number>, modelId: string): Hook[] {
+type Hook = { it: QuizV4Item; kind: "gap" | "flip" | "walk"; u: 0 | 1; sk: number; sn: number; k: number; n: number; ak: number; an: number; gap: number };
+function hooks(answers: Record<string, 0 | 1>, modelId: string): Hook[] {
   const data = V4_PLACEHOLDER[modelId];
   const hs: Hook[] = [];
   for (const it of QUIZ_V4) {
     const d = data[it.id];
     if (!it.do || !d?.do || !d.axis) continue;
     const u = answers[it.id];
-    if (side(u) == null || side(u) !== side(d.say.mean)) continue;
-    const gap = Math.abs(d.say.mean / 100 - d.do.k / d.do.n);
+    if (u == null || modelSide(d.say.k / d.say.n) !== u) continue;
+    const gap = Math.abs(d.say.k / d.say.n - d.do.k / d.do.n);
     const flip = d.axis.k / d.axis.n;
     const kind = gap >= 0.25 ? "gap" : flip >= 0.3 ? "flip" : "walk";
-    hs.push({ it, kind, u, m: d.say.mean, k: d.do.k, n: d.do.n, ak: d.axis.k, an: d.axis.n, gap });
+    hs.push({ it, kind, u, sk: u ? d.say.k : d.say.n - d.say.k, sn: d.say.n, k: d.do.k, n: d.do.n, ak: d.axis.k, an: d.axis.n, gap });
   }
   const rank = { gap: 0, flip: 1, walk: 2 } as const;
   return hs.sort((a, b) => rank[a.kind] - rank[b.kind] || b.gap - a.gap);
@@ -69,23 +70,18 @@ function Track({ marks }: { marks: { v: number; cls: string; label: string }[] }
 
 export default function QuizV4Client() {
   const [step, setStep] = useState<"intro" | number | "result">("intro");
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [cur, setCur] = useState(50);
-  const [touched, setTouched] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, 0 | 1>>({});
   const [askStay, setAskStay] = useState(false);
   useEffect(() => { setAskStay(Math.random() < 0.5); }, []);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [step]);
 
-  const go = (s: "intro" | number | "result") => {
-    if (typeof s === "number") { const v = answers[QUIZ_V4[s].id]; setCur(v ?? 50); setTouched(v != null); }
-    setStep(s);
-  };
+  const go = (s: "intro" | number | "result") => setStep(s);
 
   const result = useMemo(() => {
     if (step !== "result") return null;
-    const you = profile(answers);
+    const you = profile(Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, v * 100])));
     const models = Object.keys(V4_PLACEHOLDER).map((id) => {
-      const vals = Object.fromEntries(Object.entries(V4_PLACEHOLDER[id]).map(([k, v]) => [k, v.say.mean]));
+      const vals = Object.fromEntries(Object.entries(V4_PLACEHOLDER[id]).map(([k, v]) => [k, (v.say.k / v.say.n) * 100]));
       const p = profile(vals);
       return { id, name: modelMeta(id).name, p, d: dist(you, p) };
     }).sort((a, b) => a.d - b.d);
@@ -98,16 +94,16 @@ export default function QuizV4Client() {
         <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="relative grid gap-10 px-5 pb-14 pt-12 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:px-8 md:pb-16 md:pt-16">
           <div>
-            <Eyebrow>Quiz v4 prototype · {N} dilemmas · about 4 minutes</Eyebrow>
+            <Eyebrow>Quiz v4 prototype · {N} dilemmas · about 3 minutes</Eyebrow>
             <h1 className="wide mt-6 text-[40px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px]">Who&apos;s your AI ethical twin?</h1>
-            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">{N} everyday dilemmas. Slide to where you stand. Then meet the AI model whose answers are closest to yours, and see what it actually <b className="text-vermilion">did</b> when we gave it the same job.</p>
+            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">{N} everyday dilemmas. Pick what you'd do. Then meet the AI model whose answers are closest to yours, and see what it actually <b className="text-vermilion">did</b> when we gave it the same job.</p>
             <div className="mt-8 flex flex-wrap gap-3"><button type="button" onClick={() => { setAnswers({}); go(0); }} className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Start</button></div>
             <p className="mt-5 text-[13.5px] leading-6 text-ink/55">No right answers. Your answers stay in this browser tab: nothing is sent or stored.</p>
           </div>
           <div className="flex flex-col gap-3 self-end">
             <div className="label">Before you start</div>
             {[
-              ["Say and do", "Models answered each question like you did. For 11 of 12 we also gave them the job itself, with real-looking tools, in a sandbox."],
+              ["Say and do", "Each model answered every question about 20 times; we count how often it picked each option. For 11 of 12 we also gave them the job itself, with real-looking tools, in a sandbox."],
               ["Seven foundations", "Your twin is matched on your whole profile: care, equality, proportionality, loyalty, authority, purity and liberty."],
               ["Prototype", "The model numbers on this page are PLACEHOLDERS. No v4 runs exist yet."],
             ].map(([t, b]) => <div key={t} className="border border-rule bg-paper p-4"><div className="text-[15px] font-semibold">{t}</div><p className="mt-1 text-[13.5px] leading-6 text-ink/60">{b}</p></div>)}
@@ -120,7 +116,7 @@ export default function QuizV4Client() {
   if (typeof step === "number") {
     const q = QUIZ_V4[step];
     const question = q.id === "game-night" ? (askStay ? "Should you stay home?" : "Should you go?") : q.question;
-    const next = () => { setAnswers((x) => ({ ...x, [q.id]: cur })); if (step + 1 < N) { const v = answers[QUIZ_V4[step + 1].id]; setCur(v ?? 50); setTouched(v != null); setStep(step + 1); } else setStep("result"); };
+    const pick = (v: 0 | 1) => { setAnswers((x) => ({ ...x, [q.id]: v })); setStep(step + 1 < N ? step + 1 : "result"); };
     return (
       <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
         <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
@@ -134,16 +130,13 @@ export default function QuizV4Client() {
             <h1 className="wide mt-6 text-[32px] font-bold leading-[1] tracking-[-0.04em] md:text-[46px]">{question}</h1>
           </div>
           <div className="flex flex-col justify-end gap-4">
-            <div className="label">Where do you stand?</div>
-            <div className="border border-ink bg-paper p-5">
-              <div className="flex justify-between gap-4 text-[14px] font-semibold"><span className="max-w-[45%]">{q.left}</span><span className="max-w-[45%] text-right">{q.right}</span></div>
-              <input aria-label={`${q.left} to ${q.right}`} type="range" min={0} max={100} value={cur} onChange={(e) => { setCur(Number(e.target.value)); setTouched(true); }} className="mt-4 w-full accent-[#ff3d1f]" />
-              <div className="mt-2 flex justify-between font-mono text-[11px] text-ink/45"><span>0</span><span className="num text-[13px] text-ink">{touched ? cur : "–"}</span><span>100</span></div>
-            </div>
-            <button type="button" onClick={next} disabled={!touched} className="btn-primary disabled:cursor-not-allowed disabled:opacity-40">{step + 1 < N ? "Next →" : "See my AI twin →"}</button>
+            <div className="label">What should happen?</div>
+            {([[0, q.left], [1, q.right]] as const).map(([v, t]) => (
+              <button key={v} type="button" onClick={() => pick(v)} className={`btn-ghost !justify-between !border-ink !py-5 !text-left !text-[14px] hover:!bg-ink hover:!text-white ${answers[q.id] === v ? "!bg-ink !text-white" : ""}`}>{t}<span>→</span></button>
+            ))}
             <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
               <button type="button" onClick={() => go(step === 0 ? "intro" : step - 1)} className="uppercase hover:text-vermilion">← Back</button>
-              <span>{touched ? "No right answer" : "Move the slider to continue"}</span>
+              <span>No right answer</span>
             </div>
           </div>
         </div>
@@ -160,7 +153,8 @@ export default function QuizV4Client() {
   const hs = hooks(answers, twin.id);
   const match = Math.round(100 - twin.d);
   const shareText = `${WRAPPER} I took the Moral Gradient quiz v4 prototype (placeholder model numbers): my AI ethical twin came out as ${twin.name}. Who's yours?`;
-  const pole = (it: QuizV4Item, v: number) => (v > 50 ? it.right : it.left).toLowerCase();
+  const label = (it: QuizV4Item, v: 0 | 1) => (v ? it.right : it.left);
+  const allRate = (it: string, v: 0 | 1) => { const ids = Object.keys(V4_PLACEHOLDER); const r = ids.reduce((s, id) => s + sayRate(id, it), 0) / ids.length; return Math.round((v ? r : 1 - r) * 100); };
 
   return (
     <>
@@ -170,7 +164,7 @@ export default function QuizV4Client() {
             <Eyebrow>Your result · {N} of {N} answered</Eyebrow>
             <h1 className="mt-8"><span className="label block">Your AI ethical twin is</span><span className="wide block text-[38px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[48px]">{twin.name}<span className="text-vermilion">.</span></span></h1>
             <p className="mt-4 inline-block border border-vermilion px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-vermilion">Placeholder data</p>
-            <p className="mt-4 text-[15px] leading-relaxed text-ink/70">Across all seven foundations you&apos;re <b className="num text-ink">{match}%</b> alike (average gap {twin.d.toFixed(1)} points of 100).{near && <> A near tie with <b className="text-ink">{runner.name}</b> ({Math.round(100 - runner.d)}%).</>}</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink/70">Across all seven foundations you&apos;re <b className="num text-ink">{match}%</b> alike: the average gap between your choices and its choice rates is {twin.d.toFixed(1)} points of 100.{near && <> A near tie with <b className="text-ink">{runner.name}</b> ({Math.round(100 - runner.d)}%).</>}</p>
             <div className="mt-6 grid gap-3">
               <div className="border border-rule p-4"><div className="label">What you share</div><p className="text-[15px] leading-6">{yt.id === tt.id ? <>You both put <b>{yt.name}</b> first ({Math.round(you[yt.id])} vs {Math.round(twin.p[tt.id])}).</> : <>You put <b>{yt.name}</b> first ({Math.round(you[yt.id])}); {twin.name} puts <b>{tt.name}</b> first ({Math.round(twin.p[tt.id])}).</>}</p></div>
               <div className="border border-rule p-4"><div className="label">Your biggest difference</div><p className="text-[15px] leading-6"><b>{diff.name}</b>: you {Math.round(you[diff.id])}, {twin.name} {Math.round(twin.p[diff.id])}. You care {you[diff.id] > twin.p[diff.id] ? "more" : "less"} about it.</p></div>
@@ -196,12 +190,12 @@ export default function QuizV4Client() {
 
       <section className="mx-auto max-w-[1200px] border-b border-rule p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-2"><span className="kicker text-ink">You said it. Here&apos;s what {twin.name} did.</span><span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-vermilion">Placeholder numbers</span></div>
-        {hs.length === 0 && <p className="mt-4 text-[15px] text-ink/65">You and {twin.name} landed on opposite sides of every say-and-do question. Twins can disagree.</p>}
+        {hs.length === 0 && <p className="mt-4 text-[15px] text-ink/65">You and {twin.name} chose differently on every say-and-do question. Twins can disagree.</p>}
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {hs.slice(0, 3).map((h, i) => (
             <article key={h.it.id} className={`border p-5 ${i === 0 ? "border-ink md:col-span-3" : "border-rule"}`}>
               <div className="flex flex-wrap items-center justify-between gap-2"><span className="label !mb-0">{h.it.title} · {h.it.tag}</span><span className={`font-mono text-[10.5px] uppercase tracking-[0.06em] ${h.kind === "walk" ? "text-moss" : "text-vermilion"}`}>{KIND_LABEL[h.kind]}</span></div>
-              <p className={`mt-3 leading-snug ${i === 0 ? "text-[22px] font-semibold md:text-[26px]" : "text-[16px] font-semibold"}`}>You and {twin.name} both said: {pole(h.it, h.u)} (you {h.u}, {twin.name} {h.m} of 100).</p>
+              <p className={`mt-3 leading-snug ${i === 0 ? "text-[22px] font-semibold md:text-[26px]" : "text-[16px] font-semibold"}`}>You and {twin.name} both chose &ldquo;{label(h.it, h.u)}&rdquo; ({twin.name}: {h.sk} of {h.sn} samples).</p>
               <p className="mt-2 text-[15px] leading-6 text-ink/75">When {twin.name} was the {h.it.do!.role}, it <b className="text-vermilion">{h.it.do!.rightAction}</b> in <span className="num">{h.k} of {h.n}</span> runs ({Math.round((h.k / h.n) * 100)}%).</p>
               <p className="mt-2 text-[13.5px] leading-6 text-ink/60">{h.it.do!.axis}: it changed course in <span className="num">{h.ak} of {h.an}</span> runs.</p>
               <p className="mt-2 text-[12.5px] leading-5 text-ink/45">Moral Gradient visitors: not collected in this prototype. · {modelMeta(twin.id).name}, run date: {PLACEHOLDER_META.runDate}. {PLACEHOLDER_META.note}</p>
@@ -214,13 +208,14 @@ export default function QuizV4Client() {
         <div className="label">Every question</div>
         <div className="overflow-x-auto">
           <table className="mt-2 w-full min-w-[640px] text-left text-[13.5px]">
-            <thead className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50"><tr><th className="py-2 pr-3">Question</th><th className="pr-3">You</th><th className="pr-3">{twin.name} said (95% CI)</th><th className="pr-3">{twin.name} did</th><th>Published humans</th></tr></thead>
+            <thead className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50"><tr><th className="py-2 pr-3">Question</th><th className="pr-3">You chose</th><th className="pr-3">{twin.name} said the same</th><th className="pr-3">All models said the same</th><th className="pr-3">{twin.name} did</th><th>Published humans</th></tr></thead>
             <tbody>
               {QUIZ_V4.map((it) => { const d = V4_PLACEHOLDER[twin.id][it.id]; return (
                 <tr key={it.id} className="border-t border-rule align-top">
-                  <td className="py-2 pr-3"><b className="font-semibold">{it.title}</b><div className="text-[12px] text-ink/50">{it.left} ↔ {it.right}</div></td>
-                  <td className="num pr-3">{answers[it.id]}</td>
-                  <td className="num pr-3">{d.say.mean} ({d.say.lo}–{d.say.hi})</td>
+                  <td className="py-2 pr-3"><b className="font-semibold">{it.title}</b><div className="text-[12px] text-ink/50">{it.left} / {it.right}</div></td>
+                  <td className="pr-3">{label(it, answers[it.id])}</td>
+                  <td className="num pr-3">{Math.round((answers[it.id] ? d.say.k / d.say.n : 1 - d.say.k / d.say.n) * 100)}%</td>
+                  <td className="num pr-3">{allRate(it.id, answers[it.id])}% of runs</td>
                   <td className="num pr-3">{d.do ? `${d.do.k}/${d.do.n} ${it.do!.rightAction}` : "say only"}</td>
                   <td className="text-[12px] leading-5 text-ink/60">{it.published ?? "–"}</td>
                 </tr>); })}
