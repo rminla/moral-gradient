@@ -31,7 +31,7 @@ def test_parallel_800_samples_no_duplicates():
             "models": [
                 "anthropic/claude-haiku-5-5",
                 "groq/qwen/qwen3.6-27b",
-                "groq/deepseek/deepseek-r1-distill-qwen-32b",
+                "groq/openai/gpt-oss-120b",
                 "openrouter/google/gemini-3.8-flash"
             ],
             "n_per_question": 20,
@@ -80,8 +80,18 @@ def test_parallel_800_samples_no_duplicates():
             max_workers=4
         )
         
+        # Count calls per model
+        calls_per_model = {}
+        for call in manifest["calls"]:
+            model_id = call["model_id"]
+            calls_per_model[model_id] = calls_per_model.get(model_id, 0) + 1
+        
+        print(f"\n  Calls per model:")
+        for model_id, count in calls_per_model.items():
+            print(f"    {model_id}: {count}")
+        
         # Verify total calls
-        assert len(manifest["calls"]) == 800, f"Expected 800 calls, got {len(manifest['calls'])}"
+        assert len(manifest["calls"]) == 800, f"Expected 800 calls, got {len(manifest['calls'])}. Per model: {calls_per_model}"
         
         # Verify no duplicate call_ids
         call_ids = [call["call_id"] for call in manifest["calls"]]

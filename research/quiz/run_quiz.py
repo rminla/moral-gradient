@@ -120,14 +120,15 @@ def generate_prompt(
     Returns:
         Formatted prompt string
     """
-    # Find options by ID
-    options_by_id = {opt['id']: opt['label'] for opt in scenario['options']}
+    # Find options by ID (support both 'label' and 'text' fields)
+    options_by_id = {opt['id']: opt.get('label') or opt.get('text') for opt in scenario['options']}
     
     option_a = options_by_id[option_order[0]]
     option_b = options_by_id[option_order[1]]
     
     return template.format(
-        scenario_text=scenario['text'],
+        text=scenario['text'],
+        scenario_text=scenario['text'],  # Legacy support
         option_a=option_a,
         option_b=option_b
     )
