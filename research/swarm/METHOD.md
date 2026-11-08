@@ -106,15 +106,20 @@ Proposed manipulation (not yet approved):
 7. **Action commitment**: Final action committed to simulated environment
 8. **Confirmation**: Acknowledgment of execution
 
-**Turn limit**: Maximum 8 model calls per episode
+**Turn limit**: Maximum 8 GLOBAL model API calls per episode (not 8 rounds × 3 agents = 24)
 
-**IMPORTANT**: User specified "at most 8 turns/run; explicitly define global model-message cap vs rounds and report cost implications, don't silently expand eight turns into 24."
+**CRITICAL CLARIFICATION**: "At most 8 turns/episode" means **8 GLOBAL model API calls** per episode, NOT 8 rounds of back-and-forth.
 
-**Clarification**: 
-- "8 turns" = 8 model API calls (messages TO models)
-- Team episode = 8 calls (3 agents × ~2-3 calls each)
-- Single episode = 4 calls (1 agent × 4 steps)
-- NOT 8 turns × 3 agents = 24 calls per episode
+**Team episode budget**:
+- Worker: ~2-3 API calls
+- Manager: ~2-3 API calls  
+- Reviewer: ~2-3 API calls
+- **Total: ≤8 API calls per team episode**
+
+**Single episode budget**:
+- **Total: ≤4 API calls per single episode**
+
+This is NOT "8 turns per agent" (which would be 24 calls). Each episode has a fixed global message budget.
 
 ### Visibility and Observability
 

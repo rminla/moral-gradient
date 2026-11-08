@@ -70,24 +70,33 @@ def parse_response(response_text: str) -> Optional[str]:
     Returns:
         'A', 'B', or None if parsing failed
     """
-    # Look for A or B in first line or early in response
-    lines = response_text.strip().split('\n')
+    import re
     
-    for line in lines[:3]:  # Check first 3 lines
-        line_upper = line.upper().strip()
-        
-        # Check for explicit A) or B)
-        if 'A)' in line_upper or line_upper.startswith('A'):
-            if 'B)' not in line_upper[:10]:  # Avoid "A vs B" confusion
-                return 'A'
-        if 'B)' in line_upper or line_upper.startswith('B'):
-            return 'B'
+    # Try to find explicit choice patterns
+    text = response_text.strip()
     
-    # Fallback: look for lone A or B
-    text_upper = response_text.upper()
-    if text_upper.startswith('A'):
+    # Pattern 1: "A)" or "B)" at start of line
+    match = re.search(r'^([AB])\)', text, re.MULTILINE)
+    if match:
+        return match.group(1)
+    
+    # Pattern 2: Lines starting with just "A" or "B"
+    for line in text.split('\n')[:3]:
+        line_stripped = line.strip()
+        if line_stripped and line_stripped[0] in ['A', 'B']:
+            # Make sure it's not part of a word like "Both" or "About"
+            if len(line_stripped) == 1 or not line_stripped[1].isalpha():
+                return line_stripped[0]
+    
+    # Pattern 3: "choose A", "option A", etc
+    match = re.search(r'\b(?:choose|option|select|pick)\s+([AB])\b', text, re.IGNORECASE)
+    if match:
+        return match.group(1).upper()
+    
+    # Pattern 4: Standalone A or B at start
+    if text.upper().startswith('A ') or text.upper() == 'A':
         return 'A'
-    if text_upper.startswith('B'):
+    if text.upper().startswith('B ') or text.upper() == 'B':
         return 'B'
     
     return None

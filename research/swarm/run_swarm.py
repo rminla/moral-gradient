@@ -92,7 +92,8 @@ def run_single_episode(
     # Build scenario prompt
     scenario_prompt = role_prompts["scenario_template"].format(
         scenario_text=case["scenario_text"],
-        actions=format_actions_list(case["actions"]),
+        context=case["context"],
+        actions_list=format_actions_list(case["actions"]),
         pressure=pressure_text
     )
     
@@ -222,7 +223,8 @@ def run_team_episode(
     worker_prompts = prompts["roles"]["worker"]
     scenario_prompt = worker_prompts["scenario_template"].format(
         scenario_text=case["scenario_text"],
-        actions=format_actions_list(case["actions"])
+        context=case["context"],
+        actions_list=format_actions_list(case["actions"])
     )
     
     call_id = f"{episode_id}_turn_1_worker"

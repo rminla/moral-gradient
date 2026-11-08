@@ -205,14 +205,28 @@ class BudgetTracker:
             if existing_res:
                 raise ValueError(f"Call {call_id} already reserved")
             
-            # Check budget
-            status = self.get_status()
+            # Check budget (inline to avoid lock re-entry)
+            reserved_row = conn.execute("""
+                SELECT COALESCE(SUM(reserved_usd), 0) as total
+                FROM reservations
+                WHERE reconciled = 0
+            """).fetchone()
+            global_reserved = reserved_row['total']
             
-            if status.global_available_usd < worst_case_usd:
+            spent_row = conn.execute("""
+                SELECT COALESCE(SUM(actual_cost_usd), 0) as total
+                FROM calls
+            """).fetchone()
+            global_spent = spent_row['total']
+            
+            global_available = self.global_cap_usd - global_reserved - global_spent
+            
+            if global_available < worst_case_usd:
                 raise BudgetExceededError(
                     f"Reservation would exceed budget cap: "
-                    f"available ${status.global_available_usd:.4f}, "
-                    f"requested ${worst_case_usd:.4f}"
+                    f"available ${global_available:.4f}, "
+                    f"requested ${worst_case_usd:.4f}, "
+                    f"cap ${self.global_cap_usd:.2f}"
                 )
             
             # Create reservation
