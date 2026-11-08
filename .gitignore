@@ -19,3 +19,10 @@ data/sample-traces.json
 data/jobs/
 screenshots/14-scenario-SD-CAR-01-donor-traces.png
 screenshots/*.tmp
+
+# Private fixtures - DO NOT COMMIT
+regfix/
+cloud-fixture-*/
+**/ledger*.db
+**/*.journal
+**/*fixture*.tar.gz
