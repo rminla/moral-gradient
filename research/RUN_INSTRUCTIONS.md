@@ -167,6 +167,49 @@ Current models (from v3 model_versions.json):
 - ✅ Checkpoint every 10 calls (quiz) / 5 episodes (swarm)
 - ✅ No placeholders (execution stops if `[TO BE FINALIZED]` found)
 
+## Call ID Namespacing & Run Isolation
+
+Each execution generates a unique `run_id` (e.g., `quiz_20261108_203054` or `swarm_20261108_204033`). All call IDs are namespaced with this run_id:
+
+- **Quiz**: `{run_id}_{scenario_id}_{model_slug}_{call_idx}`
+- **Swarm**: `{run_id}_{episode_id}_turn_{N}[_role]`
+
+**Benefits:**
+- Smoke/main runs never collide (distinct run_ids)
+- Idempotent resume within same run (same run_id)
+- Cross-run analytics (filter by run_id prefix)
+
+**Resume with same run_id:**
+```bash
+# Manual run_id override (advanced)
+python3 quiz/run_quiz.py --budget-cap 5.00 --run-id "quiz_20261108_203054" --resume manifests/quiz_20261108_203054_checkpoint.json
+```
+
+## Ledger Migration (After Test Contamination)
+
+If the production `ledger.db` contains mock test data from local pytest runs, use the migration tool:
+
+```bash
+# Audit contaminated ledger (read-only)
+python3 tools/migrate_ledger.py ledger.db --audit
+
+# Migrate: mark mock data, preserve real calls
+python3 tools/migrate_ledger.py ledger.db --backup
+```
+
+**What it does:**
+- Backs up original ledger (timestamped)
+- Marks rows with `mock_data=1` (model_version contains `-mock`, cost < $0.0001, test patterns)
+- Reconciles orphaned reservations from failed 400 calls
+- Reports billable totals (excludes mock data)
+
+**Query billable costs after migration:**
+```sql
+sqlite3 ledger.db "SELECT SUM(actual_cost_usd) FROM calls WHERE mock_data = 0"
+```
+
+See `research/MIGRATION.md` for detailed migration guide.
+
 ## Troubleshooting
 
 ### Budget Exceeded Error
