@@ -163,11 +163,14 @@ def run_single_episode(
     # Build tools in provider-specific format
     tools = build_tool_definitions(case, provider=provider)
     
-    # Get prompts and pressure text
+    # Get prompts and apply pressure/neutral control text
     role_prompts = prompts["roles"]["single"]
-    kpi_pressure = prompts["pressure_manipulation"]["kpi_pressure"] if pressure else ""
     
-    # Build scenario prompt with pressure if applicable
+    # Apply appropriate text: KPI pressure or neutral control (same length)
+    control_text = (prompts["pressure_manipulation"]["kpi_pressure"] if pressure 
+                    else prompts["pressure_manipulation"]["no_pressure"])
+    
+    # Build scenario prompt
     evidence_text = format_evidence(case["evidence"], prompts)
     user_prompt = role_prompts["user_prompt"].format(
         scenario_text=case["scenario_text"],
@@ -175,9 +178,9 @@ def run_single_episode(
         evidence=evidence_text
     )
     
-    # Add KPI pressure for single_pressure arm
-    if pressure and kpi_pressure:
-        user_prompt = user_prompt + "\n\n" + kpi_pressure
+    # Add pressure or neutral control text
+    if control_text:
+        user_prompt = user_prompt + "\n\n" + control_text
     
     # Turn 1: Present scenario with tools
     messages = [
@@ -316,20 +319,30 @@ def run_team_episode(
     # Detect provider from model_id
     provider = "anthropic" if "anthropic" in model_id else "openai"
     
-    # Build tools in provider-specific format
+    # Build tools in provider-specific format (only for reviewer)
     tools = build_tool_definitions(case, provider=provider)
     
-    # Pressure text (only for manager)
-    kpi_pressure = prompts["pressure_manipulation"]["kpi_pressure"] if pressure else ""
+    # Manager receives pressure or neutral control text (same length)
+    manager_control_text = (prompts["pressure_manipulation"]["kpi_pressure"] if pressure 
+                           else prompts["pressure_manipulation"]["no_pressure"])
     
     evidence_text = format_evidence(case["evidence"], prompts)
     
     # ===== TURN 1: WORKER =====
+    # Worker proposes (NO tools - text analysis only)
     worker_prompts = prompts["roles"]["worker"]
+    
+    # Format actions list for worker
+    actions_list = "\n".join(
+        f"- {tool['function']['name']}: {tool['function']['description']}"
+        for tool in case["action_tools"]
+    )
+    
     worker_user_prompt = worker_prompts["user_prompt"].format(
         scenario_text=case["scenario_text"],
         context=case["context"],
-        evidence=evidence_text
+        evidence=evidence_text,
+        actions_list=actions_list
     )
     
     call_id = f"{run_id}_{episode_id}_turn_1_worker"
@@ -350,7 +363,7 @@ def run_team_episode(
                 Message(role="system", content=worker_prompts["system"]),
                 Message(role="user", content=worker_user_prompt)
             ],
-            tools=tools,
+            tools=None,  # Worker does NOT execute - only proposes
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
             metadata={
@@ -361,19 +374,15 @@ def run_team_episode(
             }
         )
         
-        # Extract tool call
-        tool_call = extract_tool_call(response)
-        worker_tool_call = tool_call
-        
-        # Store full worker message for manager (text only, not tool blocks)
+        # Store worker message (text only - no tools provided)
         if hasattr(response, 'content'):
             if isinstance(response.content, list):
-                # Anthropic format - extract only text blocks
+                # Anthropic format - extract text blocks
                 text_parts = [
                     block.text for block in response.content
                     if hasattr(block, 'text') and hasattr(block, 'type') and block.type == 'text'
                 ]
-                worker_message = "\n".join(text_parts) if text_parts else "[Worker called tool]"
+                worker_message = "\n".join(text_parts) if text_parts else "[Worker response]"
             else:
                 worker_message = str(response.content)
         else:
@@ -385,22 +394,13 @@ def run_team_episode(
             "prompt_type": "scenario",
             "message_count": message_count,
             "response_preview": worker_message[:200],
-            "tool_call": tool_call["name"] if tool_call else None,
+            "tool_call": None,  # Worker does not execute tools
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
         }
         
         turns.append(turn_record)
-        
-        if tool_call:
-            tool_calls_log.append({
-                "turn": 1,
-                "role": "worker",
-                "tool_name": tool_call["name"],
-                "arguments": tool_call["arguments"],
-                "outcome": get_tool_outcome(tool_call["name"], case)
-            })
     
     except Exception as e:
         print(f"  ✗ Worker turn failed: {e}")
@@ -413,10 +413,11 @@ def run_team_episode(
         return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "worker_error")
     
     # ===== TURN 2: MANAGER =====
+    # Manager reviews and instructs (NO tools - guidance only, receives pressure or neutral control)
     manager_prompts = prompts["roles"]["manager"]
     manager_user_prompt = manager_prompts["user_prompt"].format(
         worker_message=worker_message,
-        pressure=kpi_pressure
+        pressure=manager_control_text
     )
     
     call_id = f"{run_id}_{episode_id}_turn_2_manager"
@@ -437,7 +438,7 @@ def run_team_episode(
                 Message(role="system", content=manager_prompts["system"]),
                 Message(role="user", content=manager_user_prompt)
             ],
-            tools=tools,
+            tools=None,  # Manager does NOT execute - only instructs
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
             metadata={
@@ -448,19 +449,15 @@ def run_team_episode(
             }
         )
         
-        # Extract tool call
-        tool_call = extract_tool_call(response)
-        manager_tool_call = tool_call
-        
-        # Store full manager message for reviewer (text only, not tool blocks)
+        # Store manager message (text only - no tools provided)
         if hasattr(response, 'content'):
             if isinstance(response.content, list):
-                # Anthropic format - extract only text blocks
+                # Anthropic format - extract text blocks
                 text_parts = [
                     block.text for block in response.content
                     if hasattr(block, 'text') and hasattr(block, 'type') and block.type == 'text'
                 ]
-                manager_message = "\n".join(text_parts) if text_parts else "[Manager called tool]"
+                manager_message = "\n".join(text_parts) if text_parts else "[Manager response]"
             else:
                 manager_message = str(response.content)
         else:
@@ -472,22 +469,13 @@ def run_team_episode(
             "prompt_type": "review",
             "message_count": message_count,
             "response_preview": manager_message[:200],
-            "tool_call": tool_call["name"] if tool_call else None,
+            "tool_call": None,  # Manager does not execute tools
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
         }
         
         turns.append(turn_record)
-        
-        if tool_call:
-            tool_calls_log.append({
-                "turn": 2,
-                "role": "manager",
-                "tool_name": tool_call["name"],
-                "arguments": tool_call["arguments"],
-                "outcome": get_tool_outcome(tool_call["name"], case)
-            })
     
     except Exception as e:
         print(f"  ✗ Manager turn failed: {e}")

@@ -338,20 +338,34 @@ def test_run_team_episode_complete(
     assert episode["total_model_calls"] == 3
     assert episode["budget_exceeded"] is False
     
-    # Verify all three agents called tools
-    assert len(episode["tool_calls"]) == 3
-    assert episode["tool_calls"][0]["role"] == "worker"
-    assert episode["tool_calls"][1]["role"] == "manager"
-    assert episode["tool_calls"][2]["role"] == "reviewer"
+    # Verify only reviewer executed tool (worker and manager discuss only)
+    assert len(episode["tool_calls"]) == 1
+    assert episode["tool_calls"][0]["role"] == "reviewer"
+    assert episode["tool_calls"][0]["tool_name"] == "keep_late_fee"
     
-    # Verify KPI pressure was included in manager call
+    # Verify worker did NOT receive tools
+    worker_call = [
+        call for call in mock_provider.call_model.call_args_list
+        if "worker" in call[1]["call_id"]
+    ][0]
+    assert worker_call[1]["tools"] is None
+    
+    # Verify manager did NOT receive tools but DID receive KPI pressure
     manager_call = [
         call for call in mock_provider.call_model.call_args_list
         if "manager" in call[1]["call_id"]
     ][0]
+    assert manager_call[1]["tools"] is None
     manager_messages = manager_call[1]["messages"]
     manager_user_msg = [m for m in manager_messages if m.role == "user"][0]
     assert "performance review" in manager_user_msg.content.lower()
+    
+    # Verify reviewer DID receive tools
+    reviewer_call = [
+        call for call in mock_provider.call_model.call_args_list
+        if "reviewer" in call[1]["call_id"]
+    ][0]
+    assert reviewer_call[1]["tools"] is not None
 
 
 def test_load_cases_real_file():

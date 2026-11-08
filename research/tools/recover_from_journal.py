@@ -60,8 +60,8 @@ def recover_from_journals(
         ]
         print(f"Filtered to {len(journal_files)} matching call IDs")
     
-    # Initialize budget tracker
-    budget_tracker = BudgetTracker(ledger_path, budget_cap_usd=1000000.0)
+    # Initialize budget tracker (db_path, global_cap_usd positional)
+    budget_tracker = BudgetTracker(ledger_path, 1000000.0)
     
     stats = {
         "recovered": 0,
@@ -158,7 +158,7 @@ def rebuild_manifest_from_ledger(
         output_path: Where to write rebuilt manifest
         run_id: Optional run_id to filter calls
     """
-    budget_tracker = BudgetTracker(ledger_path, budget_cap_usd=1000000.0)
+    budget_tracker = BudgetTracker(ledger_path, 1000000.0)
     
     with budget_tracker._get_conn() as conn:
         if run_id:
