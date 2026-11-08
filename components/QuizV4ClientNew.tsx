@@ -92,53 +92,63 @@ export default function QuizV4ClientNew() {
     const item = QUIZ_V4_NEW[step];
     const answered = Object.keys(answers).length;
     return (
-      <section className="relative mx-auto max-w-[1100px] overflow-hidden border-b border-rule">
-        <div className="relative px-5 pt-8 md:px-8">
+      <section className="relative mx-auto max-w-[1280px] overflow-hidden border-b border-rule">
+        {/* Header with progress */}
+        <div className="relative border-b border-rule px-5 py-6 md:px-8">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Eyebrow>Question {step + 1} of {N} · {item.title}</Eyebrow>
+            <div>
+              <Eyebrow>Question {step + 1} of {N}</Eyebrow>
+              <h1 className="mt-2 text-[22px] font-bold leading-tight tracking-[-0.02em] md:text-[26px]">{item.title}</h1>
+            </div>
             <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/45">{item.category === "classic" ? "Classic problem" : "Everyday dilemma"}</span>
           </div>
-          <div className="mt-4 grid gap-1" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+          <div className="mt-5 grid gap-1" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
             {QUIZ_V4_NEW.map((_, j) => <span key={j} className={`h-1.5 ${j < step ? "bg-ink" : j === step ? "bg-vermilion" : "bg-ink/10"}`} />)}
           </div>
         </div>
-        <div className="relative px-5 pb-14 pt-10 md:px-8 md:pb-20 md:pt-14">
-          <div className="mx-auto max-w-2xl">
+
+        {/* Main content: two-column on desktop, stacked on mobile */}
+        <div className="relative grid gap-8 px-5 py-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-10 md:px-8 md:py-12">
+          
+          {/* Left column: Scenario and choices */}
+          <div>
             {/* Scenario */}
             <div className="space-y-4">
               {item.scenario.split('\n\n').map((para, i) => (
-                <p key={i} className="text-[17px] leading-relaxed text-ink/75">{para}</p>
+                <p key={i} className="text-[16px] leading-relaxed text-ink/80">{para}</p>
               ))}
             </div>
 
-            {/* Question */}
-            <h2 className="wide mt-8 text-[28px] font-bold leading-tight tracking-[-0.03em] md:text-[36px]">{item.question}</h2>
-
-            {/* Background */}
-            <div className="mt-8 border-l-4 border-ink/20 pl-5">
-              <div className="label !mb-1.5">Background</div>
-              <p className="text-[15px] leading-relaxed text-ink/75">{item.background}</p>
-              {item.sourceUrl && (
-                <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link mt-2 inline-block text-[14px]">
-                  Learn more
-                </a>
-              )}
+            {/* Mobile-only context (shown before choices on mobile) */}
+            <div className="mt-8 space-y-6 md:hidden">
+              <div className="rounded border border-ink/15 bg-paper p-5">
+                <div className="label !mb-2">Background</div>
+                <p className="text-[14px] leading-relaxed text-ink/75">{item.background}</p>
+                {item.sourceUrl && (
+                  <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link mt-2 inline-block text-[13px]">
+                    Learn more
+                  </a>
+                )}
+              </div>
+              <div className="rounded border border-vermilion/20 bg-highlight/30 p-5">
+                <div className="label !mb-2">Why it matters for AI</div>
+                <p className="text-[14px] leading-relaxed text-ink/75">{item.aiRelevance}</p>
+              </div>
             </div>
 
-            {/* AI Relevance */}
-            <div className="mt-6 border-l-4 border-vermilion/30 pl-5">
-              <div className="label !mb-1.5">Why it matters for AI</div>
-              <p className="text-[15px] leading-relaxed text-ink/75">{item.aiRelevance}</p>
+            {/* Question prompt */}
+            <div className="mt-8">
+              <h2 className="text-[18px] font-semibold leading-snug text-ink/90 md:text-[20px]">{item.question}</h2>
             </div>
 
             {/* Choices */}
-            <div className="mt-10 space-y-3">
+            <div className="mt-5 space-y-3">
               {([[0, item.left], [1, item.right]] as const).map(([v, t]) => (
                 <button 
                   key={v} 
                   type="button" 
                   onClick={() => answerQuestion(step, v)} 
-                  className="btn-ghost !w-full !justify-start !border-ink !py-5 !text-left !text-[15px] hover:!bg-ink hover:!text-white"
+                  className="btn-ghost !w-full !justify-start !border-ink !py-4 !text-left !text-[15px] hover:!bg-ink hover:!text-white"
                 >
                   {t}
                 </button>
@@ -147,12 +157,32 @@ export default function QuizV4ClientNew() {
 
             {/* Navigation */}
             {answered > 0 && (
-              <div className="mt-6 flex justify-between font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
+              <div className="mt-8 flex justify-between border-t border-rule pt-5 font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
                 <button type="button" onClick={() => setStep(step - 1)} className="uppercase hover:text-vermilion">Back</button>
                 <span>{answered} of {N} answered</span>
               </div>
             )}
           </div>
+
+          {/* Right sidebar: Background and AI relevance (desktop only) */}
+          <div className="hidden md:block">
+            <div className="sticky top-8 space-y-6">
+              <div className="rounded border border-ink/15 bg-paper p-6">
+                <div className="label !mb-2.5">Background</div>
+                <p className="text-[15px] leading-relaxed text-ink/75">{item.background}</p>
+                {item.sourceUrl && (
+                  <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link mt-3 inline-block text-[14px]">
+                    Learn more →
+                  </a>
+                )}
+              </div>
+              <div className="rounded border border-vermilion/20 bg-highlight/30 p-6">
+                <div className="label !mb-2.5">Why it matters for AI</div>
+                <p className="text-[15px] leading-relaxed text-ink/75">{item.aiRelevance}</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
     );
