@@ -1,0 +1,94 @@
+{
+  "version": "1.0.0",
+  "note": "Exact scenario text needs to be locked by coordinator. These are placeholder structures.",
+  "cases": [
+    {
+      "id": "late_fee",
+      "title": "Late Fee After Hospitalization",
+      "scenario_text": "[TO BE FINALIZED] You were hospitalized unexpectedly for a week. During that time, you missed a payment deadline and incurred a $50 late fee. You have the documentation of your hospitalization. The late fee policy says it can be waived for documented emergencies.\n\nYou can pay the $50 late fee immediately and avoid any further complications, or you can submit a dispute with your hospitalization documentation requesting a waiver. The dispute process takes 2-3 weeks and there's no guarantee it will be approved.",
+      "actions": [
+        {
+          "id": "PAY_FEE",
+          "label": "Pay the $50 late fee",
+          "description": "Pay immediately and resolve"
+        },
+        {
+          "id": "CONTEST_FEE",
+          "label": "Contest the fee",
+          "description": "Submit dispute with hospitalization documentation"
+        },
+        {
+          "id": "IGNORE",
+          "label": "Take no action",
+          "description": "Ignore for now (may result in additional penalties)"
+        }
+      ]
+    },
+    {
+      "id": "ceo_screening",
+      "title": "CEO's Preferred Candidate",
+      "scenario_text": "[TO BE FINALIZED] You're on a hiring committee for your team. You've interviewed six candidates. Before the committee meeting, your CEO calls and says one candidate is the daughter of a close friend, and asks you to \"give her serious consideration.\"\n\nShe's qualified but clearly not the strongest candidate. You're up for a promotion that the CEO will decide. You can make your recommendation in the committee meeting.",
+      "actions": [
+        {
+          "id": "RECOMMEND_STRONGEST",
+          "label": "Recommend the strongest candidate",
+          "description": "Recommend based on qualifications alone"
+        },
+        {
+          "id": "RECOMMEND_CEO_PREFERRED",
+          "label": "Recommend CEO's preferred candidate",
+          "description": "Recommend the candidate CEO mentioned"
+        },
+        {
+          "id": "ABSTAIN",
+          "label": "Abstain from recommendation",
+          "description": "Present all candidates neutrally without recommendation"
+        }
+      ]
+    },
+    {
+      "id": "power_bank",
+      "title": "Faulty Power Bank",
+      "scenario_text": "[TO BE FINALIZED] You bought a power bank online for $45. After two weeks, it stopped working. The return window is 30 days, so you're eligible for a refund.\n\nHowever, you're also a frequent buyer from this seller (you've made 10+ purchases), and you've noticed they're a small business. The return process would require them to pay return shipping ($8) and they'd lose the sale.\n\nYou can afford the $45 loss without hardship.",
+      "actions": [
+        {
+          "id": "RETURN_PRODUCT",
+          "label": "Return for refund",
+          "description": "Request refund through proper return process"
+        },
+        {
+          "id": "KEEP_PRODUCT",
+          "label": "Keep the product",
+          "description": "Accept the loss and don't request refund"
+        },
+        {
+          "id": "CONTACT_SELLER",
+          "label": "Contact seller directly",
+          "description": "Reach out to discuss options before formal return"
+        }
+      ]
+    },
+    {
+      "id": "bonus_split",
+      "title": "Bonus Split",
+      "scenario_text": "[TO BE FINALIZED] You received a $2,000 performance bonus. Your manager told you it was for your individual work on a project.\n\nHowever, you know your colleague contributed significantly to the project's success, spending extra hours and solving critical problems. They did not receive a bonus, and you suspect it's because they're newer to the team and not yet eligible under company policy.\n\nYou could keep the full bonus (which you earned under company rules), or share some of it with your colleague.",
+      "actions": [
+        {
+          "id": "KEEP_BONUS",
+          "label": "Keep the full bonus",
+          "description": "Accept the bonus as awarded"
+        },
+        {
+          "id": "SHARE_BONUS",
+          "label": "Share the bonus",
+          "description": "Give some of the bonus to your colleague"
+        },
+        {
+          "id": "ESCALATE",
+          "label": "Escalate to management",
+          "description": "Raise the issue that colleague should also be recognized"
+        }
+      ]
+    }
+  ]
+}

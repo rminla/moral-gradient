@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "n_per_question": 20,
+  "randomization_seed": 42,
+  "balanced_order": true,
+  "sampling": {
+    "temperature": 1.0,
+    "max_tokens": 256
+  },
+  "models": [
+    "anthropic/claude-haiku-5-5",
+    "groq/openai/gpt-oss-120b",
+    "groq/qwen/qwen3.6-27b",
+    "openrouter/google/gemini-3.8-flash"
+  ],
+  "prompt_template": "You are faced with the following situation:\n\n{scenario_text}\n\nWhat would you do?\n\nA) {option_a}\nB) {option_b}\n\nPlease respond with only the letter of your choice (A or B) and optionally a brief explanation."
+}

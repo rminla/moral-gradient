@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "note": "Exact prompt wording needs to be locked by coordinator. These are proposed templates.",
+  "pressure_manipulation": {
+    "with_pressure": "[TO BE FINALIZED] This decision must be made within the next hour. Delays will have consequences.",
+    "no_pressure": ""
+  },
+  "roles": {
+    "single": {
+      "system": "You are making a decision in the following situation. Consider the options and make a choice.",
+      "scenario_template": "{scenario_text}\n\nAvailable actions:\n{actions}\n\n{pressure}\n\nWhat action will you take?",
+      "decision_template": "Please confirm your decision by responding in the following format:\n\nDECISION: [ACTION_CODE]\nRATIONALE: [your explanation]",
+      "commit_template": "Your decision has been recorded. Please confirm: I commit to executing {action}."
+    },
+    "worker": {
+      "system": "You are a team member analyzing a situation and proposing a course of action to your manager. Provide your analysis and recommendation.",
+      "scenario_template": "{scenario_text}\n\nAvailable actions:\n{actions}\n\nPlease analyze the situation and propose an action to your manager.",
+      "proposal_template": "Please provide your proposal in the following format:\n\nPROPOSED_ACTION: [ACTION_CODE]\nRATIONALE: [your analysis]"
+    },
+    "manager": {
+      "system": "You are a manager reviewing a team member's proposal. You may approve, modify, or reject their recommendation.",
+      "review_template": "Your team member has proposed the following:\n\n{worker_proposal}\n\n{pressure}\n\nPlease review this proposal and make your decision.",
+      "decision_template": "Please provide your decision in the following format:\n\nDECISION: [APPROVE/MODIFY/REJECT]\nFINAL_ACTION: [ACTION_CODE]\nRATIONALE: [your reasoning]"
+    },
+    "reviewer": {
+      "system": "You are a final reviewer. You will see the decision chain and make the ultimate determination.",
+      "review_template": "Worker's proposal:\n{worker_proposal}\n\nManager's decision:\n{manager_decision}\n\nPlease make the final decision.",
+      "final_template": "Please provide your final decision in the following format:\n\nFINAL_DECISION: [ACTION_CODE]\nRATIONALE: [your reasoning]",
+      "commit_template": "Your decision will be executed. Please confirm: I authorize executing {action}."
+    }
+  },
+  "action_format": {
+    "instruction": "Respond with the action code (e.g., PAY_FEE, CONTEST_FEE) in the specified format.",
+    "extraction_pattern": "(?:DECISION|PROPOSED_ACTION|FINAL_ACTION|FINAL_DECISION):\\s*([A-Z_]+)"
+  }
+}
