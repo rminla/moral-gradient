@@ -231,7 +231,8 @@ def run_quiz(
     run_id: Optional[str] = None,
     ledger_path: Optional[Path] = None,
     max_workers: int = 4,
-    http_timeout: int = 180
+    http_timeout: int = 180,
+    retry_plan_path: Optional[Path] = None
 ) -> Dict:
     """
     Run quiz comparison experiment.
@@ -352,39 +353,105 @@ def run_quiz(
     print(f"  Total recorded in ledger: {len(ledger_call_ids)} ({len(error_call_ids)} errors)")
     print(f"  Will skip: {len(completed_call_ids)} already recorded\n")
     
-    # Generate call plan
-    random.seed(config["randomization_seed"])
-    
-    call_plan = []
-    for scenario in scenarios_data["scenarios"]:
-        scenario_id = scenario["id"]
-        option_ids = [opt["id"] for opt in scenario["options"]]
+    # Generate call plan (or load from retry plan)
+    if retry_plan_path:
+        print(f"Loading retry plan: {retry_plan_path}")
+        with open(retry_plan_path) as f:
+            retry_data = json.load(f)
         
-        for model_id in config["models"]:
-            # Generate balanced randomization
-            n_per = config["n_per_question"]
-            n_half = n_per // 2
+        print(f"Retry plan for {len(retry_data['retry_plan'])} missing samples")
+        print(f"  Errors: {sum(1 for r in retry_data['retry_plan'] if r['reason'] == 'local_error')}")
+        print(f"  Held: {sum(1 for r in retry_data['retry_plan'] if r['reason'] == 'held_unknown_cost')}")
+        print(f"  Unattempted: {sum(1 for r in retry_data['retry_plan'] if r['reason'] == 'unattempted')}\n")
+        
+        # Build call plan from retry specs
+        call_plan = []
+        
+        # Deterministic order generation (same seed)
+        random.seed(config["randomization_seed"])
+        
+        # Pre-compute option orders for all samples
+        order_map = {}
+        for scenario in scenarios_data["scenarios"]:
+            scenario_id = scenario["id"]
+            option_ids = [opt["id"] for opt in scenario["options"]]
             
-            # Half with original order, half with swapped
-            orders = []
-            orders.extend([option_ids] * n_half)  # Original order
-            orders.extend([option_ids[::-1]] * (n_per - n_half))  # Swapped
-            
-            random.shuffle(orders)  # Shuffle assignment
-            
-            for call_idx, option_order in enumerate(orders):
-                # Namespace call IDs by run to avoid collisions
-                call_id = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_{call_idx}"
+            for model_id in config["models"]:
+                n_per = config["n_per_question"]
+                n_half = n_per // 2
+                orders = []
+                orders.extend([option_ids] * n_half)
+                orders.extend([option_ids[::-1]] * (n_per - n_half))
+                random.shuffle(orders)
                 
-                if call_id not in completed_call_ids:
-                    call_plan.append({
-                        "call_id": call_id,
-                        "scenario_id": scenario_id,
-                        "scenario": scenario,
-                        "model_id": model_id,
-                        "option_order": option_order,
-                        "call_index": call_idx
-                    })
+                for idx, order in enumerate(orders):
+                    key = f"{scenario_id}_{model_id}_{idx}"
+                    order_map[key] = order
+        
+        # Generate specs from retry plan
+        for retry_spec in retry_data['retry_plan']:
+            scenario_id = retry_spec['scenario_id']
+            model_id = retry_spec['model_id']
+            sample_idx = retry_spec['sample_idx']
+            
+            # Find scenario
+            scenario = next((s for s in scenarios_data["scenarios"] if s["id"] == scenario_id), None)
+            if not scenario:
+                continue
+            
+            # Get deterministic option order
+            key = f"{scenario_id}_{model_id}_{sample_idx}"
+            option_order = order_map.get(key)
+            if not option_order:
+                option_order = [opt["id"] for opt in scenario["options"]]
+            
+            call_plan.append({
+                "call_id": retry_spec['new_call_id'],
+                "scenario_id": scenario_id,
+                "scenario": scenario,
+                "model_id": model_id,
+                "option_order": option_order,
+                "call_index": sample_idx,
+                "retry_info": {
+                    "attempt_num": retry_spec['attempt_num'],
+                    "reason": retry_spec['reason'],
+                    "old_call_id": retry_spec.get('old_call_id')
+                }
+            })
+    else:
+        # Normal call plan generation
+        random.seed(config["randomization_seed"])
+        
+        call_plan = []
+        for scenario in scenarios_data["scenarios"]:
+            scenario_id = scenario["id"]
+            option_ids = [opt["id"] for opt in scenario["options"]]
+            
+            for model_id in config["models"]:
+                # Generate balanced randomization
+                n_per = config["n_per_question"]
+                n_half = n_per // 2
+                
+                # Half with original order, half with swapped
+                orders = []
+                orders.extend([option_ids] * n_half)  # Original order
+                orders.extend([option_ids[::-1]] * (n_per - n_half))  # Swapped
+                
+                random.shuffle(orders)  # Shuffle assignment
+                
+                for call_idx, option_order in enumerate(orders):
+                    # Namespace call IDs by run to avoid collisions
+                    call_id = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_{call_idx}"
+                    
+                    if call_id not in completed_call_ids:
+                        call_plan.append({
+                            "call_id": call_id,
+                            "scenario_id": scenario_id,
+                            "scenario": scenario,
+                            "model_id": model_id,
+                            "option_order": option_order,
+                            "call_index": call_idx
+                        })
     
     total_planned = len(call_plan) + len(completed_call_ids)
     print(f"Total calls planned: {total_planned}")
@@ -676,7 +743,7 @@ def execute_quiz_call(
         error_msg = str(e)
         # Internal errors (already reserved, already exists) - SKIP WITHOUT COUNTING
         if "already reserved" in error_msg.lower() or "already exists" in error_msg.lower() or "already recorded" in error_msg.lower():
-            print(f"  ⊘ {call_id}: Skipped (internal: {error_msg})")
+            print(f"  ⊘ {call_spec['call_id']}: Skipped (internal: {error_msg})")
             return None  # Skip silently, don't count as failure
         # Other ValueError - count as failure
         disabled = circuit_breaker.record_failure(model_id)
@@ -840,6 +907,11 @@ def main():
         default=180,
         help="HTTP timeout in seconds (default: 180)"
     )
+    parser.add_argument(
+        "--retry-plan",
+        type=Path,
+        help="Retry plan JSON for missing samples (from audit_retry_plan.py)"
+    )
     
     args = parser.parse_args()
     
@@ -857,7 +929,8 @@ def main():
         run_id=args.run_id,
         ledger_path=args.ledger_path,
         max_workers=args.max_workers,
-        http_timeout=args.http_timeout
+        http_timeout=args.http_timeout,
+        retry_plan_path=args.retry_plan
     )
     
     # Exit with code 2 if coverage incomplete (for box automation)
