@@ -228,23 +228,41 @@ class ProviderClient:
         if system_msg:
             kwargs["system"] = system_msg
         
-        # Add model-specific parameters
+        # Add model-specific parameters (exact v3 config)
         if model_config.adaptive_thinking:
-            # Anthropic adaptive thinking parameters
-            kwargs["metadata"] = {"thinking_effort": model_config.reasoning_effort}
+            # Anthropic adaptive thinking (v3 model_versions.json format)
+            kwargs["thinking"] = {
+                "type": "adaptive",
+                "display": "summarized"
+            }
+            kwargs["output_config"] = {
+                "effort": model_config.reasoning_effort or "medium"
+            }
         
         start_time = time.time()
         response = client.messages.create(**kwargs)
         duration_ms = int((time.time() - start_time) * 1000)
         
-        # Extract content
-        content = response.content[0].text if response.content else ""
+        # Extract content (concatenate all text blocks, thinking may come first)
+        content_parts = []
+        if response.content:
+            for block in response.content:
+                if hasattr(block, 'text'):
+                    content_parts.append(block.text)
+        content = "\n".join(content_parts) if content_parts else ""
         
-        # Calculate cost
+        # Calculate cost (account for all token types including thinking)
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
+        
+        # Account for thinking tokens if present (added to output count)
+        if hasattr(response.usage, 'thinking_tokens') and response.usage.thinking_tokens:
+            output_tokens += response.usage.thinking_tokens
+        
         usage = {
-            'prompt_tokens': response.usage.input_tokens,
-            'completion_tokens': response.usage.output_tokens,
-            'total_tokens': response.usage.input_tokens + response.usage.output_tokens
+            'prompt_tokens': input_tokens,
+            'completion_tokens': output_tokens,
+            'total_tokens': input_tokens + output_tokens
         }
         
         from .models import estimate_cost
