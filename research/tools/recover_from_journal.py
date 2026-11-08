@@ -214,13 +214,17 @@ def rebuild_manifest_from_ledger(
         # Parse quiz answers from journals using SAME parser as main runner
         results = []
         metadata_missing_count = 0
+        skipped_count = 0
         
         for row in rows:
             call_id = row['call_id']
-            journal_path = journal_dir / f"{call_id}.journal"
+            # Journal filenames have slashes replaced with underscores
+            journal_filename = call_id.replace('/', '_')
+            journal_path = journal_dir / f"{journal_filename}.journal"
             
             if not journal_path.exists():
                 print(f"  ⚠ {call_id}: No journal found")
+                skipped_count += 1
                 continue
             
             try:
@@ -228,31 +232,58 @@ def rebuild_manifest_from_ledger(
                 with open(journal_path) as f:
                     entry = json.load(f)
                 
-                # Get metadata (contains scenario, question_id, model, sample, option_order)
+                # ACTUAL journal shape:
+                # - Top-level: model_id, model_version, provider, finish_reason, raw_response
+                # - metadata: {"scenario_id": "trolley", "option_order": ["leave_alone", "pull_switch"]}
+                
+                # Get metadata (JSON string or dict)
                 metadata_str = entry.get('metadata')
                 if not metadata_str:
                     print(f"  ✗ {call_id}: No metadata in journal (unrecoverable)")
                     metadata_missing_count += 1
+                    skipped_count += 1
                     continue
                 
                 metadata = json.loads(metadata_str) if isinstance(metadata_str, str) else metadata_str
                 
-                # Extract from metadata (DO NOT parse call_id with underscores)
-                question_id = metadata.get('question_id')
-                model_id = metadata.get('model_id')  # Full ID with slashes
-                sample_idx = metadata.get('sample_idx')
+                # Extract from metadata - ACTUAL keys
+                scenario_id = metadata.get('scenario_id')  # NOT 'question_id'
                 option_order = metadata.get('option_order')  # Canonical action IDs
-                scenario = metadata.get('scenario')
                 
-                if not all([question_id, model_id, option_order]):
-                    print(f"  ✗ {call_id}: Incomplete metadata (question_id={question_id}, model={model_id}, option_order={option_order})")
+                # Extract from top-level - NOT from metadata
+                model_id = entry.get('model_id')  # Full ID like 'openrouter/google/gemini-3.8-flash'
+                
+                if not all([scenario_id, model_id, option_order]):
+                    print(f"  ✗ {call_id}: Incomplete data (scenario_id={scenario_id}, model={model_id}, option_order={option_order})")
                     metadata_missing_count += 1
+                    skipped_count += 1
                     continue
                 
-                # Extract response content
+                # Extract sample_idx by removing EXACT known prefix
+                # Format: {run_id}_{scenario_id}_{model_id.replace("/", "_")}_s{N}
+                if run_id:
+                    expected_prefix = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_s"
+                    if call_id.startswith(expected_prefix):
+                        sample_str = call_id[len(expected_prefix):]
+                        try:
+                            sample_idx = int(sample_str)
+                        except ValueError:
+                            print(f"  ✗ {call_id}: Cannot parse sample_idx from '{sample_str}'")
+                            skipped_count += 1
+                            continue
+                    else:
+                        print(f"  ✗ {call_id}: Does not match expected prefix '{expected_prefix}'")
+                        skipped_count += 1
+                        continue
+                else:
+                    # No run_id provided, cannot extract sample_idx reliably
+                    sample_idx = None
+                
+                # Extract response content from raw_response
                 raw_response = entry.get('raw_response')
                 if not raw_response:
                     print(f"  ⚠ {call_id}: No raw_response")
+                    skipped_count += 1
                     continue
                 
                 content = ""
@@ -279,12 +310,12 @@ def rebuild_manifest_from_ledger(
                 # Build result with SAME schema as main runner
                 result = {
                     "call_id": call_id,
-                    "question_id": question_id,
-                    "model_id": model_id,  # Full ID like "anthropic/claude-haiku-5-5"
+                    "question_id": scenario_id,  # Use scenario_id as question_id
+                    "model_id": model_id,  # Full ID from top-level
                     "sample_idx": sample_idx,
-                    "option_order": option_order,  # Canonical action IDs [first, second]
+                    "option_order": option_order,  # From metadata
                     "display_letter": letter_choice,  # A, B, or None
-                    "semantic_choice": semantic_action,  # Canonical action ID or None
+                    "semantic_choice": semantic_action,  # Canonical action ID
                     "response_text": content,  # Full text
                     "finish_reason": entry.get('finish_reason'),
                     "usage": entry.get('usage', {}),
@@ -303,6 +334,7 @@ def rebuild_manifest_from_ledger(
                 print(f"  ✗ {call_id}: Failed to parse - {e}")
                 import traceback
                 traceback.print_exc()
+                skipped_count += 1
                 continue
         
         manifest["results"] = results
@@ -311,6 +343,12 @@ def rebuild_manifest_from_ledger(
             print(f"⚠ {metadata_missing_count} calls missing metadata (unrecoverable)")
         
         print(f"✓ Recovered {len(results)} quiz answers from journals")
+        print(f"  Skipped: {skipped_count} calls")
+        
+        # Exit with error if all skipped (unless truly empty run)
+        if len(rows) > 0 and len(results) == 0:
+            print(f"\n✗ ERROR: All {len(rows)} calls skipped, no results recovered")
+            sys.exit(1)
     
     # Add ledger summary (costs, not full answers)
     for row in rows:
