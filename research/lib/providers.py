@@ -26,6 +26,7 @@ class ModelResponse:
     usage: Dict[str, int]  # prompt_tokens, completion_tokens, total_tokens
     actual_cost_usd: float
     duration_ms: int
+    finish_reason: Optional[str] = None  # stop, length, error, etc
     raw_response: Optional[Dict] = None  # Full response for debugging
 
 
@@ -63,7 +64,7 @@ class ProviderClient:
         call_id: str,
         model_id: str,
         messages: List[Message],
-        max_tokens: int = 256,
+        max_tokens: int = 2048,
         temperature: float = 1.0,
         metadata: Optional[Dict] = None
     ) -> ModelResponse:
@@ -109,24 +110,59 @@ class ProviderClient:
         )
         
         # Make API call (or mock if dry_run)
-        if self.dry_run:
-            response = self._mock_call(model_config, messages, max_tokens)
-        else:
-            response = self._real_call(
-                model_config, messages, max_tokens, temperature
-            )
+        try:
+            if self.dry_run:
+                response = self._mock_call(model_config, messages, max_tokens)
+            else:
+                response = self._real_call(
+                    model_config, messages, max_tokens, temperature
+                )
+        except Exception as call_error:
+            # If call fails (especially circuit breaker), release reservation
+            try:
+                self.budget_tracker.reconcile(
+                    call_id=call_id,
+                    model_version='error',
+                    prompt_tokens=0,
+                    completion_tokens=0,
+                    actual_cost_usd=0.0,
+                    duration_ms=0,
+                    experiment=self.experiment,
+                    error=str(call_error)
+                )
+            except:
+                pass  # Last resort: tried to release
+            raise call_error
         
-        # Reconcile actual cost
-        self.budget_tracker.reconcile(
-            call_id=call_id,
-            model_version=response.model_version,
-            prompt_tokens=response.usage['prompt_tokens'],
-            completion_tokens=response.usage['completion_tokens'],
-            actual_cost_usd=response.actual_cost_usd,
-            duration_ms=response.duration_ms,
-            experiment=self.experiment,
-            metadata=json.dumps(metadata) if metadata else None
-        )
+        # Reconcile actual cost (or release reservation on error)
+        try:
+            self.budget_tracker.reconcile(
+                call_id=call_id,
+                model_version=response.model_version,
+                prompt_tokens=response.usage['prompt_tokens'],
+                completion_tokens=response.usage['completion_tokens'],
+                actual_cost_usd=response.actual_cost_usd,
+                duration_ms=response.duration_ms,
+                experiment=self.experiment,
+                metadata=json.dumps(metadata) if metadata else None
+            )
+        except Exception as reconcile_error:
+            # If reconciliation fails, at least release the reservation
+            # by recording a zero-cost failed call
+            try:
+                self.budget_tracker.reconcile(
+                    call_id=call_id,
+                    model_version='error',
+                    prompt_tokens=0,
+                    completion_tokens=0,
+                    actual_cost_usd=0.0,
+                    duration_ms=response.duration_ms if 'response' in locals() else 0,
+                    experiment=self.experiment,
+                    error=str(reconcile_error)
+                )
+            except:
+                pass  # Last resort: at least we tried
+            raise reconcile_error
         
         return response
     
@@ -168,6 +204,7 @@ class ProviderClient:
             },
             actual_cost_usd=mock_cost,
             duration_ms=100,  # Mock duration
+            finish_reason="stop",
             raw_response={'mock': True}
         )
     
@@ -240,8 +277,16 @@ class ProviderClient:
             }
         
         start_time = time.time()
-        response = client.messages.create(**kwargs)
-        duration_ms = int((time.time() - start_time) * 1000)
+        try:
+            response = client.messages.create(**kwargs)
+            duration_ms = int((time.time() - start_time) * 1000)
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            # Check for permanent errors that should circuit break
+            error_str = str(e).lower()
+            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota', 'overloaded']):
+                raise RuntimeError(f"Anthropic permanent error (circuit break): {e}")
+            raise
         
         # Extract content (concatenate all text blocks, thinking may come first)
         content_parts = []
@@ -278,6 +323,7 @@ class ProviderClient:
             usage=usage,
             actual_cost_usd=cost,
             duration_ms=duration_ms,
+            finish_reason=response.stop_reason if hasattr(response, 'stop_reason') else None,
             raw_response=response.model_dump() if hasattr(response, 'model_dump') else None
         )
     
@@ -303,7 +349,7 @@ class ProviderClient:
             for msg in messages
         ]
         
-        # Build request
+        # Build request (model-specific params from v3)
         kwargs = {
             "model": model_config.api_model_name,
             "messages": conv_messages,
@@ -311,13 +357,25 @@ class ProviderClient:
             "temperature": temperature,
         }
         
-        # Add reasoning effort if supported
-        if model_config.reasoning_effort:
+        # Model-specific parameters (exact v3 format)
+        if model_config.model_id == "groq/qwen/qwen3.6-27b":
+            # Qwen uses reasoning_format, NOT reasoning_effort
+            kwargs["reasoning_format"] = "parsed"
+        elif model_config.reasoning_effort:
+            # Other models (gpt-oss) use reasoning_effort
             kwargs["reasoning_effort"] = model_config.reasoning_effort
         
         start_time = time.time()
-        response = client.chat.completions.create(**kwargs)
-        duration_ms = int((time.time() - start_time) * 1000)
+        try:
+            response = client.chat.completions.create(**kwargs)
+            duration_ms = int((time.time() - start_time) * 1000)
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            # Check for permanent errors that should circuit break
+            error_str = str(e).lower()
+            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota']):
+                raise RuntimeError(f"Groq permanent error (circuit break): {e}")
+            raise
         
         # Extract content
         content = response.choices[0].message.content or ""
@@ -342,6 +400,7 @@ class ProviderClient:
             usage=usage,
             actual_cost_usd=cost,
             duration_ms=duration_ms,
+            finish_reason=response.choices[0].finish_reason if response.choices else None,
             raw_response=response.model_dump() if hasattr(response, 'model_dump') else None
         )
     
@@ -381,8 +440,16 @@ class ProviderClient:
             pass
         
         start_time = time.time()
-        response = client.chat.completions.create(**kwargs)
-        duration_ms = int((time.time() - start_time) * 1000)
+        try:
+            response = client.chat.completions.create(**kwargs)
+            duration_ms = int((time.time() - start_time) * 1000)
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            # Check for permanent errors that should circuit break
+            error_str = str(e).lower()
+            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota']):
+                raise RuntimeError(f"OpenRouter permanent error (circuit break): {e}")
+            raise
         
         # Extract content
         content = response.choices[0].message.content or ""
@@ -407,5 +474,6 @@ class ProviderClient:
             usage=usage,
             actual_cost_usd=cost,
             duration_ms=duration_ms,
+            finish_reason=response.choices[0].finish_reason if response.choices else None,
             raw_response=response.model_dump() if hasattr(response, 'model_dump') else None
         )

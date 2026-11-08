@@ -48,13 +48,15 @@ def test_quiz_dry_run():
         with open(test_scenarios_path, 'w') as f:
             json.dump(test_scenarios, f)
         
-        # Run quiz in dry-run mode
+        # Run quiz in dry-run mode (with temp ledger)
+        ledger_path = Path(tmpdir) / "test_ledger.db"
         manifest = run_quiz.run_quiz(
             config_path=test_config_path,
             scenarios_path=test_scenarios_path,
             output_dir=output_dir,
             budget_cap=1.0,
-            dry_run=True
+            dry_run=True,
+            ledger_path=ledger_path
         )
         
         # Verify manifest structure
@@ -141,13 +143,15 @@ def test_checkpoint_resume():
         with open(test_config_path, 'w') as f:
             json.dump(test_config, f)
         
-        # First run (will create checkpoint)
+        # First run (will create checkpoint, with temp ledger)
+        ledger_path = Path(tmpdir) / "test_ledger.db"
         manifest1 = run_quiz.run_quiz(
             config_path=test_config_path,
             scenarios_path=scenarios_path,
             output_dir=output_dir,
             budget_cap=1.0,
-            dry_run=True
+            dry_run=True,
+            ledger_path=ledger_path
         )
         
         # Save manifest
@@ -155,14 +159,15 @@ def test_checkpoint_resume():
         with open(manifest_path, 'w') as f:
             json.dump(manifest1, f)
         
-        # Resume (should skip already completed calls)
+        # Resume (should skip already completed calls, same temp ledger)
         manifest2 = run_quiz.run_quiz(
             config_path=test_config_path,
             scenarios_path=scenarios_path,
             output_dir=output_dir,
             budget_cap=1.0,
             dry_run=True,
-            resume_from=manifest_path
+            resume_from=manifest_path,
+            ledger_path=ledger_path
         )
         
         # Should have same number of calls

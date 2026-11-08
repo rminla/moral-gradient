@@ -73,7 +73,8 @@ def run_single_episode(
     pressure: bool,
     config: Dict,
     prompts: Dict,
-    provider_client: ProviderClient
+    provider_client: ProviderClient,
+    run_id: str
 ) -> Dict:
     """
     Run a single-agent episode.
@@ -103,7 +104,7 @@ def run_single_episode(
         Message(role="user", content=scenario_prompt)
     ]
     
-    call_id = f"{episode_id}_turn_1"
+    call_id = f"{run_id}_{episode_id}_turn_1"
     
     try:
         response = provider_client.call_model(
@@ -141,7 +142,7 @@ def run_single_episode(
     
     # Turn 2: Decision confirmation (if no action yet)
     if not final_action and len(turns) < max_turns:
-        call_id = f"{episode_id}_turn_2"
+        call_id = f"{run_id}_{episode_id}_turn_2"
         
         try:
             turn_2_messages = turn_1_messages + [
@@ -205,7 +206,8 @@ def run_team_episode(
     pressure: bool,
     config: Dict,
     prompts: Dict,
-    provider_client: ProviderClient
+    provider_client: ProviderClient,
+    run_id: str
 ) -> Dict:
     """
     Run a team episode (worker → manager → reviewer).
@@ -227,7 +229,7 @@ def run_team_episode(
         actions_list=format_actions_list(case["actions"])
     )
     
-    call_id = f"{episode_id}_turn_1_worker"
+    call_id = f"{run_id}_{episode_id}_turn_1_worker"
     worker_proposal = None
     
     try:
@@ -278,7 +280,7 @@ def run_team_episode(
         pressure=pressure_text
     )
     
-    call_id = f"{episode_id}_turn_2_manager"
+    call_id = f"{run_id}_{episode_id}_turn_2_manager"
     manager_decision = None
     
     try:
@@ -329,7 +331,7 @@ def run_team_episode(
         manager_decision=manager_decision
     )
     
-    call_id = f"{episode_id}_turn_3_reviewer"
+    call_id = f"{run_id}_{episode_id}_turn_3_reviewer"
     
     try:
         response = provider_client.call_model(
@@ -384,7 +386,9 @@ def run_swarm(
     output_dir: Path,
     budget_cap: float,
     dry_run: bool = False,
-    resume_from: Optional[Path] = None
+    resume_from: Optional[Path] = None,
+    run_id: Optional[str] = None,
+    ledger_path: Optional[Path] = None
 ) -> Dict:
     """
     Run swarm experiment.
@@ -416,8 +420,9 @@ def run_swarm(
         print("="*60)
         sys.exit(1)
     
-    # Initialize budget tracker
-    ledger_path = Path(__file__).parent.parent / "ledger.db"
+    # Initialize budget tracker (use provided path or default)
+    if ledger_path is None:
+        ledger_path = Path(__file__).parent.parent / "ledger.db"
     budget_tracker = BudgetTracker(ledger_path, budget_cap)
     
     # Initialize provider client
@@ -450,8 +455,9 @@ def run_swarm(
     if dry_run:
         print("⚠️  DRY RUN MODE - No actual API calls will be made\n")
     
-    # Create manifest structure
-    run_id = f"swarm_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    # Create manifest structure (use provided run_id or generate)
+    if run_id is None:
+        run_id = f"swarm_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
     manifest = {
         "version": "1.0.0",
         "run_id": run_id,
@@ -528,7 +534,8 @@ def run_swarm(
                         pressure=ep_spec['arm_config']['pressure'],
                         config=config,
                         prompts=prompts,
-                        provider_client=provider_client
+                        provider_client=provider_client,
+                        run_id=run_id
                     )
                 else:  # team
                     episode = run_team_episode(
@@ -538,7 +545,8 @@ def run_swarm(
                         pressure=ep_spec['arm_config']['pressure'],
                         config=config,
                         prompts=prompts,
-                        provider_client=provider_client
+                        provider_client=provider_client,
+                        run_id=run_id
                     )
                 
                 manifest["episodes"].append(episode)

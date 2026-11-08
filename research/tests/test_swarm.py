@@ -70,7 +70,8 @@ def test_single_episode_dry_run():
             pressure=False,
             config=config,
             prompts=prompts,
-            provider_client=client
+            provider_client=client,
+            run_id="test_single_episode"
         )
         
         # Verify structure
@@ -112,7 +113,8 @@ def test_team_episode_dry_run():
             pressure=True,
             config=config,
             prompts=prompts,
-            provider_client=client
+            provider_client=client,
+            run_id="test_team_episode"
         )
         
         # Verify structure
@@ -164,14 +166,18 @@ def test_swarm_full_dry_run():
         with open(test_cases_path, 'w') as f:
             json.dump(test_cases, f)
         
-        # Run swarm in dry-run mode
+        # Run swarm in dry-run mode (with temp ledger and unique run_id)
+        ledger_path = Path(tmpdir) / "test_ledger.db"
+        run_id = "test_swarm_full"
         manifest = run_swarm.run_swarm(
             config_path=test_config_path,
             cases_path=test_cases_path,
             prompts_path=prompts_path,
             output_dir=output_dir,
             budget_cap=5.0,
-            dry_run=True
+            dry_run=True,
+            run_id=run_id,
+            ledger_path=ledger_path
         )
         
         # Verify manifest
@@ -214,7 +220,8 @@ def test_turn_limits():
             pressure=False,
             config=config,
             prompts=prompts,
-            provider_client=client
+            provider_client=client,
+            run_id="test_turn_limits_single"
         )
         
         assert len(single_episode["turns"]) <= config["max_turns"]["single"]
@@ -227,7 +234,8 @@ def test_turn_limits():
             pressure=False,
             config=config,
             prompts=prompts,
-            provider_client=client
+            provider_client=client,
+            run_id="test_turn_limits_team"
         )
         
         assert len(team_episode["turns"]) <= config["max_turns"]["team"]

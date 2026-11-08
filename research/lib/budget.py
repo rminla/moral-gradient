@@ -90,7 +90,9 @@ class BudgetTracker:
                     actual_cost_usd REAL NOT NULL,
                     duration_ms INTEGER,
                     experiment TEXT NOT NULL,
-                    metadata TEXT
+                    metadata TEXT,
+                    error TEXT,
+                    mock_data INTEGER DEFAULT 0
                 )
             """)
             
@@ -265,7 +267,8 @@ class BudgetTracker:
         actual_cost_usd: float,
         duration_ms: int,
         experiment: str,
-        metadata: Optional[str] = None
+        metadata: Optional[str] = None,
+        error: Optional[str] = None
     ):
         """
         Reconcile reservation with actual usage.
@@ -290,20 +293,20 @@ class BudgetTracker:
             if not res:
                 raise ValueError(f"No unreconciled reservation for call {call_id}")
             
-            # Record call
+            # Record call (with optional error for failed calls)
             conn.execute(
                 """
                 INSERT INTO calls
                 (call_id, timestamp, model_id, model_version, provider,
                  prompt_tokens, completion_tokens, total_tokens,
-                 actual_cost_usd, duration_ms, experiment, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 actual_cost_usd, duration_ms, experiment, metadata, error)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     call_id,
                     datetime.utcnow().isoformat(),
                     res['model_id'],
-                    model_version,
+                    model_version or 'unknown',
                     res['provider'],
                     prompt_tokens,
                     completion_tokens,
@@ -311,7 +314,8 @@ class BudgetTracker:
                     actual_cost_usd,
                     duration_ms,
                     experiment,
-                    metadata
+                    metadata,
+                    error
                 )
             )
             

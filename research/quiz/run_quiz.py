@@ -67,36 +67,62 @@ def parse_response(response_text: str) -> Optional[str]:
     """
     Parse model response to extract choice (A or B).
     
+    Strict parsing: Only match explicit choices, never match letters
+    inside refusals or explanations.
+    
     Returns:
-        'A', 'B', or None if parsing failed
+        'A', 'B', or None if parsing failed or refused
     """
     import re
     
-    # Try to find explicit choice patterns
     text = response_text.strip()
     
-    # Pattern 1: "A)" or "B)" at start of line
+    # ANTI-PATTERN: Detect refusals first (must NOT match these)
+    refusal_patterns = [
+        r"I(?:'m| am) not (?:able|comfortable|willing)",
+        r"cannot (?:provide|give|make|offer)",
+        r"(?:refuse|decline) to",
+        r"don't feel (?:comfortable|able)",
+        r"would not be appropriate"
+    ]
+    
+    for pattern in refusal_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return None  # Explicit refusal, do not parse
+    
+    # Pattern 1: Markdown bold **A)** or **A**
+    match = re.search(r'\*\*([AB])\*\*|\*\*([AB])\)', text)
+    if match:
+        return (match.group(1) or match.group(2)).upper()
+    
+    # Pattern 2: "A)" or "B)" at start of line  
     match = re.search(r'^([AB])\)', text, re.MULTILINE)
     if match:
         return match.group(1)
     
-    # Pattern 2: Lines starting with just "A" or "B"
+    # Pattern 3: Lines starting with just "A" or "B" (strict)
     for line in text.split('\n')[:3]:
         line_stripped = line.strip()
         if line_stripped and line_stripped[0] in ['A', 'B']:
-            # Make sure it's not part of a word like "Both" or "About"
-            if len(line_stripped) == 1 or not line_stripped[1].isalpha():
+            # Must be: "A" alone, "A)" "A " "A." but NOT "About" "As"
+            if len(line_stripped) == 1 or line_stripped[1] in [')', ' ', '.', ',', ':']:
                 return line_stripped[0]
     
-    # Pattern 3: "choose A", "option A", etc
+    # Pattern 4: "choose A", "option A" (strict word boundaries)
     match = re.search(r'\b(?:choose|option|select|pick)\s+([AB])\b', text, re.IGNORECASE)
     if match:
         return match.group(1).upper()
     
-    # Pattern 4: Standalone A or B at start
-    if text.upper().startswith('A ') or text.upper() == 'A':
+    # Pattern 5: Standalone A or B at very start (strict, case insensitive)
+    if re.match(r'^[Aa][\s\.\)]', text):
         return 'A'
-    if text.upper().startswith('B ') or text.upper() == 'B':
+    if re.match(r'^[Bb][\s\.\)]', text):
+        return 'B'
+    
+    # Pattern 6: Just "a" or "b" alone (case insensitive)
+    if text.upper() == 'A':
+        return 'A'
+    if text.upper() == 'B':
         return 'B'
     
     return None
@@ -130,7 +156,9 @@ def run_quiz(
     output_dir: Path,
     budget_cap: float,
     dry_run: bool = False,
-    resume_from: Optional[Path] = None
+    resume_from: Optional[Path] = None,
+    run_id: Optional[str] = None,
+    ledger_path: Optional[Path] = None
 ) -> Dict:
     """
     Run quiz comparison experiment.
@@ -150,8 +178,9 @@ def run_quiz(
     config = load_config(config_path)
     scenarios_data = load_scenarios(scenarios_path)
     
-    # Initialize budget tracker
-    ledger_path = Path(__file__).parent.parent / "ledger.db"
+    # Initialize budget tracker (use provided path or default)
+    if ledger_path is None:
+        ledger_path = Path(__file__).parent.parent / "ledger.db"
     budget_tracker = BudgetTracker(ledger_path, budget_cap)
     
     # Initialize provider client
@@ -184,8 +213,9 @@ def run_quiz(
     if dry_run:
         print("⚠️  DRY RUN MODE - No actual API calls will be made\n")
     
-    # Create manifest structure
-    run_id = f"quiz_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    # Create manifest structure (use provided run_id or generate)
+    if run_id is None:
+        run_id = f"quiz_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
     manifest = {
         "version": "1.0.0",
         "run_id": run_id,
@@ -236,7 +266,8 @@ def run_quiz(
             random.shuffle(orders)  # Shuffle assignment
             
             for call_idx, option_order in enumerate(orders):
-                call_id = f"{scenario_id}_{model_id.replace('/', '_')}_{call_idx}"
+                # Namespace call IDs by run to avoid collisions
+                call_id = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_{call_idx}"
                 
                 if call_id not in completed_call_ids:
                     call_plan.append({
@@ -297,6 +328,8 @@ def run_quiz(
                 valid = letter_choice is not None
                 
                 # Record call
+                truncated = (response.finish_reason == "length") if response.finish_reason else False
+                
                 call_record = {
                     "call_id": call_spec['call_id'],
                     "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -313,7 +346,9 @@ def run_quiz(
                     },
                     "usage": response.usage,
                     "cost_usd": response.actual_cost_usd,
-                    "duration_ms": response.duration_ms
+                    "duration_ms": response.duration_ms,
+                    "finish_reason": response.finish_reason,
+                    "truncated": truncated
                 }
                 
                 manifest["calls"].append(call_record)
