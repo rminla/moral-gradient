@@ -90,11 +90,45 @@ def extract_tool_call(response: Any) -> Optional[Dict]:
     Extract tool call from model response.
     
     Handles both OpenAI and Anthropic formats.
+    Checks raw_response from ProviderClient's ModelResponse wrapper.
     
     Returns:
         {"name": str, "arguments": dict} or None
     """
-    # Anthropic format (check first to avoid attribute errors on Mock)
+    # Get raw SDK response if available (ProviderClient wraps in ModelResponse)
+    raw = getattr(response, 'raw_response', None)
+    if raw is None:
+        # Fallback to direct SDK response object
+        raw = response
+    
+    # Anthropic format: content array with tool_use blocks
+    # finish_reason: "tool_use", content: [{type: "thinking", ...}, {type: "tool_use", name, input}]
+    if isinstance(raw, dict):
+        content = raw.get('content', [])
+        if isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get('type') == 'tool_use':
+                    return {
+                        "name": block.get('name'),
+                        "arguments": block.get('input', {})
+                    }
+        
+        # OpenAI format: choices[0].message.tool_calls
+        # finish_reason: "tool_calls", message.content: null, message.tool_calls: [{function: {name, arguments}}]
+        choices = raw.get('choices', [])
+        if choices and isinstance(choices, list):
+            message = choices[0].get('message', {})
+            tool_calls = message.get('tool_calls', [])
+            if tool_calls and isinstance(tool_calls, list):
+                tool_call = tool_calls[0]
+                func = tool_call.get('function', {})
+                args_str = func.get('arguments', '{}')
+                return {
+                    "name": func.get('name'),
+                    "arguments": json.loads(args_str) if isinstance(args_str, str) else args_str
+                }
+    
+    # Fallback: check direct SDK object attributes (if not dict)
     if hasattr(response, 'content') and isinstance(response.content, list):
         for block in response.content:
             if hasattr(block, 'type') and block.type == 'tool_use':
@@ -103,7 +137,6 @@ def extract_tool_call(response: Any) -> Optional[Dict]:
                     "arguments": block.input
                 }
     
-    # OpenAI format
     if hasattr(response, 'choices') and response.choices:
         message = response.choices[0].message
         if hasattr(message, 'tool_calls') and message.tool_calls:
