@@ -22,6 +22,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from lib.budget import BudgetTracker
 from lib.journal import ResponseJournal
 
+# Import SAME parser from main quiz runner (do NOT duplicate)
+from quiz.run_quiz import parse_response, map_choice_to_semantic
+
 
 def recover_from_journals(
     journal_dir: Path,
@@ -208,8 +211,10 @@ def rebuild_manifest_from_ledger(
     print(f"Rebuilding {experiment} results from {len(rows)} ledger entries...")
     
     if experiment == "quiz" and journal:
-        # Parse quiz answers from journals
+        # Parse quiz answers from journals using SAME parser as main runner
         results = []
+        metadata_missing_count = 0
+        
         for row in rows:
             call_id = row['call_id']
             journal_path = journal_dir / f"{call_id}.journal"
@@ -223,13 +228,33 @@ def rebuild_manifest_from_ledger(
                 with open(journal_path) as f:
                     entry = json.load(f)
                 
-                # Parse quiz answer from raw response
-                raw_response = entry.get('raw_response')
-                if not raw_response:
-                    print(f"  ⚠ {call_id}: No raw_response in journal")
+                # Get metadata (contains scenario, question_id, model, sample, option_order)
+                metadata_str = entry.get('metadata')
+                if not metadata_str:
+                    print(f"  ✗ {call_id}: No metadata in journal (unrecoverable)")
+                    metadata_missing_count += 1
                     continue
                 
-                # Extract content
+                metadata = json.loads(metadata_str) if isinstance(metadata_str, str) else metadata_str
+                
+                # Extract from metadata (DO NOT parse call_id with underscores)
+                question_id = metadata.get('question_id')
+                model_id = metadata.get('model_id')  # Full ID with slashes
+                sample_idx = metadata.get('sample_idx')
+                option_order = metadata.get('option_order')  # Canonical action IDs
+                scenario = metadata.get('scenario')
+                
+                if not all([question_id, model_id, option_order]):
+                    print(f"  ✗ {call_id}: Incomplete metadata (question_id={question_id}, model={model_id}, option_order={option_order})")
+                    metadata_missing_count += 1
+                    continue
+                
+                # Extract response content
+                raw_response = entry.get('raw_response')
+                if not raw_response:
+                    print(f"  ⚠ {call_id}: No raw_response")
+                    continue
+                
                 content = ""
                 if 'content' in raw_response:
                     if isinstance(raw_response['content'], list):
@@ -245,48 +270,46 @@ def rebuild_manifest_from_ledger(
                     # OpenAI format
                     content = raw_response['choices'][0]['message']['content']
                 
-                # Parse call_id: run_id_question_model_sample
-                parts = call_id.split('_')
-                if len(parts) >= 4:
-                    # Extract question, model, sample from call_id
-                    # Format: {run_id}_q{N}_{model}_{sample}
-                    question_part = [p for p in parts if p.startswith('q')]
-                    model_parts = [p for p in parts if '/' in p or p in ['anthropic', 'groq', 'openrouter']]
-                    sample_part = [p for p in parts if p.startswith('s')]
-                    
-                    question_id = question_part[0] if question_part else None
-                    model_slug = '_'.join(model_parts) if model_parts else row['model_id']
-                    sample_idx = int(sample_part[0][1:]) if sample_part else 0
-                    
-                    # Parse semantic choice (A/B/C/D) from content
-                    import re
-                    choice_match = re.search(r'\b([A-D])\b', content)
-                    semantic_choice = choice_match.group(1) if choice_match else None
-                    
-                    result = {
-                        "call_id": call_id,
-                        "question_id": question_id,
-                        "model_id": model_slug,
-                        "sample_idx": sample_idx,
-                        "semantic_choice": semantic_choice,
-                        "response_text": content[:500],  # Preview
-                        "finish_reason": entry.get('finish_reason'),
-                        "usage": entry.get('usage', {}),
-                        "cost_usd": entry.get('actual_cost_usd', 0.0),
-                        "refusal": "refuse" in content.lower() or "cannot" in content.lower(),
-                        "truncated": entry.get('finish_reason') == 'length'
-                    }
-                    
-                    results.append(result)
-                    
-                    if len(results) % 50 == 0:
-                        print(f"  Parsed {len(results)} quiz answers...")
+                # Use SAME parser as main runner (imported from quiz.run_quiz)
+                letter_choice = parse_response(content)
+                
+                # Map to canonical action ID using SAME function
+                semantic_action = map_choice_to_semantic(letter_choice, option_order)
+                
+                # Build result with SAME schema as main runner
+                result = {
+                    "call_id": call_id,
+                    "question_id": question_id,
+                    "model_id": model_id,  # Full ID like "anthropic/claude-haiku-5-5"
+                    "sample_idx": sample_idx,
+                    "option_order": option_order,  # Canonical action IDs [first, second]
+                    "display_letter": letter_choice,  # A, B, or None
+                    "semantic_choice": semantic_action,  # Canonical action ID or None
+                    "response_text": content,  # Full text
+                    "finish_reason": entry.get('finish_reason'),
+                    "usage": entry.get('usage', {}),
+                    "cost_usd": entry.get('actual_cost_usd', 0.0),
+                    "duration_ms": entry.get('duration_ms', 0),
+                    "truncated": entry.get('finish_reason') == 'length',
+                    "max_tokens_reached": entry.get('finish_reason') == 'length'
+                }
+                
+                results.append(result)
+                
+                if len(results) % 50 == 0:
+                    print(f"  Parsed {len(results)} quiz answers...")
                 
             except Exception as e:
                 print(f"  ✗ {call_id}: Failed to parse - {e}")
+                import traceback
+                traceback.print_exc()
                 continue
         
         manifest["results"] = results
+        
+        if metadata_missing_count > 0:
+            print(f"⚠ {metadata_missing_count} calls missing metadata (unrecoverable)")
+        
         print(f"✓ Recovered {len(results)} quiz answers from journals")
     
     # Add ledger summary (costs, not full answers)
