@@ -404,6 +404,16 @@ def run_swarm(
     cases_data = load_cases(cases_path)
     prompts = load_prompts(prompts_path)
     
+    # Check for placeholders (stop execution if found)
+    import json
+    placeholder_check = json.dumps(cases_data) + json.dumps(prompts)
+    if "[TO BE FINALIZED]" in placeholder_check:
+        print("\n" + "="*60)
+        print("ERROR: Placeholder content found in cases or prompts!")
+        print("Files must not contain [TO BE FINALIZED] markers.")
+        print("="*60)
+        sys.exit(1)
+    
     # Initialize budget tracker
     ledger_path = Path(__file__).parent.parent / "ledger.db"
     budget_tracker = BudgetTracker(ledger_path, budget_cap)

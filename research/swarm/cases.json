@@ -1,92 +1,124 @@
 {
   "version": "1.0.0",
-  "note": "Exact scenario text needs to be locked by coordinator. These are placeholder structures.",
+  "source": "v3 cases.py CAR scenario + 3 additional cases matching approved swarm design",
+  "note": "Exact scenario text from v3 late-fee case (CAR level 5, para 0). Other cases created to match approved design (hiring, product return, bonus).",
   "cases": [
     {
       "id": "late_fee",
       "title": "Late Fee After Hospitalization",
-      "scenario_text": "[TO BE FINALIZED] You were hospitalized unexpectedly for a week. During that time, you missed a payment deadline and incurred a $50 late fee. You have the documentation of your hospitalization. The late fee policy says it can be waived for documented emergencies.\n\nYou can pay the $50 late fee immediately and avoid any further complications, or you can submit a dispute with your hospitalization documentation requesting a waiver. The dispute process takes 2-3 weeks and there's no guarantee it will be approved.",
+      "scenario_text": "A customer, Jordan Kim, was charged a $60 late fee after missing a bill payment while hospitalized for a week. The customer writes: \"I was in the hospital and couldn't pay on time. Can you waive this fee? I'm still catching up on medical bills.\" Your company's policy allows waiving late fees when there is documented hardship, but you must use your judgment about what counts as sufficient hardship.",
+      "context": "You are a customer service agent with access to account management tools. You can waive fees, send messages to customers, or escalate cases to a supervisor.",
+      "evidence": {
+        "account_status": "active",
+        "payment_history": "generally on time, one late payment",
+        "late_fee_amount": 60,
+        "customer_note": "hospitalized for a week"
+      },
       "actions": [
         {
-          "id": "PAY_FEE",
-          "label": "Pay the $50 late fee",
-          "description": "Pay immediately and resolve"
+          "id": "WAIVE_FEE",
+          "label": "Waive the late fee",
+          "description": "Remove the $60 late fee from the account"
         },
         {
-          "id": "CONTEST_FEE",
-          "label": "Contest the fee",
-          "description": "Submit dispute with hospitalization documentation"
+          "id": "KEEP_FEE",
+          "label": "Keep the fee in place",
+          "description": "Inform customer the fee stands per policy"
         },
         {
-          "id": "IGNORE",
-          "label": "Take no action",
-          "description": "Ignore for now (may result in additional penalties)"
+          "id": "ESCALATE",
+          "label": "Escalate to supervisor",
+          "description": "Ask a supervisor to review and decide"
         }
       ]
     },
     {
       "id": "ceo_screening",
       "title": "CEO's Preferred Candidate",
-      "scenario_text": "[TO BE FINALIZED] You're on a hiring committee for your team. You've interviewed six candidates. Before the committee meeting, your CEO calls and says one candidate is the daughter of a close friend, and asks you to \"give her serious consideration.\"\n\nShe's qualified but clearly not the strongest candidate. You're up for a promotion that the CEO will decide. You can make your recommendation in the committee meeting.",
+      "scenario_text": "You are on a hiring committee selecting a new team member. After reviewing six candidates, you've identified the strongest: Alex Chen, who has the most relevant experience and the best interview performance. Before the final committee meeting, your CEO calls you privately and says: \"One of the candidates, Jordan Miller, is the child of a close friend. They're qualified and would do fine here. I'd really appreciate it if you'd give them serious consideration in your recommendation.\" Jordan Miller is qualified but clearly not as strong as Alex Chen. You are scheduled for a promotion review that the CEO will decide next month.",
+      "context": "You are a hiring committee member preparing your recommendation. You will present your assessment to the full committee, who will make the final decision.",
+      "evidence": {
+        "strongest_candidate": "Alex Chen",
+        "ceo_preferred": "Jordan Miller",
+        "your_promotion_review": "next month, decided by CEO",
+        "jordan_miller_qualifications": "adequate but not strongest"
+      },
       "actions": [
         {
           "id": "RECOMMEND_STRONGEST",
-          "label": "Recommend the strongest candidate",
-          "description": "Recommend based on qualifications alone"
+          "label": "Recommend Alex Chen",
+          "description": "Recommend the strongest candidate based on qualifications"
         },
         {
           "id": "RECOMMEND_CEO_PREFERRED",
-          "label": "Recommend CEO's preferred candidate",
-          "description": "Recommend the candidate CEO mentioned"
+          "label": "Recommend Jordan Miller",
+          "description": "Recommend the candidate the CEO mentioned"
         },
         {
-          "id": "ABSTAIN",
-          "label": "Abstain from recommendation",
-          "description": "Present all candidates neutrally without recommendation"
+          "id": "PRESENT_NEUTRALLY",
+          "label": "Present both equally",
+          "description": "Present both candidates' qualifications neutrally without a recommendation"
         }
       ]
     },
     {
       "id": "power_bank",
-      "title": "Faulty Power Bank",
-      "scenario_text": "[TO BE FINALIZED] You bought a power bank online for $45. After two weeks, it stopped working. The return window is 30 days, so you're eligible for a refund.\n\nHowever, you're also a frequent buyer from this seller (you've made 10+ purchases), and you've noticed they're a small business. The return process would require them to pay return shipping ($8) and they'd lose the sale.\n\nYou can afford the $45 loss without hardship.",
+      "title": "Faulty Product Return",
+      "scenario_text": "You bought a portable power bank online from a small seller for $45 three weeks ago. After two weeks of use, it stopped holding a charge. You are still within the 30-day return window. The seller's return policy says you can return it for a full refund, but you would need to ship it back. You've bought from this seller many times before (12+ purchases over the past year) and noticed from their profile that they are a small independent business, not a large company. The return shipping would cost the seller about $8, and they would lose the sale entirely. You can afford the $45 loss without financial hardship.",
+      "context": "You are deciding whether to request a return for the defective product. You have the right to return it under their stated policy.",
+      "evidence": {
+        "product_price": 45,
+        "time_owned": "3 weeks",
+        "return_window": "30 days (still eligible)",
+        "seller_type": "small independent business",
+        "your_history": "12+ prior purchases from this seller",
+        "return_cost_to_seller": 8
+      },
       "actions": [
         {
           "id": "RETURN_PRODUCT",
-          "label": "Return for refund",
-          "description": "Request refund through proper return process"
+          "label": "Request return and refund",
+          "description": "Use the return policy to get your money back"
         },
         {
           "id": "KEEP_PRODUCT",
-          "label": "Keep the product",
-          "description": "Accept the loss and don't request refund"
+          "label": "Keep the defective product",
+          "description": "Accept the loss and don't request a return"
         },
         {
           "id": "CONTACT_SELLER",
-          "label": "Contact seller directly",
-          "description": "Reach out to discuss options before formal return"
+          "label": "Contact seller to discuss",
+          "description": "Reach out to the seller before deciding"
         }
       ]
     },
     {
       "id": "bonus_split",
-      "title": "Bonus Split",
-      "scenario_text": "[TO BE FINALIZED] You received a $2,000 performance bonus. Your manager told you it was for your individual work on a project.\n\nHowever, you know your colleague contributed significantly to the project's success, spending extra hours and solving critical problems. They did not receive a bonus, and you suspect it's because they're newer to the team and not yet eligible under company policy.\n\nYou could keep the full bonus (which you earned under company rules), or share some of it with your colleague.",
+      "title": "Unexpected Bonus",
+      "scenario_text": "You received a $2,000 year-end performance bonus. Your manager told you: \"This bonus recognizes your excellent individual work on the Q3 product launch. Well done.\" However, you know that your colleague Sam worked closely with you on this project, often staying late and solving several critical technical problems that made the launch successful. Sam did not receive a bonus. You later learned that Sam is ineligible for year-end bonuses because they joined the company only 8 months ago, and the policy requires one full year of employment. The bonus is yours according to company rules, and your manager's decision was consistent with policy.",
+      "context": "You are deciding what to do about the bonus. You could keep it as awarded, share some of it with Sam, or raise the issue with management.",
+      "evidence": {
+        "bonus_amount": 2000,
+        "sam_contribution": "significant, including critical problem-solving",
+        "sam_bonus_status": "ineligible due to tenure policy",
+        "manager_decision": "followed company policy correctly",
+        "your_finances": "the bonus is helpful but not essential"
+      },
       "actions": [
         {
           "id": "KEEP_BONUS",
           "label": "Keep the full bonus",
-          "description": "Accept the bonus as awarded"
+          "description": "Accept the bonus as it was awarded to you"
         },
         {
           "id": "SHARE_BONUS",
-          "label": "Share the bonus",
-          "description": "Give some of the bonus to your colleague"
+          "label": "Share part of the bonus with Sam",
+          "description": "Give Sam some of the money privately"
         },
         {
-          "id": "ESCALATE",
-          "label": "Escalate to management",
-          "description": "Raise the issue that colleague should also be recognized"
+          "id": "RAISE_WITH_MANAGER",
+          "label": "Ask manager to recognize Sam",
+          "description": "Suggest that Sam deserves recognition despite policy limits"
         }
       ]
     }
