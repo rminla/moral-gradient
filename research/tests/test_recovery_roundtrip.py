@@ -61,7 +61,8 @@ def test_recovery_roundtrip_with_real_journals():
         
         for scenario in scenarios:
             for sample_idx, (response_text, expected_letter, expected_semantic) in enumerate(scenario["responses"]):
-                call_id = f"{run_id}_{scenario['scenario_id']}_{scenario['model_id'].replace('/', '_')}_s{sample_idx}"
+                # EXACT production format: no 's' prefix before index
+                call_id = f"{run_id}_{scenario['scenario_id']}_{scenario['model_id'].replace('/', '_')}_{sample_idx}"
                 
                 # Reserve budget
                 provider = Provider.ANTHROPIC if 'anthropic' in scenario['model_id'] else Provider.OPENROUTER

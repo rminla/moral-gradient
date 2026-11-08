@@ -260,9 +260,10 @@ def rebuild_manifest_from_ledger(
                     continue
                 
                 # Extract sample_idx by removing EXACT known prefix
-                # Format: {run_id}_{scenario_id}_{model_id.replace("/", "_")}_s{N}
+                # Format: {run_id}_{scenario_id}_{model_id.replace("/", "_")}_{call_idx}
+                # Example: quiz_v4_main_n20_20261108_trolley_anthropic_claude-haiku-5-5_0
                 if run_id:
-                    expected_prefix = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_s"
+                    expected_prefix = f"{run_id}_{scenario_id}_{model_id.replace('/', '_')}_"
                     if call_id.startswith(expected_prefix):
                         sample_str = call_id[len(expected_prefix):]
                         try:
@@ -308,6 +309,9 @@ def rebuild_manifest_from_ledger(
                 semantic_action = map_choice_to_semantic(letter_choice, option_order)
                 
                 # Build result with SAME schema as main runner
+                finish_reason = entry.get('finish_reason')
+                is_truncated = finish_reason in ('length', 'max_tokens')
+                
                 result = {
                     "call_id": call_id,
                     "question_id": scenario_id,  # Use scenario_id as question_id
@@ -317,12 +321,12 @@ def rebuild_manifest_from_ledger(
                     "display_letter": letter_choice,  # A, B, or None
                     "semantic_choice": semantic_action,  # Canonical action ID
                     "response_text": content,  # Full text
-                    "finish_reason": entry.get('finish_reason'),
+                    "finish_reason": finish_reason,
                     "usage": entry.get('usage', {}),
                     "cost_usd": entry.get('actual_cost_usd', 0.0),
                     "duration_ms": entry.get('duration_ms', 0),
-                    "truncated": entry.get('finish_reason') == 'length',
-                    "max_tokens_reached": entry.get('finish_reason') == 'length'
+                    "truncated": is_truncated,
+                    "max_tokens_reached": is_truncated
                 }
                 
                 results.append(result)

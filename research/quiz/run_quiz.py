@@ -328,7 +328,7 @@ def run_quiz(
                 valid = letter_choice is not None
                 
                 # Record call
-                truncated = (response.finish_reason == "length") if response.finish_reason else False
+                truncated = (response.finish_reason in ("length", "max_tokens")) if response.finish_reason else False
                 
                 call_record = {
                     "call_id": call_spec['call_id'],
