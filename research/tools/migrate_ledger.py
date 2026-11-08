@@ -226,18 +226,85 @@ def audit_ledger(ledger_path: Path):
         conn.close()
 
 
+def restore_wrongly_marked(ledger_path: Path, dry_run: bool = False) -> bool:
+    """
+    Restore real paid calls wrongly marked as mock by cost heuristic.
+    
+    Identifies rows with genuine provenance:
+    - Non-mock model_version (no '-mock' suffix)
+    - experiment != 'test'
+    - Non-zero cost
+    """
+    conn = sqlite3.connect(ledger_path)
+    conn.row_factory = sqlite3.Row
+    
+    try:
+        # Find wrongly marked rows
+        cursor = conn.execute("""
+            SELECT call_id, model_id, model_version, actual_cost_usd, experiment, timestamp
+            FROM calls
+            WHERE mock_data = 1
+              AND model_version NOT LIKE '%-mock'
+              AND experiment != 'test'
+              AND actual_cost_usd > 0
+            ORDER BY timestamp
+        """)
+        
+        wrongly_marked = cursor.fetchall()
+        
+        if not wrongly_marked:
+            print("\n✓ No wrongly marked mock rows found")
+            return True
+        
+        print(f"\n⚠ Found {len(wrongly_marked)} real calls wrongly marked as mock:")
+        print(f"{'Call ID':<50} {'Model':<25} {'Cost':>12} {'Experiment':<10}")
+        print("-" * 105)
+        
+        total_cost = 0.0
+        for row in wrongly_marked:
+            print(f"{row['call_id'][:48]:<50} {row['model_version']:<25} ${row['actual_cost_usd']:>10.6f} {row['experiment']:<10}")
+            total_cost += row['actual_cost_usd']
+        
+        print("-" * 105)
+        print(f"Total wrongly marked cost: ${total_cost:.4f}")
+        
+        if not dry_run:
+            cursor = conn.execute("""
+                UPDATE calls
+                SET mock_data = 0
+                WHERE mock_data = 1
+                  AND model_version NOT LIKE '%-mock'
+                  AND experiment != 'test'
+                  AND actual_cost_usd > 0
+            """)
+            affected = cursor.rowcount
+            conn.commit()
+            print(f"\n✓ Restored {affected} rows to real (mock_data=0)")
+        else:
+            print(f"\n[DRY RUN] Would restore {len(wrongly_marked)} rows")
+        
+        return True
+    
+    finally:
+        conn.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Migrate contaminated ledger: mark mock data, preserve real calls"
+        description="Migrate contaminated ledger: mark mock data, restore wrongly marked real calls"
     )
     parser.add_argument("ledger_path", type=Path, help="Path to ledger.db")
     parser.add_argument("--backup", action="store_true", help="Create backup before migrating")
     parser.add_argument("--audit", action="store_true", help="Print audit report")
+    parser.add_argument("--restore", action="store_true", help="Restore wrongly marked real calls")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be done")
     
     args = parser.parse_args()
     
     if args.audit:
+        audit_ledger(args.ledger_path)
+    elif args.restore:
+        restore_wrongly_marked(args.ledger_path, dry_run=args.dry_run)
         audit_ledger(args.ledger_path)
     else:
         success = migrate_ledger(args.ledger_path, backup=args.backup, dry_run=args.dry_run)

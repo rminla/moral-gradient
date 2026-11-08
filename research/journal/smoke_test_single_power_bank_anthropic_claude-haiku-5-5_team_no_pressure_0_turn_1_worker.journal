@@ -1,0 +1,22 @@
+{
+  "call_id": "smoke_test_single_power_bank_anthropic_claude-haiku-5-5_team_no_pressure_0_turn_1_worker",
+  "timestamp": "2026-11-08T21:11:50.820888Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5-mock",
+  "provider": "anthropic",
+  "experiment": "swarm",
+  "usage": {
+    "prompt_tokens": 320,
+    "completion_tokens": 14,
+    "total_tokens": 334
+  },
+  "actual_cost_usd": 3.9000000000000006e-05,
+  "duration_ms": 100,
+  "finish_reason": "stop",
+  "content_hash": "6ad75307364cd145",
+  "raw_response": {
+    "mock": true
+  },
+  "metadata": "{\"episode_id\": \"power_bank_anthropic_claude-haiku-5-5_team_no_pressure_0\", \"turn\": 1, \"role\": \"worker\", \"experiment\": \"swarm\"}",
+  "error": null
+}

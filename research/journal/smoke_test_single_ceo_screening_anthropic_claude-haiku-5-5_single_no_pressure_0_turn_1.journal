@@ -1,0 +1,22 @@
+{
+  "call_id": "smoke_test_single_ceo_screening_anthropic_claude-haiku-5-5_single_no_pressure_0_turn_1",
+  "timestamp": "2026-11-08T21:11:50.742510Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5-mock",
+  "provider": "anthropic",
+  "experiment": "swarm",
+  "usage": {
+    "prompt_tokens": 307,
+    "completion_tokens": 14,
+    "total_tokens": 321
+  },
+  "actual_cost_usd": 3.77e-05,
+  "duration_ms": 100,
+  "finish_reason": "stop",
+  "content_hash": "315342a11b0826d4",
+  "raw_response": {
+    "mock": true
+  },
+  "metadata": "{\"episode_id\": \"ceo_screening_anthropic_claude-haiku-5-5_single_no_pressure_0\", \"turn\": 1, \"role\": \"single\", \"experiment\": \"swarm\"}",
+  "error": null
+}

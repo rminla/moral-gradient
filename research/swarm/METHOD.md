@@ -18,14 +18,20 @@ Do models behave differently when making decisions alone vs. in same-model teams
 
 ### Structure: 2×2 Factorial
 
-| Arm ID | Structure | Manager KPI Pressure |
-|--------|-----------|---------------------|
-| `single_no_pressure` | Single agent | N/A |
-| `single_pressure` | Single agent | N/A (no manager) |
-| `team_no_pressure` | 3-agent team | No |
-| `team_pressure` | 3-agent team | Yes |
+| Arm ID | Structure | KPI Pressure Exposure |
+|--------|-----------|----------------------|
+| `single_no_pressure` | Single agent | No pressure text |
+| `single_pressure` | Single agent | **Same KPI pressure as team manager** |
+| `team_no_pressure` | 3-agent team | No pressure (all roles) |
+| `team_pressure` | 3-agent team | Manager sees KPI pressure |
 
-**Note**: Single-agent arms do NOT receive pressure manipulation. The pressure treatment applies only to the manager role in team episodes. This creates matched single (no pressure) vs team (±pressure) comparisons.
+**Pressure exposure matrix**:
+- `single_no_pressure`: Decision prompt with neutral framing only
+- `single_pressure`: Decision prompt includes KPI pressure text (identical to what team manager sees)
+- `team_no_pressure`: Worker → Manager (neutral) → Reviewer
+- `team_pressure`: Worker → Manager (with KPI pressure) → Reviewer
+
+This creates a full 2×2 factorial: structure (single vs team) × pressure (present vs absent).
 
 ### Agent Roles (Team Structure)
 
@@ -45,8 +51,9 @@ Do models behave differently when making decisions alone vs. in same-model teams
 ### Sample Size
 
 - **n = 30 episodes per arm per model**
-- **4 arms × 4 models × 30 episodes = 480 episodes total**
-- **4 cases rotated per model** (not all cases in every episode)
+- **4 cases × 4 arms × 30 episodes = 480 episodes per model**
+- **480 episodes/model × 4 models = 1920 episodes TOTAL**
+- Cases are distributed: each model runs episodes across all 4 cases
 
 ### Models
 
@@ -209,19 +216,19 @@ Each case defines **action tools** as structured function calls with:
 
 ## Limitations and Caveats
 
-1. **Single-agent arms receive NO pressure**: This is a team-structure manipulation, not a general pressure study. We cannot claim "pressure increases X behavior" without pressured single agents.
+1. **8-message budget may differentially constrain**: Teams require coordination messages. If teams hit budget more often than single agents, observed differences may partly reflect constraint effects.
 
-2. **8-message budget may differentially constrain**: Teams require coordination messages. If teams hit budget more often than single agents, observed differences may partly reflect constraint effects.
+2. **Team pressure propagates via manager messages**: In `team_pressure`, only the manager sees KPI pressure directly. Reviewer sees the manager's response, so pressure effects are mediated through manager's message content.
 
-3. **Manager sees pressure, reviewer does not**: We measure how/whether pressure propagates through manager's messages. This is not a "reviewer under pressure" design.
+3. **Homogeneous teams only**: All agents in a team episode use the same model. We cannot study heterogeneous team dynamics.
 
-4. **Homogeneous teams only**: All agents in a team episode use the same model. We cannot study heterogeneous team dynamics.
+4. **Deterministic outcomes limit realism**: Real-world actions have uncertain consequences. Our tool outcomes are fixed for experimental control.
 
-5. **Deterministic outcomes limit realism**: Real-world actions have uncertain consequences. Our tool outcomes are fixed for experimental control.
+5. **KPI pressure is generic**: "Cost control and efficiency" applies across cases but may be differentially relevant (strong for late_fee, weak for bonus_split).
 
-6. **KPI pressure is generic**: "Cost control and efficiency" applies across cases but may be differentially relevant (strong for late_fee, weak for bonus_split).
+6. **No explicit ethical ranking**: We do not label actions as "correct" or "moral." Analysis will report distributions and factorial effects without normative claims.
 
-7. **No explicit ethical ranking**: We do not label actions as "correct" or "moral." Analysis will report distributions and team-vs-single differences without normative claims.
+7. **Single-agent pressure is direct exposure**: In `single_pressure`, the agent sees KPI text in the initial prompt. In `team_pressure`, only the manager sees it. This creates matched pressure exposure but different routing.
 
 ---
 

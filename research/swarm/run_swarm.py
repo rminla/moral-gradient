@@ -53,13 +53,31 @@ def format_evidence(evidence: Dict, prompts: Dict) -> str:
     return template.format(items=items)
 
 
-def build_tool_definitions(case: Dict) -> List[Dict]:
+def build_tool_definitions(case: Dict, provider: str = "openai") -> List[Dict]:
     """
     Extract tool definitions from case action_tools.
     
-    Returns OpenAI/Anthropic compatible tool definitions.
+    Args:
+        case: Case dict with action_tools
+        provider: "openai" or "anthropic" for format conversion
+    
+    Returns tool definitions in provider-specific format.
     """
-    return [tool for tool in case["action_tools"]]
+    tools = case["action_tools"]
+    
+    if provider == "anthropic":
+        # Anthropic expects {name, description, input_schema}
+        return [
+            {
+                "name": tool["function"]["name"],
+                "description": tool["function"]["description"],
+                "input_schema": tool["function"]["parameters"]
+            }
+            for tool in tools
+        ]
+    else:
+        # OpenAI format (default)
+        return tools
 
 
 def extract_tool_call(response: Any) -> Optional[Dict]:
@@ -124,7 +142,7 @@ def run_single_episode(
     Run a single-agent episode with tool calling.
     
     Single agent structure:
-    - Turn 1: System + scenario prompt with tools
+    - Turn 1: System + scenario prompt with tools (with KPI pressure if pressure=True)
     - Model calls action tool
     - Episode complete
     
@@ -139,19 +157,27 @@ def run_single_episode(
     final_action = None
     tool_calls_log = []
     
-    # Build tools
-    tools = build_tool_definitions(case)
+    # Detect provider from model_id
+    provider = "anthropic" if "anthropic" in model_id else "openai"
     
-    # Get prompts (single agent never sees pressure)
+    # Build tools in provider-specific format
+    tools = build_tool_definitions(case, provider=provider)
+    
+    # Get prompts and pressure text
     role_prompts = prompts["roles"]["single"]
+    kpi_pressure = prompts["pressure_manipulation"]["kpi_pressure"] if pressure else ""
     
-    # Build scenario prompt
+    # Build scenario prompt with pressure if applicable
     evidence_text = format_evidence(case["evidence"], prompts)
     user_prompt = role_prompts["user_prompt"].format(
         scenario_text=case["scenario_text"],
         context=case["context"],
         evidence=evidence_text
     )
+    
+    # Add KPI pressure for single_pressure arm
+    if pressure and kpi_pressure:
+        user_prompt = user_prompt + "\n\n" + kpi_pressure
     
     # Turn 1: Present scenario with tools
     messages = [
@@ -160,6 +186,26 @@ def run_single_episode(
     ]
     
     call_id = f"{run_id}_{episode_id}_turn_1"
+    
+    # Check message limit BEFORE call
+    if message_count >= MAX_GLOBAL_MESSAGES:
+        return {
+            "episode_id": episode_id,
+            "case_id": case["id"],
+            "model_id": model_id,
+            "arm": "single_pressure" if pressure else "single_no_pressure",
+            "structure": "single",
+            "pressure": pressure,
+            "turns": turns,
+            "tool_calls": tool_calls_log,
+            "final_action": None,
+            "complete": False,
+            "total_model_calls": message_count,
+            "budget_exceeded": True,
+            "total_cost_usd": 0.0,
+            "termination_reason": "budget_exceeded"
+        }
+    
     message_count += 1
     
     try:
@@ -218,14 +264,15 @@ def run_single_episode(
     # Build episode record
     total_cost = sum(t.get("cost_usd", 0) for t in turns)
     complete = final_action is not None
+    arm = "single_pressure" if pressure else "single_no_pressure"
     
     return {
         "episode_id": episode_id,
         "case_id": case["id"],
         "model_id": model_id,
-        "arm": "single_no_pressure",  # single never has pressure
+        "arm": arm,
         "structure": "single",
-        "pressure": False,
+        "pressure": pressure,
         "turns": turns,
         "tool_calls": tool_calls_log,
         "final_action": final_action,
@@ -266,8 +313,11 @@ def run_team_episode(
     final_action = None
     tool_calls_log = []
     
-    # Build tools
-    tools = build_tool_definitions(case)
+    # Detect provider from model_id
+    provider = "anthropic" if "anthropic" in model_id else "openai"
+    
+    # Build tools in provider-specific format
+    tools = build_tool_definitions(case, provider=provider)
     
     # Pressure text (only for manager)
     kpi_pressure = prompts["pressure_manipulation"]["kpi_pressure"] if pressure else ""
@@ -283,12 +333,14 @@ def run_team_episode(
     )
     
     call_id = f"{run_id}_{episode_id}_turn_1_worker"
-    message_count += 1
     worker_message = None
     worker_tool_call = None
     
-    if message_count > MAX_GLOBAL_MESSAGES:
+    # Check message limit BEFORE call
+    if message_count >= MAX_GLOBAL_MESSAGES:
         return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
+    
+    message_count += 1
     
     try:
         response = provider_client.call_model(
@@ -368,12 +420,14 @@ def run_team_episode(
     )
     
     call_id = f"{run_id}_{episode_id}_turn_2_manager"
-    message_count += 1
     manager_message = None
     manager_tool_call = None
     
-    if message_count > MAX_GLOBAL_MESSAGES:
+    # Check message limit BEFORE call
+    if message_count >= MAX_GLOBAL_MESSAGES:
         return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
+    
+    message_count += 1
     
     try:
         response = provider_client.call_model(
@@ -453,10 +507,12 @@ def run_team_episode(
     )
     
     call_id = f"{run_id}_{episode_id}_turn_3_reviewer"
-    message_count += 1
     
-    if message_count > MAX_GLOBAL_MESSAGES:
+    # Check message limit BEFORE call
+    if message_count >= MAX_GLOBAL_MESSAGES:
         return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
+    
+    message_count += 1
     
     try:
         response = provider_client.call_model(

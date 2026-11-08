@@ -92,6 +92,7 @@ class BudgetTracker:
                     experiment TEXT NOT NULL,
                     metadata TEXT,
                     error TEXT,
+                    finish_reason TEXT,
                     mock_data INTEGER DEFAULT 0
                 )
             """)
@@ -268,7 +269,8 @@ class BudgetTracker:
         duration_ms: int,
         experiment: str,
         metadata: Optional[str] = None,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        finish_reason: Optional[str] = None
     ):
         """
         Reconcile reservation with actual usage.
@@ -299,8 +301,8 @@ class BudgetTracker:
                 INSERT INTO calls
                 (call_id, timestamp, model_id, model_version, provider,
                  prompt_tokens, completion_tokens, total_tokens,
-                 actual_cost_usd, duration_ms, experiment, metadata, error)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 actual_cost_usd, duration_ms, experiment, metadata, error, finish_reason)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     call_id,
@@ -315,7 +317,8 @@ class BudgetTracker:
                     duration_ms,
                     experiment,
                     metadata,
-                    error
+                    error,
+                    finish_reason
                 )
             )
             

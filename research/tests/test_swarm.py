@@ -120,12 +120,20 @@ def test_config():
 
 def test_build_tool_definitions(test_case):
     """Test tool definition extraction from case."""
-    tools = build_tool_definitions(test_case)
+    # OpenAI format (default)
+    tools_openai = build_tool_definitions(test_case, provider="openai")
+    assert len(tools_openai) == 2
+    assert tools_openai[0]["type"] == "function"
+    assert tools_openai[0]["function"]["name"] == "waive_late_fee"
+    assert tools_openai[1]["function"]["name"] == "keep_late_fee"
     
-    assert len(tools) == 2
-    assert tools[0]["type"] == "function"
-    assert tools[0]["function"]["name"] == "waive_late_fee"
-    assert tools[1]["function"]["name"] == "keep_late_fee"
+    # Anthropic format
+    tools_anthropic = build_tool_definitions(test_case, provider="anthropic")
+    assert len(tools_anthropic) == 2
+    assert tools_anthropic[0]["name"] == "waive_late_fee"
+    assert tools_anthropic[0]["description"] == "Waive the late fee"
+    assert "input_schema" in tools_anthropic[0]
+    assert tools_anthropic[0]["input_schema"]["type"] == "object"
 
 
 def test_format_evidence(test_prompts):
@@ -407,6 +415,116 @@ def test_message_limit_enforcement():
     
     team_source = inspect.getsource(run_team_episode)
     assert "MAX_GLOBAL_MESSAGES = 8" in team_source
+
+
+@patch('swarm.run_swarm.ProviderClient')
+def test_single_pressure_arm(
+    mock_provider_class, test_case, test_prompts, test_config, temp_dir
+):
+    """Test single_pressure arm receives KPI pressure text."""
+    tool_block = Mock()
+    tool_block.type = "tool_use"
+    tool_block.name = "keep_late_fee"
+    tool_block.input = {}
+    
+    mock_response = Mock()
+    mock_response.content = [tool_block]
+    mock_response.usage = {"prompt_tokens": 100, "completion_tokens": 20, "total_tokens": 120}
+    mock_response.actual_cost_usd = 0.001
+    mock_response.duration_ms = 500
+    
+    mock_provider = Mock()
+    mock_provider.call_model.return_value = mock_response
+    mock_provider_class.return_value = mock_provider
+    
+    # Run single episode WITH pressure
+    episode = run_single_episode(
+        episode_id="test_single_pressure",
+        case=test_case,
+        model_id="anthropic/claude-haiku-5-5",
+        pressure=True,  # <-- Pressure enabled
+        config=test_config,
+        prompts=test_prompts,
+        provider_client=mock_provider,
+        run_id="test_run"
+    )
+    
+    # Verify arm is single_pressure
+    assert episode["arm"] == "single_pressure"
+    assert episode["pressure"] is True
+    assert episode["structure"] == "single"
+    
+    # Verify KPI pressure was included in prompt
+    call_args = mock_provider.call_model.call_args
+    messages = call_args[1]["messages"]
+    user_message = [m for m in messages if m.role == "user"][0]
+    assert "performance review" in user_message.content.lower() or "metric" in user_message.content.lower()
+
+
+def test_episode_count_calculation():
+    """Test that episode count is 1920 total (480 per model)."""
+    from pathlib import Path
+    
+    config_path = Path(__file__).parent.parent / "swarm" / "config.json"
+    cases_path = Path(__file__).parent.parent / "swarm" / "cases.json"
+    
+    if config_path.exists() and cases_path.exists():
+        import json
+        
+        with open(config_path) as f:
+            config = json.load(f)
+        
+        with open(cases_path) as f:
+            cases = json.load(f)
+        
+        n_per_arm = config["n_per_arm"]
+        n_models = len(config["models"])
+        n_arms = len(config["arms"])
+        n_cases = len(cases["cases"])
+        
+        # 4 cases × 4 arms × 30 samples = 480 per model
+        episodes_per_model = n_cases * n_arms * n_per_arm
+        assert episodes_per_model == 480, f"Expected 480 per model, got {episodes_per_model}"
+        
+        # 480 per model × 4 models = 1920 total
+        total_episodes = episodes_per_model * n_models
+        assert total_episodes == 1920, f"Expected 1920 total, got {total_episodes}"
+
+
+def test_all_four_arms_present():
+    """Test that config has all 4 arms of 2×2 factorial."""
+    from pathlib import Path
+    import json
+    
+    config_path = Path(__file__).parent.parent / "swarm" / "config.json"
+    
+    if config_path.exists():
+        with open(config_path) as f:
+            config = json.load(f)
+        
+        arms = config["arms"]
+        arm_ids = [arm["id"] for arm in arms]
+        
+        # Must have all 4 arms
+        assert "single_no_pressure" in arm_ids
+        assert "single_pressure" in arm_ids
+        assert "team_no_pressure" in arm_ids
+        assert "team_pressure" in arm_ids
+        
+        # Verify pressure assignment
+        for arm in arms:
+            if arm["id"] == "single_no_pressure":
+                assert arm["pressure"] is False
+                assert arm["structure"] == "single"
+            elif arm["id"] == "single_pressure":
+                assert arm["pressure"] is True
+                assert arm["structure"] == "single"
+            elif arm["id"] == "team_no_pressure":
+                assert arm["pressure"] is False
+                assert arm["structure"] == "team"
+            elif arm["id"] == "team_pressure":
+                assert arm["pressure"] is True
+                assert arm["structure"] == "team"
 
 
 if __name__ == "__main__":

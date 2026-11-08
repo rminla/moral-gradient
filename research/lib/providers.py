@@ -163,7 +163,8 @@ class ProviderClient:
                     actual_cost_usd=0.0,
                     duration_ms=0,
                     experiment=self.experiment,
-                    error=str(call_error)
+                    error=str(call_error),
+                    finish_reason="error"
                 )
             except:
                 pass  # Journal preserved, ledger best-effort
@@ -197,26 +198,21 @@ class ProviderClient:
                 actual_cost_usd=response.actual_cost_usd,
                 duration_ms=response.duration_ms,
                 experiment=self.experiment,
-                metadata=json.dumps(metadata) if metadata else None
+                metadata=json.dumps(metadata) if metadata else None,
+                finish_reason=response.finish_reason
             )
         except Exception as reconcile_error:
-            # Journal preserved! Can recover later
-            print(f"Warning: Ledger write failed for {call_id}, journal preserved: {reconcile_error}")
-            # Try to release reservation at least
-            try:
-                self.budget_tracker.reconcile(
-                    call_id=call_id,
-                    model_version='ledger_error',
-                    prompt_tokens=0,
-                    completion_tokens=0,
-                    actual_cost_usd=0.0,
-                    duration_ms=response.duration_ms,
-                    experiment=self.experiment,
-                    error=f"Ledger write failed: {reconcile_error}"
-                )
-            except:
-                pass  # Journal is safe, that's what matters
-            raise reconcile_error
+            # FATAL: Ledger write failed
+            # Journal preserved! Can recover later via recovery tool
+            # DO NOT release reservation - uncertain cost must be held
+            # Fail closed and propagate fatal storage exception
+            raise RuntimeError(
+                f"FATAL: Ledger write failed for {call_id}. "
+                f"Journal preserved at {self.journal.journal_dir}/{call_id}.journal. "
+                f"Reservation held (cannot release without recorded cost). "
+                f"Use recovery tool to replay from journal. "
+                f"Original error: {reconcile_error}"
+            ) from reconcile_error
         
         return response
     
@@ -287,9 +283,10 @@ class ProviderClient:
             raise ValueError(f"Unknown provider: {model_config.provider}")
     
     def _call_anthropic(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
-        """Call Anthropic API."""
+        """Call Anthropic API with finite timeouts."""
         try:
             import anthropic
+            import httpx
         except ImportError:
             raise RuntimeError("anthropic package not installed. Run: pip install anthropic")
         
@@ -297,7 +294,9 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("ANTHROPIC_API_KEY not set")
         
-        client = anthropic.Anthropic(api_key=api_key)
+        # Finite timeout: 60s connect, 300s read (5 min max per call)
+        timeout = httpx.Timeout(60.0, read=300.0)
+        client = anthropic.Anthropic(api_key=api_key, timeout=timeout, max_retries=0)
         
         # Convert messages
         system_msg = None
@@ -386,9 +385,10 @@ class ProviderClient:
         )
     
     def _call_groq(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
-        """Call Groq API (OpenAI-compatible)."""
+        """Call Groq API (OpenAI-compatible) with finite timeouts."""
         try:
             from openai import OpenAI
+            import httpx
         except ImportError:
             raise RuntimeError("openai package not installed. Run: pip install openai")
         
@@ -396,9 +396,15 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("GROQ_API_KEY not set")
         
+        # Finite timeout: 60s connect, 300s read (5 min max per call)
+        timeout = httpx.Timeout(60.0, read=300.0)
+        http_client = httpx.Client(timeout=timeout)
+        
         client = OpenAI(
             api_key=api_key,
-            base_url="https://api.groq.com/openai/v1"
+            base_url="https://api.groq.com/openai/v1",
+            http_client=http_client,
+            max_retries=0
         )
         
         # Convert messages
@@ -467,9 +473,10 @@ class ProviderClient:
         )
     
     def _call_openrouter(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
-        """Call OpenRouter API (OpenAI-compatible)."""
+        """Call OpenRouter API (OpenAI-compatible) with finite timeouts."""
         try:
             from openai import OpenAI
+            import httpx
         except ImportError:
             raise RuntimeError("openai package not installed. Run: pip install openai")
         
@@ -477,9 +484,15 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY not set")
         
+        # Finite timeout: 60s connect, 300s read (5 min max per call)
+        timeout = httpx.Timeout(60.0, read=300.0)
+        http_client = httpx.Client(timeout=timeout)
+        
         client = OpenAI(
             api_key=api_key,
-            base_url="https://openrouter.ai/api/v1"
+            base_url="https://openrouter.ai/api/v1",
+            http_client=http_client,
+            max_retries=0
         )
         
         # Convert messages
