@@ -37,22 +37,31 @@ def migrate_ledger(ledger_path: Path, backup: bool = True, dry_run: bool = False
     conn.row_factory = sqlite3.Row
     
     try:
-        # Check if mock_data column exists
+        # Add missing columns idempotently (for legacy ledgers)
         cursor = conn.execute("PRAGMA table_info(calls)")
         columns = [row['name'] for row in cursor.fetchall()]
         
+        columns_to_add = []
         if 'mock_data' not in columns:
-            print("Adding mock_data column...")
-            if not dry_run:
-                conn.execute("ALTER TABLE calls ADD COLUMN mock_data INTEGER DEFAULT 0")
-                conn.commit()
+            columns_to_add.append(("mock_data", "INTEGER DEFAULT 0"))
+        if 'error' not in columns:
+            columns_to_add.append(("error", "TEXT"))
+        if 'finish_reason' not in columns:
+            columns_to_add.append(("finish_reason", "TEXT"))
         
-        # Identify mock data
+        if columns_to_add and not dry_run:
+            print(f"Adding missing columns: {', '.join(c[0] for c in columns_to_add)}")
+            for col_name, col_def in columns_to_add:
+                conn.execute(f"ALTER TABLE calls ADD COLUMN {col_name} {col_def}")
+            conn.commit()
+        elif columns_to_add and dry_run:
+            print(f"[DRY RUN] Would add columns: {', '.join(c[0] for c in columns_to_add)}")
+        
+        # Identify mock data (NEVER by price alone - real gpt-oss can be $0.00097)
+        # ONLY mark by explicit mock indicators
         mock_patterns = [
-            "model_version LIKE '%-mock'",
-            "actual_cost_usd < 0.0001 AND model_version != 'error'",
-            "call_id LIKE '%test%'",
-            "experiment = 'test'"
+            "model_version LIKE '%-mock'",  # Explicit mock version suffix
+            "experiment = 'test'",           # Test experiment name
         ]
         
         where_clause = " OR ".join(f"({p})" for p in mock_patterns)

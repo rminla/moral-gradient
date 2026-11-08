@@ -5,9 +5,12 @@ import json
 import os
 import time
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .budget import BudgetTracker
+from .journal import JournalEntry, ResponseJournal, hash_content
 from .models import MODELS, Provider, get_model_info, get_worst_case_estimate
 
 
@@ -45,7 +48,8 @@ class ProviderClient:
         self,
         budget_tracker: BudgetTracker,
         experiment: str,
-        dry_run: bool = False
+        dry_run: bool = False,
+        journal_dir: Optional[Path] = None
     ):
         """
         Initialize provider client.
@@ -54,10 +58,20 @@ class ProviderClient:
             budget_tracker: Budget tracker for reservations
             experiment: Experiment name (quiz, swarm)
             dry_run: If True, mock all API calls
+            journal_dir: Journal directory (defaults to ledger parent dir)
         """
         self.budget_tracker = budget_tracker
         self.experiment = experiment
         self.dry_run = dry_run
+        
+        # Initialize durable journal (defaults to same dir as ledger)
+        if journal_dir is None:
+            journal_dir = budget_tracker.db_path.parent / "journal"
+        self.journal = ResponseJournal(journal_dir)
+    
+    def _get_model_config(self, model_id: str):
+        """Helper to get model config (for testing)."""
+        return get_model_info(model_id)
     
     def call_model(
         self,
@@ -118,7 +132,26 @@ class ProviderClient:
                     model_config, messages, max_tokens, temperature
                 )
         except Exception as call_error:
-            # If call fails (especially circuit breaker), release reservation
+            # Journal the failure BEFORE releasing reservation
+            journal_entry = JournalEntry(
+                call_id=call_id,
+                timestamp=datetime.utcnow().isoformat() + "Z",
+                model_id=model_config.model_id,
+                model_version="error",
+                provider=model_config.provider.value,
+                experiment=self.experiment,
+                usage={"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                actual_cost_usd=0.0,
+                duration_ms=0,
+                finish_reason="error",
+                content_hash="",
+                raw_response=None,
+                metadata=None,
+                error=str(call_error)
+            )
+            self.journal.write(journal_entry)
+            
+            # Release reservation
             try:
                 self.budget_tracker.reconcile(
                     call_id=call_id,
@@ -131,10 +164,28 @@ class ProviderClient:
                     error=str(call_error)
                 )
             except:
-                pass  # Last resort: tried to release
+                pass  # Journal preserved, ledger best-effort
             raise call_error
         
-        # Reconcile actual cost (or release reservation on error)
+        # JOURNAL FIRST: durable write before fragile ledger reconcile
+        journal_entry = JournalEntry(
+            call_id=call_id,
+            timestamp=datetime.utcnow().isoformat() + "Z",
+            model_id=model_config.model_id,
+            model_version=response.model_version,
+            provider=model_config.provider.value,
+            experiment=self.experiment,
+            usage=response.usage,
+            actual_cost_usd=response.actual_cost_usd,
+            duration_ms=response.duration_ms,
+            finish_reason=response.finish_reason,
+            content_hash=hash_content(response.content),
+            raw_response=response.raw_response,
+            metadata=json.dumps(metadata) if metadata else None
+        )
+        self.journal.write(journal_entry)
+        
+        # Reconcile actual cost (journal already written, safe to fail)
         try:
             self.budget_tracker.reconcile(
                 call_id=call_id,
@@ -147,21 +198,22 @@ class ProviderClient:
                 metadata=json.dumps(metadata) if metadata else None
             )
         except Exception as reconcile_error:
-            # If reconciliation fails, at least release the reservation
-            # by recording a zero-cost failed call
+            # Journal preserved! Can recover later
+            print(f"Warning: Ledger write failed for {call_id}, journal preserved: {reconcile_error}")
+            # Try to release reservation at least
             try:
                 self.budget_tracker.reconcile(
                     call_id=call_id,
-                    model_version='error',
+                    model_version='ledger_error',
                     prompt_tokens=0,
                     completion_tokens=0,
                     actual_cost_usd=0.0,
-                    duration_ms=response.duration_ms if 'response' in locals() else 0,
+                    duration_ms=response.duration_ms,
                     experiment=self.experiment,
-                    error=str(reconcile_error)
+                    error=f"Ledger write failed: {reconcile_error}"
                 )
             except:
-                pass  # Last resort: at least we tried
+                pass  # Journal is safe, that's what matters
             raise reconcile_error
         
         return response
@@ -254,20 +306,18 @@ class ProviderClient:
                     "content": msg.content
                 })
         
-        # Build request
+        # Build request (Anthropic SDK 2.6.0: NO temperature parameter)
         kwargs = {
             "model": model_config.api_model_name,
             "messages": conv_messages,
             "max_tokens": max_tokens,
-            "temperature": temperature,
         }
         
         if system_msg:
             kwargs["system"] = system_msg
         
-        # Add model-specific parameters (exact v3 config)
-        if model_config.adaptive_thinking:
-            # Anthropic adaptive thinking (v3 model_versions.json format)
+        # Add thinking configuration for reasoning models (exact v3 config)
+        if model_config.adaptive_thinking or model_config.reasoning_effort:
             kwargs["thinking"] = {
                 "type": "adaptive",
                 "display": "summarized"
@@ -358,9 +408,10 @@ class ProviderClient:
         }
         
         # Model-specific parameters (exact v3 format)
+        # NOTE: reasoning_format must be in extra_body for OpenAI SDK, not top-level
         if model_config.model_id == "groq/qwen/qwen3.6-27b":
-            # Qwen uses reasoning_format, NOT reasoning_effort
-            kwargs["reasoning_format"] = "parsed"
+            # Qwen uses reasoning_format in extra_body
+            kwargs["extra_body"] = {"reasoning_format": "parsed"}
         elif model_config.reasoning_effort:
             # Other models (gpt-oss) use reasoning_effort
             kwargs["reasoning_effort"] = model_config.reasoning_effort

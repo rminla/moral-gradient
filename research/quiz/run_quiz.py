@@ -500,6 +500,16 @@ def main():
         type=Path,
         help="Resume from checkpoint manifest"
     )
+    parser.add_argument(
+        "--run-id",
+        type=str,
+        help="Unique run ID (default: auto-generated timestamp)"
+    )
+    parser.add_argument(
+        "--ledger-path",
+        type=Path,
+        help="Path to ledger.db (default: research/ledger.db)"
+    )
     
     args = parser.parse_args()
     
@@ -513,7 +523,9 @@ def main():
         output_dir=args.output_dir,
         budget_cap=args.budget_cap,
         dry_run=args.dry_run,
-        resume_from=args.resume
+        resume_from=args.resume,
+        run_id=args.run_id,
+        ledger_path=args.ledger_path
     )
 
 
