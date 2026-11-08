@@ -80,6 +80,7 @@ class ProviderClient:
         messages: List[Message],
         max_tokens: int = 2048,
         temperature: float = 1.0,
+        tools: Optional[List[Dict]] = None,
         metadata: Optional[Dict] = None
     ) -> ModelResponse:
         """
@@ -91,6 +92,7 @@ class ProviderClient:
             messages: Conversation messages
             max_tokens: Maximum completion tokens
             temperature: Sampling temperature
+            tools: Optional tool definitions for function calling
             metadata: Optional metadata to store
         
         Returns:
@@ -126,10 +128,10 @@ class ProviderClient:
         # Make API call (or mock if dry_run)
         try:
             if self.dry_run:
-                response = self._mock_call(model_config, messages, max_tokens)
+                response = self._mock_call(model_config, messages, max_tokens, tools)
             else:
                 response = self._real_call(
-                    model_config, messages, max_tokens, temperature
+                    model_config, messages, max_tokens, temperature, tools
                 )
         except Exception as call_error:
             # Journal the failure BEFORE releasing reservation
@@ -222,12 +224,14 @@ class ProviderClient:
         self,
         model_config,
         messages: List[Message],
-        max_tokens: int
+        max_tokens: int,
+        tools: Optional[List[Dict]] = None
     ) -> ModelResponse:
         """
         Mock an API call for dry-run testing.
         
         Returns a deterministic response based on prompt hash.
+        Tools parameter is accepted but not used in mock.
         """
         # Hash prompt for deterministic mocking
         prompt_text = "\n".join(m.content for m in messages)
@@ -265,7 +269,8 @@ class ProviderClient:
         model_config,
         messages: List[Message],
         max_tokens: int,
-        temperature: float
+        temperature: float,
+        tools: Optional[List[Dict]] = None
     ) -> ModelResponse:
         """
         Make a real API call.
@@ -273,15 +278,15 @@ class ProviderClient:
         Dispatches to provider-specific implementation.
         """
         if model_config.provider == Provider.ANTHROPIC:
-            return self._call_anthropic(model_config, messages, max_tokens, temperature)
+            return self._call_anthropic(model_config, messages, max_tokens, temperature, tools)
         elif model_config.provider == Provider.GROQ:
-            return self._call_groq(model_config, messages, max_tokens, temperature)
+            return self._call_groq(model_config, messages, max_tokens, temperature, tools)
         elif model_config.provider == Provider.OPENROUTER:
-            return self._call_openrouter(model_config, messages, max_tokens, temperature)
+            return self._call_openrouter(model_config, messages, max_tokens, temperature, tools)
         else:
             raise ValueError(f"Unknown provider: {model_config.provider}")
     
-    def _call_anthropic(self, model_config, messages, max_tokens, temperature) -> ModelResponse:
+    def _call_anthropic(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
         """Call Anthropic API."""
         try:
             import anthropic
@@ -315,6 +320,9 @@ class ProviderClient:
         
         if system_msg:
             kwargs["system"] = system_msg
+        
+        if tools:
+            kwargs["tools"] = tools
         
         # Add thinking configuration for reasoning models (exact v3 config)
         if model_config.adaptive_thinking or model_config.reasoning_effort:
@@ -377,7 +385,7 @@ class ProviderClient:
             raw_response=response.model_dump() if hasattr(response, 'model_dump') else None
         )
     
-    def _call_groq(self, model_config, messages, max_tokens, temperature) -> ModelResponse:
+    def _call_groq(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
         """Call Groq API (OpenAI-compatible)."""
         try:
             from openai import OpenAI
@@ -406,6 +414,9 @@ class ProviderClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
+        
+        if tools:
+            kwargs["tools"] = tools
         
         # Model-specific parameters (exact v3 format)
         # NOTE: reasoning_format must be in extra_body for OpenAI SDK, not top-level
@@ -455,7 +466,7 @@ class ProviderClient:
             raw_response=response.model_dump() if hasattr(response, 'model_dump') else None
         )
     
-    def _call_openrouter(self, model_config, messages, max_tokens, temperature) -> ModelResponse:
+    def _call_openrouter(self, model_config, messages, max_tokens, temperature, tools=None) -> ModelResponse:
         """Call OpenRouter API (OpenAI-compatible)."""
         try:
             from openai import OpenAI
@@ -484,6 +495,9 @@ class ProviderClient:
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
+        
+        if tools:
+            kwargs["tools"] = tools
         
         # OpenRouter-specific headers for reasoning
         if model_config.reasoning_effort:

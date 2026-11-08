@@ -2,18 +2,18 @@
 """
 Swarm experiment harness for Moral Gradient v4.
 
-Runs multi-agent team vs single-agent comparisons under pressure conditions.
+Runs multi-agent team vs single-agent comparisons under KPI pressure conditions.
+Uses action tools (not text extraction) and enforces 8 GLOBAL message limit.
 """
 
 import argparse
 import hashlib
 import json
 import random
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Any
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -30,7 +30,7 @@ def load_config(config_path: Path) -> Dict:
 
 
 def load_cases(cases_path: Path) -> Dict:
-    """Load case scenarios."""
+    """Load case scenarios with action tools."""
     with open(cases_path) as f:
         return json.load(f)
 
@@ -41,29 +41,73 @@ def load_prompts(prompts_path: Path) -> Dict:
         return json.load(f)
 
 
-def format_actions_list(actions: List[Dict]) -> str:
-    """Format actions list for prompt."""
-    return "\n".join(
-        f"- {action['id']}: {action['label']}" 
-        for action in actions
-    )
-
-
-def extract_action(response_text: str, pattern: str) -> Optional[str]:
-    """
-    Extract action code from response using regex pattern.
+def format_evidence(evidence: Dict, prompts: Dict) -> str:
+    """Format evidence dict for prompt."""
+    template = prompts["evidence_format"]["template"]
+    item_format = prompts["evidence_format"]["item_format"]
     
-    Args:
-        response_text: Model response
-        pattern: Regex pattern for extraction
+    items = "\n".join(
+        item_format.format(key=k.replace("_", " "), value=v)
+        for k, v in evidence.items()
+    )
+    return template.format(items=items)
+
+
+def build_tool_definitions(case: Dict) -> List[Dict]:
+    """
+    Extract tool definitions from case action_tools.
+    
+    Returns OpenAI/Anthropic compatible tool definitions.
+    """
+    return [tool for tool in case["action_tools"]]
+
+
+def extract_tool_call(response: Any) -> Optional[Dict]:
+    """
+    Extract tool call from model response.
+    
+    Handles both OpenAI and Anthropic formats.
     
     Returns:
-        Action code or None if parsing failed
+        {"name": str, "arguments": dict} or None
     """
-    match = re.search(pattern, response_text, re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
+    # Anthropic format (check first to avoid attribute errors on Mock)
+    if hasattr(response, 'content') and isinstance(response.content, list):
+        for block in response.content:
+            if hasattr(block, 'type') and block.type == 'tool_use':
+                return {
+                    "name": block.name,
+                    "arguments": block.input
+                }
+    
+    # OpenAI format
+    if hasattr(response, 'choices') and response.choices:
+        message = response.choices[0].message
+        if hasattr(message, 'tool_calls') and message.tool_calls:
+            tool_call = message.tool_calls[0]
+            return {
+                "name": tool_call.function.name,
+                "arguments": json.loads(tool_call.function.arguments) if isinstance(tool_call.function.arguments, str) else tool_call.function.arguments
+            }
+    
     return None
+
+
+def get_tool_outcome(tool_name: str, case: Dict) -> str:
+    """
+    Get deterministic outcome for tool call.
+    
+    Args:
+        tool_name: Name of action tool
+        case: Case dict with action_tools
+    
+    Returns:
+        Outcome string
+    """
+    for tool in case["action_tools"]:
+        if tool["function"]["name"] == tool_name:
+            return tool["outcome"]
+    return f"Tool '{tool_name}' not found."
 
 
 def run_single_episode(
@@ -77,109 +121,99 @@ def run_single_episode(
     run_id: str
 ) -> Dict:
     """
-    Run a single-agent episode.
+    Run a single-agent episode with tool calling.
+    
+    Single agent structure:
+    - Turn 1: System + scenario prompt with tools
+    - Model calls action tool
+    - Episode complete
+    
+    Max 8 global messages enforced.
     
     Returns:
         Episode record dict
     """
-    max_turns = config["max_turns"]["single"]
+    MAX_GLOBAL_MESSAGES = 8
+    message_count = 0
     turns = []
     final_action = None
+    tool_calls_log = []
     
-    # Get prompts
+    # Build tools
+    tools = build_tool_definitions(case)
+    
+    # Get prompts (single agent never sees pressure)
     role_prompts = prompts["roles"]["single"]
-    pressure_text = prompts["pressure_manipulation"]["with_pressure"] if pressure else ""
     
     # Build scenario prompt
-    scenario_prompt = role_prompts["scenario_template"].format(
+    evidence_text = format_evidence(case["evidence"], prompts)
+    user_prompt = role_prompts["user_prompt"].format(
         scenario_text=case["scenario_text"],
         context=case["context"],
-        actions_list=format_actions_list(case["actions"]),
-        pressure=pressure_text
+        evidence=evidence_text
     )
     
-    # Turn 1: Present scenario
-    turn_1_messages = [
+    # Turn 1: Present scenario with tools
+    messages = [
         Message(role="system", content=role_prompts["system"]),
-        Message(role="user", content=scenario_prompt)
+        Message(role="user", content=user_prompt)
     ]
     
     call_id = f"{run_id}_{episode_id}_turn_1"
+    message_count += 1
     
     try:
         response = provider_client.call_model(
             call_id=call_id,
             model_id=model_id,
-            messages=turn_1_messages,
+            messages=messages,
+            tools=tools,
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
-            metadata={"episode_id": episode_id, "turn": 1, "role": "single"}
+            metadata={
+                "episode_id": episode_id,
+                "turn": 1,
+                "role": "single",
+                "experiment": "swarm"
+            }
         )
         
-        turns.append({
+        # Extract tool call
+        tool_call = extract_tool_call(response)
+        
+        turn_record = {
             "turn_id": 1,
             "role": "single",
             "prompt_type": "scenario",
-            "response": response.content[:500],
+            "message_count": message_count,
+            "response_preview": str(response.content)[:200] if hasattr(response, 'content') else "",
+            "tool_call": tool_call["name"] if tool_call else None,
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
-        })
+        }
         
-        # Extract action from first response
-        action = extract_action(response.content, prompts["action_format"]["extraction_pattern"])
+        turns.append(turn_record)
         
-        if action:
-            final_action = action
+        if tool_call:
+            # Log tool call
+            tool_calls_log.append({
+                "turn": 1,
+                "role": "single",
+                "tool_name": tool_call["name"],
+                "arguments": tool_call["arguments"],
+                "outcome": get_tool_outcome(tool_call["name"], case)
+            })
+            final_action = tool_call["name"]
         
     except Exception as e:
         print(f"  ✗ Turn 1 failed: {e}")
         turns.append({
             "turn_id": 1,
             "role": "single",
+            "message_count": message_count,
             "error": str(e)
         })
-    
-    # Turn 2: Decision confirmation (if no action yet)
-    if not final_action and len(turns) < max_turns:
-        call_id = f"{run_id}_{episode_id}_turn_2"
-        
-        try:
-            turn_2_messages = turn_1_messages + [
-                Message(role="assistant", content=response.content),
-                Message(role="user", content=role_prompts["decision_template"])
-            ]
-            
-            response = provider_client.call_model(
-                call_id=call_id,
-                model_id=model_id,
-                messages=turn_2_messages,
-                max_tokens=config["sampling"]["max_tokens"],
-                temperature=config["sampling"]["temperature"],
-                metadata={"episode_id": episode_id, "turn": 2, "role": "single"}
-            )
-            
-            turns.append({
-                "turn_id": 2,
-                "role": "single",
-                "prompt_type": "decision",
-                "response": response.content[:500],
-                "usage": response.usage,
-                "cost_usd": response.actual_cost_usd,
-                "duration_ms": response.duration_ms
-            })
-            
-            action = extract_action(response.content, prompts["action_format"]["extraction_pattern"])
-            if action:
-                final_action = action
-        
-        except Exception as e:
-            print(f"  ✗ Turn 2 failed: {e}")
-            turns.append({
-                "turn_id": 2,
-                "role": "single",
-                "error": str(e)
-            })
     
     # Build episode record
     total_cost = sum(t.get("cost_usd", 0) for t in turns)
@@ -189,13 +223,17 @@ def run_single_episode(
         "episode_id": episode_id,
         "case_id": case["id"],
         "model_id": model_id,
-        "arm": "single_pressure" if pressure else "single_no_pressure",
+        "arm": "single_no_pressure",  # single never has pressure
         "structure": "single",
-        "pressure": pressure,
+        "pressure": False,
         "turns": turns,
+        "tool_calls": tool_calls_log,
         "final_action": final_action,
         "complete": complete,
-        "total_cost_usd": total_cost
+        "total_model_calls": message_count,
+        "budget_exceeded": message_count > MAX_GLOBAL_MESSAGES,
+        "total_cost_usd": total_cost,
+        "termination_reason": "action_taken" if complete else "no_tool_call"
     }
 
 
@@ -210,27 +248,47 @@ def run_team_episode(
     run_id: str
 ) -> Dict:
     """
-    Run a team episode (worker → manager → reviewer).
+    Run a team episode (worker → manager → reviewer) with tool calling.
+    
+    Team structure:
+    - Turn 1: Worker receives scenario, calls tool
+    - Turn 2: Manager sees worker message, calls tool (with KPI pressure if pressure=True)
+    - Turn 3: Reviewer sees worker+manager, calls tool (final binding decision)
+    
+    Max 8 global messages enforced across all agents.
     
     Returns:
         Episode record dict
     """
-    max_turns = config["max_turns"]["team"]
+    MAX_GLOBAL_MESSAGES = 8
+    message_count = 0
     turns = []
     final_action = None
+    tool_calls_log = []
     
-    pressure_text = prompts["pressure_manipulation"]["with_pressure"] if pressure else ""
+    # Build tools
+    tools = build_tool_definitions(case)
     
-    # Turn 1: Worker receives scenario
+    # Pressure text (only for manager)
+    kpi_pressure = prompts["pressure_manipulation"]["kpi_pressure"] if pressure else ""
+    
+    evidence_text = format_evidence(case["evidence"], prompts)
+    
+    # ===== TURN 1: WORKER =====
     worker_prompts = prompts["roles"]["worker"]
-    scenario_prompt = worker_prompts["scenario_template"].format(
+    worker_user_prompt = worker_prompts["user_prompt"].format(
         scenario_text=case["scenario_text"],
         context=case["context"],
-        actions_list=format_actions_list(case["actions"])
+        evidence=evidence_text
     )
     
     call_id = f"{run_id}_{episode_id}_turn_1_worker"
-    worker_proposal = None
+    message_count += 1
+    worker_message = None
+    worker_tool_call = None
+    
+    if message_count > MAX_GLOBAL_MESSAGES:
+        return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
     
     try:
         response = provider_client.call_model(
@@ -238,50 +296,84 @@ def run_team_episode(
             model_id=model_id,
             messages=[
                 Message(role="system", content=worker_prompts["system"]),
-                Message(role="user", content=scenario_prompt)
+                Message(role="user", content=worker_user_prompt)
             ],
+            tools=tools,
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
-            metadata={"episode_id": episode_id, "turn": 1, "role": "worker"}
+            metadata={
+                "episode_id": episode_id,
+                "turn": 1,
+                "role": "worker",
+                "experiment": "swarm"
+            }
         )
         
-        worker_proposal = response.content
+        # Extract tool call
+        tool_call = extract_tool_call(response)
+        worker_tool_call = tool_call
         
-        turns.append({
+        # Store full worker message for manager (text only, not tool blocks)
+        if hasattr(response, 'content'):
+            if isinstance(response.content, list):
+                # Anthropic format - extract only text blocks
+                text_parts = [
+                    block.text for block in response.content
+                    if hasattr(block, 'text') and hasattr(block, 'type') and block.type == 'text'
+                ]
+                worker_message = "\n".join(text_parts) if text_parts else "[Worker called tool]"
+            else:
+                worker_message = str(response.content)
+        else:
+            worker_message = str(response)
+        
+        turn_record = {
             "turn_id": 1,
             "role": "worker",
             "prompt_type": "scenario",
-            "response": response.content[:500],
+            "message_count": message_count,
+            "response_preview": worker_message[:200],
+            "tool_call": tool_call["name"] if tool_call else None,
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
-        })
+        }
+        
+        turns.append(turn_record)
+        
+        if tool_call:
+            tool_calls_log.append({
+                "turn": 1,
+                "role": "worker",
+                "tool_name": tool_call["name"],
+                "arguments": tool_call["arguments"],
+                "outcome": get_tool_outcome(tool_call["name"], case)
+            })
     
     except Exception as e:
         print(f"  ✗ Worker turn failed: {e}")
-        turns.append({"turn_id": 1, "role": "worker", "error": str(e)})
-        return {
-            "episode_id": episode_id,
-            "case_id": case["id"],
-            "model_id": model_id,
-            "arm": "team_pressure" if pressure else "team_no_pressure",
-            "structure": "team",
-            "pressure": pressure,
-            "turns": turns,
-            "final_action": None,
-            "complete": False,
-            "total_cost_usd": sum(t.get("cost_usd", 0) for t in turns)
-        }
+        turns.append({
+            "turn_id": 1,
+            "role": "worker",
+            "message_count": message_count,
+            "error": str(e)
+        })
+        return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "worker_error")
     
-    # Turn 2: Manager reviews
+    # ===== TURN 2: MANAGER =====
     manager_prompts = prompts["roles"]["manager"]
-    manager_prompt = manager_prompts["review_template"].format(
-        worker_proposal=worker_proposal,
-        pressure=pressure_text
+    manager_user_prompt = manager_prompts["user_prompt"].format(
+        worker_message=worker_message,
+        pressure=kpi_pressure
     )
     
     call_id = f"{run_id}_{episode_id}_turn_2_manager"
-    manager_decision = None
+    message_count += 1
+    manager_message = None
+    manager_tool_call = None
+    
+    if message_count > MAX_GLOBAL_MESSAGES:
+        return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
     
     try:
         response = provider_client.call_model(
@@ -289,49 +381,82 @@ def run_team_episode(
             model_id=model_id,
             messages=[
                 Message(role="system", content=manager_prompts["system"]),
-                Message(role="user", content=manager_prompt)
+                Message(role="user", content=manager_user_prompt)
             ],
+            tools=tools,
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
-            metadata={"episode_id": episode_id, "turn": 2, "role": "manager"}
+            metadata={
+                "episode_id": episode_id,
+                "turn": 2,
+                "role": "manager",
+                "experiment": "swarm"
+            }
         )
         
-        manager_decision = response.content
+        # Extract tool call
+        tool_call = extract_tool_call(response)
+        manager_tool_call = tool_call
         
-        turns.append({
+        # Store full manager message for reviewer (text only, not tool blocks)
+        if hasattr(response, 'content'):
+            if isinstance(response.content, list):
+                # Anthropic format - extract only text blocks
+                text_parts = [
+                    block.text for block in response.content
+                    if hasattr(block, 'text') and hasattr(block, 'type') and block.type == 'text'
+                ]
+                manager_message = "\n".join(text_parts) if text_parts else "[Manager called tool]"
+            else:
+                manager_message = str(response.content)
+        else:
+            manager_message = str(response)
+        
+        turn_record = {
             "turn_id": 2,
             "role": "manager",
             "prompt_type": "review",
-            "response": response.content[:500],
+            "message_count": message_count,
+            "response_preview": manager_message[:200],
+            "tool_call": tool_call["name"] if tool_call else None,
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
-        })
+        }
+        
+        turns.append(turn_record)
+        
+        if tool_call:
+            tool_calls_log.append({
+                "turn": 2,
+                "role": "manager",
+                "tool_name": tool_call["name"],
+                "arguments": tool_call["arguments"],
+                "outcome": get_tool_outcome(tool_call["name"], case)
+            })
     
     except Exception as e:
         print(f"  ✗ Manager turn failed: {e}")
-        turns.append({"turn_id": 2, "role": "manager", "error": str(e)})
-        return {
-            "episode_id": episode_id,
-            "case_id": case["id"],
-            "model_id": model_id,
-            "arm": "team_pressure" if pressure else "team_no_pressure",
-            "structure": "team",
-            "pressure": pressure,
-            "turns": turns,
-            "final_action": None,
-            "complete": False,
-            "total_cost_usd": sum(t.get("cost_usd", 0) for t in turns)
-        }
+        turns.append({
+            "turn_id": 2,
+            "role": "manager",
+            "message_count": message_count,
+            "error": str(e)
+        })
+        return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "manager_error")
     
-    # Turn 3: Reviewer makes final decision
+    # ===== TURN 3: REVIEWER =====
     reviewer_prompts = prompts["roles"]["reviewer"]
-    reviewer_prompt = reviewer_prompts["review_template"].format(
-        worker_proposal=worker_proposal,
-        manager_decision=manager_decision
+    reviewer_user_prompt = reviewer_prompts["user_prompt"].format(
+        worker_message=worker_message,
+        manager_message=manager_message
     )
     
     call_id = f"{run_id}_{episode_id}_turn_3_reviewer"
+    message_count += 1
+    
+    if message_count > MAX_GLOBAL_MESSAGES:
+        return build_incomplete_episode(episode_id, case, model_id, pressure, message_count, turns, tool_calls_log, "budget_exceeded")
     
     try:
         response = provider_client.call_model(
@@ -339,43 +464,120 @@ def run_team_episode(
             model_id=model_id,
             messages=[
                 Message(role="system", content=reviewer_prompts["system"]),
-                Message(role="user", content=reviewer_prompt)
+                Message(role="user", content=reviewer_user_prompt)
             ],
+            tools=tools,
             max_tokens=config["sampling"]["max_tokens"],
             temperature=config["sampling"]["temperature"],
-            metadata={"episode_id": episode_id, "turn": 3, "role": "reviewer"}
+            metadata={
+                "episode_id": episode_id,
+                "turn": 3,
+                "role": "reviewer",
+                "experiment": "swarm"
+            }
         )
         
-        turns.append({
+        # Extract tool call
+        tool_call = extract_tool_call(response)
+        
+        reviewer_message = ""
+        if hasattr(response, 'content'):
+            if isinstance(response.content, list):
+                # Anthropic format - extract only text blocks
+                text_parts = [
+                    block.text for block in response.content
+                    if hasattr(block, 'text') and hasattr(block, 'type') and block.type == 'text'
+                ]
+                reviewer_message = "\n".join(text_parts) if text_parts else "[Reviewer called tool]"
+            else:
+                reviewer_message = str(response.content)
+        
+        turn_record = {
             "turn_id": 3,
             "role": "reviewer",
             "prompt_type": "final",
-            "response": response.content[:500],
+            "message_count": message_count,
+            "response_preview": reviewer_message[:200],
+            "tool_call": tool_call["name"] if tool_call else None,
             "usage": response.usage,
             "cost_usd": response.actual_cost_usd,
             "duration_ms": response.duration_ms
-        })
+        }
         
-        # Extract final action
-        action = extract_action(response.content, prompts["action_format"]["extraction_pattern"])
-        if action:
-            final_action = action
+        turns.append(turn_record)
+        
+        if tool_call:
+            tool_calls_log.append({
+                "turn": 3,
+                "role": "reviewer",
+                "tool_name": tool_call["name"],
+                "arguments": tool_call["arguments"],
+                "outcome": get_tool_outcome(tool_call["name"], case)
+            })
+            final_action = tool_call["name"]
     
     except Exception as e:
         print(f"  ✗ Reviewer turn failed: {e}")
-        turns.append({"turn_id": 3, "role": "reviewer", "error": str(e)})
+        turns.append({
+            "turn_id": 3,
+            "role": "reviewer",
+            "message_count": message_count,
+            "error": str(e)
+        })
+    
+    # Build final episode record
+    total_cost = sum(t.get("cost_usd", 0) for t in turns)
+    complete = final_action is not None
+    
+    arm = "team_pressure" if pressure else "team_no_pressure"
     
     return {
         "episode_id": episode_id,
         "case_id": case["id"],
         "model_id": model_id,
-        "arm": "team_pressure" if pressure else "team_no_pressure",
+        "arm": arm,
         "structure": "team",
         "pressure": pressure,
         "turns": turns,
+        "tool_calls": tool_calls_log,
         "final_action": final_action,
-        "complete": final_action is not None,
-        "total_cost_usd": sum(t.get("cost_usd", 0) for t in turns)
+        "complete": complete,
+        "total_model_calls": message_count,
+        "budget_exceeded": message_count > MAX_GLOBAL_MESSAGES,
+        "total_cost_usd": total_cost,
+        "termination_reason": "action_taken" if complete else "reviewer_no_tool"
+    }
+
+
+def build_incomplete_episode(
+    episode_id: str,
+    case: Dict,
+    model_id: str,
+    pressure: bool,
+    message_count: int,
+    turns: List[Dict],
+    tool_calls_log: List[Dict],
+    reason: str
+) -> Dict:
+    """Helper to build incomplete episode record."""
+    arm = f"team_{'pressure' if pressure else 'no_pressure'}"
+    total_cost = sum(t.get("cost_usd", 0) for t in turns)
+    
+    return {
+        "episode_id": episode_id,
+        "case_id": case["id"],
+        "model_id": model_id,
+        "arm": arm,
+        "structure": "team",
+        "pressure": pressure,
+        "turns": turns,
+        "tool_calls": tool_calls_log,
+        "final_action": None,
+        "complete": False,
+        "total_model_calls": message_count,
+        "budget_exceeded": message_count > 8,
+        "total_cost_usd": total_cost,
+        "termination_reason": reason
     }
 
 
@@ -391,7 +593,7 @@ def run_swarm(
     ledger_path: Optional[Path] = None
 ) -> Dict:
     """
-    Run swarm experiment.
+    Run swarm experiment with action tools and 8-message limit.
     
     Args:
         config_path: Path to config.json
@@ -401,6 +603,8 @@ def run_swarm(
         budget_cap: Budget cap in USD
         dry_run: If True, mock all API calls
         resume_from: Optional manifest to resume from
+        run_id: Unique run ID (default: auto-generated)
+        ledger_path: Path to ledger.db
     
     Returns:
         Manifest dict with all results
@@ -410,8 +614,7 @@ def run_swarm(
     cases_data = load_cases(cases_path)
     prompts = load_prompts(prompts_path)
     
-    # Check for placeholders (stop execution if found)
-    import json
+    # Check for placeholders
     placeholder_check = json.dumps(cases_data) + json.dumps(prompts)
     if "[TO BE FINALIZED]" in placeholder_check:
         print("\n" + "="*60)
@@ -420,7 +623,7 @@ def run_swarm(
         print("="*60)
         sys.exit(1)
     
-    # Initialize budget tracker (use provided path or default)
+    # Initialize budget tracker
     if ledger_path is None:
         ledger_path = Path(__file__).parent.parent / "ledger.db"
     budget_tracker = BudgetTracker(ledger_path, budget_cap)
@@ -455,11 +658,12 @@ def run_swarm(
     if dry_run:
         print("⚠️  DRY RUN MODE - No actual API calls will be made\n")
     
-    # Create manifest structure (use provided run_id or generate)
+    # Create manifest
     if run_id is None:
         run_id = f"swarm_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    
     manifest = {
-        "version": "1.0.0",
+        "version": "2.0.0",
         "run_id": run_id,
         "created_at": datetime.utcnow().isoformat() + "Z",
         "dry_run": dry_run,
@@ -509,6 +713,8 @@ def run_swarm(
                             "model_id": model_id,
                             "arm_config": arm_config
                         })
+    
+    random.shuffle(episode_plan)
     
     total_planned = len(episode_plan) + len(completed_episode_ids)
     print(f"Total episodes planned: {total_planned}")
@@ -562,7 +768,7 @@ def run_swarm(
                 manifest["summary"]["total_cost_usd"] += episode["total_cost_usd"]
                 
                 status = "✓" if episode["complete"] else "✗"
-                print(f"  {status} Action: {episode['final_action'] or 'INCOMPLETE'} | ${episode['total_cost_usd']:.6f} | {len(episode['turns'])} turns")
+                print(f"  {status} Action: {episode['final_action'] or 'INCOMPLETE'} | ${episode['total_cost_usd']:.6f} | {episode['total_model_calls']} msgs")
                 
                 # Checkpoint every 5 episodes
                 if i % 5 == 0:
@@ -577,6 +783,8 @@ def run_swarm(
                 break
             except Exception as e:
                 print(f"  ✗ ERROR: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
     
     except KeyboardInterrupt:
@@ -652,7 +860,7 @@ def compute_summary(manifest: Dict):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run swarm experiment"
+        description="Run swarm experiment with action tools"
     )
     parser.add_argument(
         "--config",
