@@ -383,42 +383,64 @@ def run_quiz(
         print("No calls remaining. Run complete!")
         return manifest
     
-    # Execute calls (bounded parallel execution with fair per-provider scheduling)
+    # Execute calls (bounded parallel with round-robin fair scheduling)
     print(f"\nStarting parallel execution with {max_workers} workers...\n")
-    print(f"Fair scheduling: max 1 call per model in-flight\n")
+    print(f"Fair scheduling: round-robin across models, max 1 call per model in-flight\n")
     
     completed_count = 0
     manifest_lock = threading.Lock()
     budget_exceeded_flag = threading.Event()
     fatal_storage_flag = threading.Event()
     
-    # Per-model semaphores for fair scheduling (max 1 concurrent per model)
-    model_semaphores = {}
+    # Organize calls by model for fair round-robin scheduling
+    model_queues = {}
     for call_spec in call_plan:
         model_id = call_spec['model_id']
-        if model_id not in model_semaphores:
-            model_semaphores[model_id] = threading.Semaphore(1)
+        if model_id not in model_queues:
+            model_queues[model_id] = []
+        model_queues[model_id].append(call_spec)
+    
+    print(f"Call distribution:")
+    for model_id, queue in model_queues.items():
+        print(f"  {model_id}: {len(queue)} calls")
+    print()
+    
+    # Track in-flight models to enforce 1 per model
+    inflight_models = set()
+    inflight_lock = threading.Lock()
+    
+    def get_next_eligible_call():
+        """Get next call from model that's not currently in-flight (round-robin)."""
+        with inflight_lock:
+            for model_id in sorted(model_queues.keys()):  # Deterministic order
+                if model_id not in inflight_models and model_queues[model_id]:
+                    call_spec = model_queues[model_id].pop(0)
+                    inflight_models.add(model_id)
+                    return call_spec, model_id
+        return None, None
+    
+    def release_model(model_id):
+        """Release model from in-flight set."""
+        with inflight_lock:
+            inflight_models.discard(model_id)
     
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Bounded submission queue - submit in batches to avoid overwhelming
+            # Bounded submission with fair scheduling
             pending_futures = {}
-            submitted_count = 0
-            call_queue = list(call_plan)
             
-            # Initial batch submission (fill worker pool)
-            while len(pending_futures) < max_workers and call_queue:
-                call_spec = call_queue.pop(0)
-                future = executor.submit(
-                    execute_quiz_call, call_spec, config, provider_client, circuit_breaker
-                )
-                pending_futures[future] = call_spec
-                submitted_count += 1
+            # Initial batch submission (round-robin across models)
+            for _ in range(min(max_workers, len(call_plan))):
+                call_spec, model_id = get_next_eligible_call()
+                if call_spec:
+                    future = executor.submit(
+                        execute_quiz_call, call_spec, config, provider_client, circuit_breaker
+                    )
+                    pending_futures[future] = (call_spec, model_id)
             
-            # Process completed tasks and submit new ones
+            # Process completed tasks and submit new ones (round-robin)
             while pending_futures:
                 if budget_exceeded_flag.is_set() or fatal_storage_flag.is_set():
-                    # Stop submitting new work
                     break
                 
                 # Wait for next completion
@@ -428,7 +450,8 @@ def run_quiz(
                 )
                 
                 for future in done:
-                    call_spec = pending_futures.pop(future)
+                    call_spec, model_id = pending_futures.pop(future)
+                    release_model(model_id)  # Free this model for next call
                     
                     try:
                         call_record = future.result()
@@ -459,7 +482,6 @@ def run_quiz(
                         print(f"\n⚠️  BUDGET EXCEEDED: {e}")
                         print(f"Stopping dispatch at {completed_count}/{len(call_plan)} completed")
                         budget_exceeded_flag.set()
-                        # Cancel remaining futures
                         for f in pending_futures:
                             f.cancel()
                         break
@@ -468,7 +490,6 @@ def run_quiz(
                             print(f"\n⚠️  FATAL STORAGE ERROR: {e}")
                             print(f"Stopping dispatch, draining in-flight, preserving held costs")
                             fatal_storage_flag.set()
-                            # Cancel queued futures (not yet running)
                             for f in pending_futures:
                                 f.cancel()
                             break
@@ -481,14 +502,15 @@ def run_quiz(
                         import traceback
                         traceback.print_exc()
                 
-                # Submit next batch if space available and work remains
-                while len(pending_futures) < max_workers and call_queue and not budget_exceeded_flag.is_set() and not fatal_storage_flag.is_set():
-                    call_spec = call_queue.pop(0)
+                # Submit next eligible call (round-robin, not in-flight)
+                while len(pending_futures) < max_workers and not budget_exceeded_flag.is_set() and not fatal_storage_flag.is_set():
+                    next_call, next_model = get_next_eligible_call()
+                    if not next_call:
+                        break  # No eligible calls remain
                     future = executor.submit(
-                        execute_quiz_call, call_spec, config, provider_client, circuit_breaker
+                        execute_quiz_call, next_call, config, provider_client, circuit_breaker
                     )
-                    pending_futures[future] = call_spec
-                    submitted_count += 1
+                    pending_futures[future] = (next_call, next_model)
             
             # Wait for any remaining in-flight work to complete
             executor.shutdown(wait=True)

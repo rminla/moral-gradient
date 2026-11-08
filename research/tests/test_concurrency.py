@@ -293,20 +293,36 @@ def test_cross_process_lock():
         lock_script.write_text("""
 import sys
 import time
-sys.path.insert(0, '/agent/repos/moral-gradient/research')
-from pathlib import Path
-from quiz.run_quiz import acquire_process_lock
 
-ledger_path = Path(sys.argv[1])
-lock_file = acquire_process_lock(ledger_path)
-if lock_file:
-    print("ACQUIRED", flush=True)
-    time.sleep(2)  # Hold lock for 2 seconds
-    lock_file.close()
-    print("RELEASED", flush=True)
-else:
-    print("BLOCKED", flush=True)
-    sys.exit(1)
+# Add research to path
+sys.path.insert(0, '/agent/repos/moral-gradient/research')
+sys.path.insert(0, '/agent/repos/moral-gradient')
+
+try:
+    from pathlib import Path
+    from quiz.run_quiz import acquire_process_lock
+    
+    ledger_path = Path(sys.argv[1])
+    lock_file = acquire_process_lock(ledger_path)
+    
+    if lock_file:
+        sys.stdout.write("ACQUIRED\\n")
+        sys.stdout.flush()
+        time.sleep(2)  # Hold lock for 2 seconds
+        lock_file.close()
+        sys.stdout.write("RELEASED\\n")
+        sys.stdout.flush()
+        sys.exit(0)
+    else:
+        sys.stdout.write("BLOCKED\\n")
+        sys.stdout.flush()
+        sys.exit(1)
+except Exception as e:
+    sys.stderr.write(f"ERROR: {e}\\n")
+    sys.stderr.flush()
+    import traceback
+    traceback.print_exc(file=sys.stderr)
+    sys.exit(2)
 """)
         
         # Start first process

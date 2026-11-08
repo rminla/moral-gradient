@@ -289,7 +289,6 @@ class ProviderClient:
         """Call Anthropic API with finite timeouts."""
         try:
             import anthropic
-            import httpx
         except ImportError:
             raise RuntimeError("anthropic package not installed. Run: pip install anthropic")
         
@@ -297,9 +296,15 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("ANTHROPIC_API_KEY not set")
         
-        # Bounded timeout: 60s connect, configurable read (default 180s)
-        timeout = httpx.Timeout(60.0, read=float(self.http_timeout))
-        client = anthropic.Anthropic(api_key=api_key, timeout=timeout, max_retries=0)
+        # Anthropic SDK 2.6.0+ uses httpx2, not httpx
+        # Use float for timeout (SDK will create appropriate httpx2.Timeout internally)
+        timeout = float(self.http_timeout)
+        
+        try:
+            client = anthropic.Anthropic(api_key=api_key, timeout=timeout, max_retries=0)
+        except (TypeError, ValueError) as e:
+            # SDK configuration error - disable provider immediately
+            raise RuntimeError(f"PERMANENT_ERROR: Anthropic SDK configuration failed: {e}")
         
         # Convert messages
         system_msg = None
