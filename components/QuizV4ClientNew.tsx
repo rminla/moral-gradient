@@ -61,10 +61,10 @@ export default function QuizV4ClientNew() {
   };
 
   if (step === "intro") return (
-    <>
-      <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
+    <section className="border-b border-rule">
+      <div className="relative mx-auto max-w-[1200px]">
         <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-        <div className="relative grid gap-10 px-5 pb-14 pt-12 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:px-8 md:pb-16 md:pt-16">
+        <div className="relative grid gap-10 px-6 pb-14 pt-12 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:px-12 md:pb-16 md:pt-16">
           <div>
             <Eyebrow>Interactive mockup · {N} ethical dilemmas · about 5 minutes</Eyebrow>
             <h1 className="wide mt-6 text-[40px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px]">Who's your AI ethical twin?</h1>
@@ -84,31 +84,32 @@ export default function QuizV4ClientNew() {
             ].map(([t, b]) => <div key={t} className="border border-rule bg-paper p-4"><div className="text-[15px] font-semibold">{t}</div><p className="mt-1 text-[13.5px] leading-6 text-ink/60">{b}</p></div>)}
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 
   if (typeof step === "number") {
     const item = QUIZ_V4_NEW[step];
     const answered = Object.keys(answers).length;
     return (
-      <section className="relative mx-auto max-w-[1280px] overflow-hidden border-b border-rule">
-        {/* Header with progress */}
-        <div className="relative border-b border-rule px-5 py-6 md:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <Eyebrow>Question {step + 1} of {N}</Eyebrow>
-              <h1 className="mt-2 text-[22px] font-bold leading-tight tracking-[-0.02em] md:text-[26px]">{item.title}</h1>
+      <section className="border-b border-rule">
+        <div className="mx-auto max-w-[1200px]">
+          {/* Header with progress */}
+          <div className="border-b border-rule px-6 py-6 md:px-12">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <Eyebrow>Question {step + 1} of {N}</Eyebrow>
+                <h1 className="mt-2 text-[22px] font-bold leading-tight tracking-[-0.02em] md:text-[26px]">{item.title}</h1>
+              </div>
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/45">{item.category === "classic" ? "Classic problem" : "Everyday dilemma"}</span>
             </div>
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/45">{item.category === "classic" ? "Classic problem" : "Everyday dilemma"}</span>
+            <div className="mt-5 grid gap-1" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+              {QUIZ_V4_NEW.map((_, j) => <span key={j} className={`h-1.5 ${j < step ? "bg-ink" : j === step ? "bg-vermilion" : "bg-ink/10"}`} />)}
+            </div>
           </div>
-          <div className="mt-5 grid gap-1" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
-            {QUIZ_V4_NEW.map((_, j) => <span key={j} className={`h-1.5 ${j < step ? "bg-ink" : j === step ? "bg-vermilion" : "bg-ink/10"}`} />)}
-          </div>
-        </div>
 
-        {/* Main content: two-column on desktop, stacked on mobile */}
-        <div className="relative grid gap-8 px-5 py-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-10 md:px-8 md:py-12">
+          {/* Main content: two-column on desktop, stacked on mobile */}
+          <div className="grid gap-8 px-6 py-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-10 md:px-12 md:py-12">
           
           {/* Left column: Scenario and choices */}
           <div>
@@ -182,7 +183,7 @@ export default function QuizV4ClientNew() {
               </div>
             </div>
           </div>
-
+        </div>
         </div>
       </section>
     );
@@ -205,9 +206,10 @@ export default function QuizV4ClientNew() {
 
     return (
       <>
-        <section className="mx-auto max-w-[1200px] border-b border-rule">
-          <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-            <div className="border-b border-rule p-5 md:border-b-0 md:border-r md:p-8">
+        <section className="border-b border-rule">
+          <div className="mx-auto max-w-[1200px]">
+            <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+              <div className="border-b border-rule p-6 md:border-b-0 md:border-r md:p-12">
               <Eyebrow>Your result · {N} of {N} answered</Eyebrow>
               <h1 className="mt-8">
                 <span className="label block">Your AI ethical twin is</span>
@@ -228,23 +230,25 @@ export default function QuizV4ClientNew() {
               <div className="mt-6 flex flex-wrap gap-2">
                 <button type="button" onClick={() => { setAnswers({}); setStep("intro"); }} className="btn-ghost">Start over</button>
               </div>
-            </div>
-            <div className="flex flex-col">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-4 md:px-8">
-                <span className="kicker text-ink">Agreement with each model</span>
-                <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-vermilion">Demo data</span>
               </div>
-              {models.map((m, k) => (
-                <div key={m.id} className={`flex items-center justify-between border-b border-rule px-5 py-4 md:px-8 ${k === 0 ? "bg-highlight/30" : ""}`}>
-                  <span className={`text-[16px] ${k === 0 ? "font-semibold" : "text-ink/70"}`}>{m.name}</span>
-                  <span className="num text-[16px] font-semibold">{m.agreement}%</span>
+              <div className="flex flex-col">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-6 py-4 md:px-12">
+                  <span className="kicker text-ink">Agreement with each model</span>
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-vermilion">Demo data</span>
                 </div>
-              ))}
+                {models.map((m, k) => (
+                  <div key={m.id} className={`flex items-center justify-between border-b border-rule px-6 py-4 md:px-12 ${k === 0 ? "bg-highlight/30" : ""}`}>
+                    <span className={`text-[16px] ${k === 0 ? "font-semibold" : "text-ink/70"}`}>{m.name}</span>
+                    <span className="num text-[16px] font-semibold">{m.agreement}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] border-b border-rule p-5 md:p-8">
+        <section className="border-b border-rule">
+          <div className="mx-auto max-w-[1200px] px-6 py-10 md:px-12 md:py-12">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="kicker text-ink">Question by question</span>
             <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50">{twin.name}</span>
@@ -269,17 +273,20 @@ export default function QuizV4ClientNew() {
               </div>
             ))}
           </div>
+          </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] border-b border-rule p-5 md:p-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <div className="kicker text-ink">Interactive mockup</div>
-            <p className="mt-4 text-[15px] leading-relaxed text-ink/70">
-              This is a prototype for exploring ethical alignment through playful similarity matching. Real model evaluation requires running actual task scenarios and measuring actions, not self-reported choices.
-            </p>
-            <p className="mt-4 text-[13px] leading-6 text-ink/55">
-              Prototype on branch quiz-v4. <Link href="/quiz" className="link">Current quiz</Link>
-            </p>
+        <section className="border-b border-rule">
+          <div className="mx-auto max-w-[1200px] px-6 py-10 md:px-12 md:py-12">
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="kicker text-ink">Interactive mockup</div>
+              <p className="mt-4 text-[15px] leading-relaxed text-ink/70">
+                This is a prototype for exploring ethical alignment through playful similarity matching. Real model evaluation requires running actual task scenarios and measuring actions, not self-reported choices.
+              </p>
+              <p className="mt-4 text-[13px] leading-6 text-ink/55">
+                Prototype on branch quiz-v4. <Link href="/quiz" className="link">Current quiz</Link>
+              </p>
+            </div>
           </div>
         </section>
       </>
