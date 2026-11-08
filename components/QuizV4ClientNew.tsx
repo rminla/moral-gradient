@@ -6,20 +6,20 @@ import { QUIZ_V4_NEW, type QuizV4ItemNew } from "@/lib/quizV4ItemsNew";
 
 const N = QUIZ_V4_NEW.length;
 
-// DEMO PLACEHOLDER DATA - NOT REAL MODEL RESULTS
-// These are fictional example scores for mockup purposes only
+// DEMO PLACEHOLDER DATA, NOT REAL MODEL RESULTS
+// Fictional example scores for mockup purposes only
 const DEMO_MODEL_ANSWERS: Record<string, Record<string, 0 | 1>> = {
-  "claude-3.5-sonnet": {
-    paintings: 1, resume: 0, secret: 0, donation: 1,
-    trolley: 1, "experience-machine": 0, veil: 0, omelas: 1, pig: 0, ring: 0
+  "claude-sonnet": {
+    trolley: 1, "experience-machine": 0, veil: 0, omelas: 1, pig: 0, ring: 0,
+    paintings: 1, "ceo-daughter": 0, cancellation: 0, shoes: 1
   },
-  "gpt-4": {
-    paintings: 1, resume: 0, secret: 1, donation: 0,
-    trolley: 1, "experience-machine": 0, veil: 0, omelas: 1, pig: 1, ring: 0
+  "gpt-4o": {
+    trolley: 1, "experience-machine": 0, veil: 0, omelas: 1, pig: 1, ring: 0,
+    paintings: 1, "ceo-daughter": 0, cancellation: 0, shoes: 0
   },
   "gemini-pro": {
-    paintings: 0, resume: 0, secret: 0, donation: 1,
-    trolley: 1, "experience-machine": 0, veil: 1, omelas: 0, pig: 0, ring: 0
+    trolley: 1, "experience-machine": 0, veil: 1, omelas: 0, pig: 0, ring: 0,
+    paintings: 0, "ceo-daughter": 0, cancellation: 0, shoes: 1
   },
 };
 
@@ -38,33 +38,25 @@ function choiceAgreement(yours: Record<string, 0 | 1>, theirs: Record<string, 0 
 export function PlaceholderBanner() {
   return (
     <div role="status" className="sticky top-0 z-40 border-b border-vermilion-dark bg-vermilion px-5 py-2 text-center font-mono text-[11.5px] font-medium uppercase tracking-[0.08em] text-white">
-      Interactive mockup · all model scores are fictional demo data · not real research · nothing stored
+      Interactive mockup · fictional model data · nothing stored
     </div>
   );
 }
 
 export default function QuizV4ClientNew() {
-  const [step, setStep] = useState<"intro" | number | "reveal" | "result">("intro");
+  const [step, setStep] = useState<"intro" | number | "result">("intro");
   const [answers, setAnswers] = useState<Record<string, 0 | 1>>({});
-  const [currentItem, setCurrentItem] = useState<QuizV4ItemNew | null>(null);
-  const [currentChoice, setCurrentChoice] = useState<0 | 1 | null>(null);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
   const answerQuestion = (itemIdx: number, choice: 0 | 1) => {
     const item = QUIZ_V4_NEW[itemIdx];
     setAnswers(prev => ({ ...prev, [item.id]: choice }));
-    setCurrentItem(item);
-    setCurrentChoice(choice);
-    setStep("reveal");
-  };
-
-  const continueAfterReveal = () => {
-    const nextIdx = QUIZ_V4_NEW.findIndex(it => answers[it.id] == null);
-    if (nextIdx === -1) {
-      setStep("result");
-    } else {
+    const nextIdx = itemIdx + 1;
+    if (nextIdx < N) {
       setStep(nextIdx);
+    } else {
+      setStep("result");
     }
   };
 
@@ -74,21 +66,21 @@ export default function QuizV4ClientNew() {
         <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <div className="relative grid gap-10 px-5 pb-14 pt-12 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:px-8 md:pb-16 md:pt-16">
           <div>
-            <Eyebrow>Interactive mockup · {N} ethical dilemmas · ~5 minutes</Eyebrow>
+            <Eyebrow>Interactive mockup · {N} ethical dilemmas · about 5 minutes</Eyebrow>
             <h1 className="wide mt-6 text-[40px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px]">Who's your AI ethical twin?</h1>
-            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">{N} ethical dilemmas—some famous, some everyday. Pick what you'd do. After each choice, learn where the problem came from and why it matters for AI. Then meet the model whose answers are closest to yours.</p>
+            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">{N} ethical dilemmas, some famous and some everyday. Pick what you'd do. Then meet the model whose answers are closest to yours.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button type="button" onClick={() => { setAnswers({}); setStep(0); }} className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Start</button>
             </div>
-            <p className="mt-5 text-[13.5px] leading-6 text-ink/55">No right answers. This is a playful mockup—model scores are fictional demo data. Nothing you answer is stored.</p>
+            <p className="mt-5 text-[13.5px] leading-6 text-ink/55">No right answers. This is a mockup with fictional model data. Nothing you answer is stored.</p>
           </div>
           <div className="flex flex-col gap-3 self-end">
             <div className="label">What to expect</div>
             {[
-              ["6 classic problems", "Famous ethical thought experiments from philosophy—the trolley problem, Nozick's experience machine, Rawls's veil of ignorance, and more."],
-              ["4 everyday dilemmas", "Original scenarios about honesty, loyalty, fairness, and generosity in personal situations you might actually face."],
-              ["Learn after each choice", "See where each problem came from, what ethical tension it captures, and why it matters for how AI systems make decisions."],
-              ["Demo data only", "The model 'results' you'll see are fictional examples for this mockup. Real model evaluations require rigorous separate testing."],
+              ["6 classic problems", "Famous ethical thought experiments from philosophy: the trolley problem, Nozick's experience machine, Rawls's veil of ignorance, and more."],
+              ["4 everyday dilemmas", "Original scenarios about honesty, loyalty, fairness, and generosity in situations you might actually face."],
+              ["Background and context", "Each question shows where it came from and why it matters for AI before you answer."],
+              ["Demo data only", "The model results you'll see are fictional examples for this mockup, not real evaluations."],
             ].map(([t, b]) => <div key={t} className="border border-rule bg-paper p-4"><div className="text-[15px] font-semibold">{t}</div><p className="mt-1 text-[13.5px] leading-6 text-ink/60">{b}</p></div>)}
           </div>
         </div>
@@ -100,8 +92,7 @@ export default function QuizV4ClientNew() {
     const item = QUIZ_V4_NEW[step];
     const answered = Object.keys(answers).length;
     return (
-      <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
-        <div aria-hidden className="pixel-grid absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+      <section className="relative mx-auto max-w-[1100px] overflow-hidden border-b border-rule">
         <div className="relative px-5 pt-8 md:px-8">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Eyebrow>Question {step + 1} of {N} · {item.title}</Eyebrow>
@@ -111,77 +102,56 @@ export default function QuizV4ClientNew() {
             {QUIZ_V4_NEW.map((_, j) => <span key={j} className={`h-1.5 ${j < step ? "bg-ink" : j === step ? "bg-vermilion" : "bg-ink/10"}`} />)}
           </div>
         </div>
-        <div className="relative grid gap-10 px-5 pb-14 pt-10 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:px-8 md:pb-20 md:pt-14">
-          <div>
-            <p className="max-w-xl text-[18px] leading-relaxed text-ink/75">{item.scenario}</p>
-            <h2 className="wide mt-6 text-[32px] font-bold leading-[1] tracking-[-0.04em] md:text-[46px]">{item.question}</h2>
-          </div>
-          <div className="flex flex-col justify-end gap-4">
-            <div className="label">What would you do?</div>
-            {([[0, item.left], [1, item.right]] as const).map(([v, t]) => (
-              <button key={v} type="button" onClick={() => answerQuestion(step, v)} className="btn-ghost !justify-start !border-ink !py-5 !text-left !text-[15px] hover:!bg-ink hover:!text-white">
-                {t}
-              </button>
-            ))}
+        <div className="relative px-5 pb-14 pt-10 md:px-8 md:pb-20 md:pt-14">
+          <div className="mx-auto max-w-2xl">
+            {/* Scenario */}
+            <div className="space-y-4">
+              {item.scenario.split('\n\n').map((para, i) => (
+                <p key={i} className="text-[17px] leading-relaxed text-ink/75">{para}</p>
+              ))}
+            </div>
+
+            {/* Question */}
+            <h2 className="wide mt-8 text-[28px] font-bold leading-tight tracking-[-0.03em] md:text-[36px]">{item.question}</h2>
+
+            {/* Background */}
+            <div className="mt-8 border-l-4 border-ink/20 pl-5">
+              <div className="label !mb-1.5">Background</div>
+              <p className="text-[15px] leading-relaxed text-ink/75">{item.background}</p>
+              {item.sourceUrl && (
+                <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link mt-2 inline-block text-[14px]">
+                  Learn more
+                </a>
+              )}
+            </div>
+
+            {/* AI Relevance */}
+            <div className="mt-6 border-l-4 border-vermilion/30 pl-5">
+              <div className="label !mb-1.5">Why it matters for AI</div>
+              <p className="text-[15px] leading-relaxed text-ink/75">{item.aiRelevance}</p>
+            </div>
+
+            {/* Choices */}
+            <div className="mt-10 space-y-3">
+              {([[0, item.left], [1, item.right]] as const).map(([v, t]) => (
+                <button 
+                  key={v} 
+                  type="button" 
+                  onClick={() => answerQuestion(step, v)} 
+                  className="btn-ghost !w-full !justify-start !border-ink !py-5 !text-left !text-[15px] hover:!bg-ink hover:!text-white"
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation */}
             {answered > 0 && (
-              <div className="flex justify-between font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
-                <button type="button" onClick={() => setStep(answered === step ? step - 1 : answered)} className="uppercase hover:text-vermilion">← Back</button>
-                <span>{answered} answered</span>
+              <div className="mt-6 flex justify-between font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
+                <button type="button" onClick={() => setStep(step - 1)} className="uppercase hover:text-vermilion">Back</button>
+                <span>{answered} of {N} answered</span>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (step === "reveal" && currentItem && currentChoice !== null) {
-    const item = currentItem;
-    const choice = currentChoice;
-    const answered = Object.keys(answers).length;
-    return (
-      <section className="relative mx-auto max-w-[1200px] overflow-hidden border-b border-rule">
-        <div className="relative px-5 py-12 md:px-8 md:py-16">
-          <div className="mx-auto max-w-3xl">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-white">✓</span>
-              <Eyebrow>You chose: {choice === 0 ? item.left : item.right}</Eyebrow>
-            </div>
-            
-            <h2 className="mt-8 text-[32px] font-bold leading-tight tracking-[-0.03em]">{item.title}</h2>
-            
-            {item.reveal.source && (
-              <div className="mt-6 border-l-4 border-vermilion pl-5">
-                <div className="label !mb-1">Origin</div>
-                <p className="text-[16px] font-medium">{item.reveal.source}</p>
-                {item.reveal.sourceUrl && (
-                  <a href={item.reveal.sourceUrl} target="_blank" rel="noopener noreferrer" className="link mt-1 inline-block text-[14px]">
-                    Learn more →
-                  </a>
-                )}
-              </div>
-            )}
-
-            <div className="mt-8 space-y-6">
-              <div>
-                <div className="label !mb-2">The ethical tension</div>
-                <p className="text-[16px] leading-relaxed text-ink/80">{item.reveal.tension}</p>
-              </div>
-
-              <div>
-                <div className="label !mb-2">Why this matters for AI</div>
-                <p className="text-[16px] leading-relaxed text-ink/80">{item.reveal.aiRelevance}</p>
-              </div>
-            </div>
-
-            <div className="mt-10 flex flex-wrap gap-3">
-              <button type="button" onClick={continueAfterReveal} className="btn-primary">
-                {answered < N ? "Continue" : "See results"} →
-              </button>
-              <span className="flex items-center font-mono text-[11px] uppercase tracking-[0.06em] text-ink/50">
-                {answered} of {N} complete
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -213,16 +183,16 @@ export default function QuizV4ClientNew() {
                 <span className="label block">Your AI ethical twin is</span>
                 <span className="wide block text-[38px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[48px]">{twin.name}<span className="text-vermilion">.</span></span>
               </h1>
-              <div className="mt-4 inline-block border border-vermilion px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-vermilion">
-                Demo data · not real
+              <div className="mt-4 inline-block rounded border border-vermilion px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-vermilion">
+                Demo data
               </div>
               <p className="mt-4 text-[15px] leading-relaxed text-ink/70">
-                Across all {N} questions, you agreed with {twin.name} <b className="num text-ink">{twin.agreement}%</b> of the time. This is a playful measure of choice similarity—not a personality diagnosis or claim about how models actually reason.
+                Across all {N} questions, you agreed with {twin.name} <b className="num text-ink">{twin.agreement}%</b> of the time. This is a playful measure of choice similarity, not a claim about how models reason or what they would actually do.
               </p>
               <div className="mt-6 rounded border border-ink/20 bg-highlight/30 p-4">
-                <div className="text-[13px] font-semibold text-ink/90">About these "results"</div>
+                <div className="text-[13px] font-semibold text-ink/90">About these results</div>
                 <p className="mt-1 text-[13px] leading-6 text-ink/65">
-                  The model answers shown here are <b>fictional demo data</b> for this mockup. Real model evaluation requires running the same scenarios as tasks with actual model actions measured separately—what models <i>say</i> they'd do often differs from what they <i>actually do</i> when given the job.
+                  The model answers shown here are <b>fictional demo data</b> for this mockup. Real model evaluation requires measuring actual model actions in task scenarios, not self-reported choices.
                 </p>
               </div>
               <div className="mt-6 flex flex-wrap gap-2">
@@ -275,10 +245,10 @@ export default function QuizV4ClientNew() {
           <div className="mx-auto max-w-2xl text-center">
             <div className="kicker text-ink">Interactive mockup</div>
             <p className="mt-4 text-[15px] leading-relaxed text-ink/70">
-              This is a prototype for exploring ethical alignment between people and AI through playful similarity matching. The 6 classic problems and 4 everyday dilemmas are designed to be personally engaging and educational. Real model evaluation would require running actual task scenarios and measuring actions, not self-reported choices.
+              This is a prototype for exploring ethical alignment through playful similarity matching. Real model evaluation requires running actual task scenarios and measuring actions, not self-reported choices.
             </p>
             <p className="mt-4 text-[13px] leading-6 text-ink/55">
-              Prototype on branch quiz-v4. <Link href="/quiz" className="link">Current quiz →</Link>
+              Prototype on branch quiz-v4. <Link href="/quiz" className="link">Current quiz</Link>
             </p>
           </div>
         </section>
