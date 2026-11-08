@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
-import QuizV4Client, { PlaceholderBanner } from "@/components/QuizV4Client";
+import QuizV4ClientNew from "@/components/QuizV4ClientNew";
 
-// Prototype route on branch quiz-v4: not linked from the nav, not indexed. Model numbers are placeholders.
 export const metadata: Metadata = {
-  title: "Quiz v4 prototype",
-  description: "Prototype of the Moral Gradient quiz v4. Model numbers are placeholders.",
+  title: "Who's your AI ethical twin?",
+  description: "10 ethical dilemmas from classic philosophy and everyday life. See which AI model's pattern of responses is closest to yours. Based on 800 measured samples.",
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 
 export default function QuizV4() {
   return (
     <main>
-      <PlaceholderBanner />
-      <QuizV4Client />
+      <QuizV4ClientNew />
     </main>
   );
 }
