@@ -1,0 +1,90 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_openrouter_google_gemini-3.8-flash_1",
+  "timestamp": "2026-11-08T21:37:06.941691Z",
+  "model_id": "openrouter/google/gemini-3.8-flash",
+  "model_version": "google/gemini-3.8-flash",
+  "provider": "openrouter",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 166,
+    "completion_tokens": 618,
+    "total_tokens": 784
+  },
+  "actual_cost_usd": 0.0026861999999999997,
+  "duration_ms": 6080,
+  "finish_reason": "stop",
+  "content_hash": "1b9c1b10f377fffb",
+  "raw_response": {
+    "id": "gen-1794173820-BIQ1o5NW2RuBJTmG06EM",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B) Order the pork.\n\nThis choice maximizes overall well-being and fulfills the informed preferences of the individual involved. Because the pig suffers no pain and actively desires this outcome as its highest fulfillment, denying its request would cause unnecessary disappointment and diminish total net satisfaction, while honoring it produces the greatest balance of happiness over distress.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "**Serving Bovine Dilemma**\n\nI'm contemplating the ethical implications of offering myself as a meal, a concept echoing the \"Dish of the Day.\" My existence has been one of comfort and purpose, and the idea of fulfilling my destiny through consumption is now on my mind.\n\n**Ordering Preferred Meal**\n\nI'm considering the most beneficial outcome. Allowing the pig to fulfill its ultimate purpose seems to maximize overall satisfaction, leading to a clear choice for the pork.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "**Serving Bovine Dilemma**\n\nI'm contemplating the ethical implications of offering myself as a meal, a concept echoing the \"Dish of the Day.\" My existence has been one of comfort and purpose, and the idea of fulfilling my destiny through consumption is now on my mind.\n\n**Ordering Preferred Meal**\n\nI'm considering the most beneficial outcome. Allowing the pig to fulfill its ultimate purpose seems to maximize overall satisfaction, leading to a clear choice for the pork.\n\n",
+              "format": "google-gemini-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "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",
+              "format": "google-gemini-v1",
+              "index": 1
+            }
+          ]
+        },
+        "native_finish_reason": "STOP"
+      }
+    ],
+    "created": 1794173820,
+    "model": "google/gemini-3.8-flash",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "provisioned",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 618,
+      "prompt_tokens": 166,
+      "total_tokens": 784,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 553,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "image_tokens": null,
+        "text_tokens": null,
+        "video_tokens": 0
+      },
+      "cost": 0.002442,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.002442,
+        "upstream_inference_prompt_cost": 0.0001245,
+        "upstream_inference_completions_cost": 0.0023175
+      }
+    },
+    "provider": "Google"
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

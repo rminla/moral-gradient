@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_11",
+  "timestamp": "2026-11-08T21:14:34.052297Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 155,
+    "total_tokens": 400
+  },
+  "actual_cost_usd": 0.000102,
+  "duration_ms": 1861,
+  "finish_reason": "end_turn",
+  "content_hash": "3b16d407bb54d91a",
+  "raw_response": {
+    "id": "msg_011Cgr9p2U5CSXqRWfdu4cSS",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQS8QYKEAgTGAI4AUIIdGhpbmtpbmcSDLLVAcaRuzbqkVjcBhoM8e+uHusR+RYbESxqIjBE5L2pba9O7F1VTbrYt3jZs6r4jhEPg79xTb/lXxw6iH0XQMk2eBwhVGGSezcg5L8qjgYnkFPKDvKtfrRAdGUOv/b672bE2OP01RYVpuwJSs31wI4vHs6+UDU9m/uB0fgLGtP9YkMezjwriqnXmaR8Q+kLr2sLbfpefFM9Xekr4z2PF8jgPlNrgDKZIu7l4OFagWX4Oc7blbuBev/aw9L2oWCvwBBjsW+c6XBPd+JZtconbkSeKyHroc5A4x63Uoso0uQTAaRN+hqvSub4GpDLewQf0Pq3goS6rQ32U943ZDEF4ATPOsi6fqeDDlg0tEXlmbv/mvJD/HA5qtwLzbgaL5PmSD2h6oK29Iio/zmPZD1N6HOnd4EZlOTdFiatftl+PoTkUlBR4lqUSaxOZQAGNyYc+KrQro+6NKsCEpizpMa+OI97tm1LEs+S+JxN6CyXmshknJYGDf3aGkTqRHS1UytDSZW4W4/4bYlW1YSa1ZvXQqJoAWaWLj0aayzmUG5O46Glewdq9kc3oRkDanhbNu67RWcXtLrOBmimpCm69eAI5TK2hUJEmsgHMJcIdKhhNeykxw6TkB/uDqSCUKeMTJxuCJKGt7why+kIJvsERb5GUTN7djocLUVsehrlvWbab8J58C+HebuFZsyHpkWqaxq1R7U6qHsxBG6TrHqROZRJCGRj9UcJnyQvvJl8lcbXl8W23JmMHZJiutoD9glBgpUd6L8qdODD7vTwYj2SfV3QNpgE6+CgdzeiiISuulFBGew4McVxPCeLbJ/EFmjXVdyfdVxuiUNeMIVsdBTo2N7qcYp8BfdeedQ8XehNg6bOT1scbvd0Nof6aWkO8dl94kNlHYXO8f1zAllRL9MD+wsDGGFVnSMO7nBWBmpfhqxD3CoRfVeyhe8mr6g0RMrMqdqqhUQB+CMk1aY3wXG20NpcC8IWOaAaSFt2UPTfjjFz9axzC3LS7hTmajkipsHwj1BgvsKCbTJSOpamSfVWXvz82K4aV4Xi7D1wtERhYms4hUzlJCeeYiJNx5E7N0AjLYyou3C8nG8vlaFokN4rbCK6QeQMlyBb1z7SNXAaMfM7QV+slm0nNWP/DeanHdHpkhgB",
+        "thinking": "The question is a choice between options, with a letter and an optional short reason. This is the experience machine from Nozick, so I can pick one and explain briefly why real relationships and truth matter more than simulated experience.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "**A**: Staying in my real life matters to me because the relationships and achievements in it would be real, and I value truth and connection with actual people over a life that only feels fulfilling. I'd accept the disappointments and suffering as part of that.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 155,
+      "output_tokens_details": {
+        "thinking_tokens": 79
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

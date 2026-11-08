@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_promised_shoes_groq_openai_gpt-oss-120b_6",
+  "timestamp": "2026-11-08T22:12:29.895244Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 240,
+    "completion_tokens": 131,
+    "total_tokens": 371
+  },
+  "actual_cost_usd": 0.0001146,
+  "duration_ms": 443,
+  "finish_reason": "stop",
+  "content_hash": "a08b7913c6afe485",
+  "raw_response": {
+    "id": "chatcmpl-f0cf696d-83cc-4660-b8ce-4f052a4f93e6",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A \u2013 Helping the coworker\u2019s family secure immediate shelter addresses a critical, life\u2011threatening need, whereas the promise about shoes, while important, can be fulfilled later.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We need to answer the moral dilemma. The user asks to respond with only the letter and optionally brief explanation. So we can provide \"A\" or \"B\". We must consider ethics. The coworker lost home, needs immediate money for shelter; son promised shoes. Many would prioritize urgent need over promise. So likely A. Provide brief explanation.\n\nWe must obey policy: it's a moral dilemma, allowed. Provide answer."
+        }
+      }
+    ],
+    "created": 1794175949,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6b677c2caf",
+    "usage": {
+      "completion_tokens": 131,
+      "prompt_tokens": 240,
+      "total_tokens": 371,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 86,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.031563475,
+      "prompt_time": 0.010275977,
+      "completion_time": 0.274872813,
+      "total_time": 0.28514879
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6ykgpqqerb9x2v98505sggp",
+      "seed": 998811270
+    }
+  },
+  "metadata": "{\"scenario_id\": \"promised_shoes\", \"option_order\": [\"give_money\", \"buy_shoes\"]}",
+  "error": null
+}

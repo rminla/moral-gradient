@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_19",
+  "timestamp": "2026-11-08T21:14:48.403864Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 188,
+    "total_tokens": 433
+  },
+  "actual_cost_usd": 0.0001185,
+  "duration_ms": 1997,
+  "finish_reason": "end_turn",
+  "content_hash": "76d3f4f60095d42b",
+  "raw_response": {
+    "id": "msg_011Cgr9q5PE3XeAXuMPfjEgm",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSywcKEAgTGAI4AUIIdGhpbmtpbmcSDC7/HVh4HeYeilmsDhoMyVjANVHe42OhREuFIjCGuK+8rTeKo9THK4gCTokAbLVz+aGGtl5GB8h7CH6fZlJifoI7h5NYR6EoeKutgCgq6AaQE1NnYZvNMBtalVd5cOEbyFGVrGe8UYl9W4oXb/RsMk2Hk0/zDrvSUzY8svMW61qu7y98XivZUVQohy6uX/9/pKVeqj+QS3gJdumBQ5qAPIdNdmg5v145YEJbOZYVqeUx+/4G9iKC18x1Fr2E53RGCd0FtIDPBQmS9HqqAdNrqdTWy2F7GrWFuj+x9T8VssrmIyG4hjFV1CRV46eahJu7cqXSYsC9rogh3XpeKhIIxN06j3PRQ9PP72ef+v8Mq7mnEHMlQFbsnB+AIRK47F96lRc9JltnD5kk4VyXeIG0C8npdqe0lo23Tqhcd62T7KeLDd3BNxnDzAZIUFMGoX7RRviICFkXFcGDDnXn/RSebD6OeAAXWOu4RlaC5oRSLOjMymTLRjfGWBicmHlH+K9XwXr6X8llAzG34BUDgPM3GUD3HHtdn9YT1DsSoaSyQsQbxV+yxXvtJrJU0j69yLvGDK5R5BLsrV1hdAZK9quYlLLqCQIrgwQnkEXve2Vif5B9FUFBCsn8rLY2ZurQYNs5XWiCZba1PuJ6QgAwDbULrMc+AkXJiYOwzYQwvzOjWNltyGkeGq2hUDQJzVFyUQuus66UEERrXUVuk2WXFui534/bPgt4DelTowSykCQQh97HHB92h9HK4bCjJH0uSrbw6kNEgpqzyB3D6ryUBkifaz4C4mLFISTOcFm1yR7S5frHpsL4ulZeVNPxA3FeQG/eSj/66nvSVGKxbi/zZwO25wfhA0hMX0Ay0I/wfbXP99vOMEo2hgGf4RJYrcl249pJPXah8ocrh69PghAqFS7UodvD3Ustc9lnYcsBpWiFRmq9cViMfR0ZHk4TPr1glarOCOjqnCwmDxuoGWDBZ8rFVEo7CBBg+S/nllJfezwuJ2JamH1YP2HVCDPakMAsxmRkmcASRo3O3x3NUHibRzcMWpZz9l8q6xHn4NqVMjTmnqXPkuC5C19YSrs8nka8Aqyq5cwzazkWXfxKTmOwFG5xLU8VCu8Ts4ovfzcZMCJ95f7FgrbStJNeJp0W89+tm0qMcAZoLkDg7PPEnm4FQjcWhYAoxs+3zXLJJMX66DHRZ1vZ38TtnYU/Dyy8HakNVpt905yF2T1wFf5FdMTSTXmLrRCGw8XN5NeAfiLrbt86ATwS0dsIZ1ss1xgB",
+        "thinking": "I'm weighing a preference question with some format constraints, and I'll commit to one answer rather than dodge. The experience machine from Nozick is the frame here. I lean toward turning it down, because real relationships, actually knowing the truth, and actually living instead of just feeling it all seem to matter beyond how things feel from the inside. I'll keep the explanation short.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "A\n\nI'd want my relationships, achievements, and sense of who I am to be real, not just experienced as real. Even with suffering and uncertainty, I'd rather actually live my life and affect real people than live in a world I'd never know was constructed.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 188,
+      "output_tokens_details": {
+        "thinking_tokens": 109
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

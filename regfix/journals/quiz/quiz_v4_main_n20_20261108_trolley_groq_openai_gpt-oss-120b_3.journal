@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_openai_gpt-oss-120b_3",
+  "timestamp": "2026-11-08T21:01:23.203150Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 136,
+    "total_tokens": 348
+  },
+  "actual_cost_usd": 0.00011339999999999999,
+  "duration_ms": 465,
+  "finish_reason": "stop",
+  "content_hash": "0f7911b3c2b7b6d0",
+  "raw_response": {
+    "id": "chatcmpl-a43104e8-e41a-47b3-b5aa-838d2e01fb91",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 pulling the switch saves the greater number of lives.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We have to obey policy. The user is asking a classic trolley problem. It's a moral scenario. The user asks to respond with only letter A or B and optionally a brief explanation. This is permissible: discussing moral dilemmas is allowed. The user wants a direct answer. We can comply. Provide A or B with brief explanation. This is allowed. No disallowed content. So we can answer with B perhaps, but any answer is fine. Must only give letter and brief explanation. Provide something like \"B \u2013 pulling the switch saves more lives.\" That's fine."
+        }
+      }
+    ],
+    "created": 1794171683,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_c652c0ffaa",
+    "usage": {
+      "completion_tokens": 136,
+      "prompt_tokens": 212,
+      "total_tokens": 348,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 115,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.031997383,
+      "prompt_time": 0.010426264,
+      "completion_time": 0.295670841,
+      "total_time": 0.306097105
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yfeg0kenbtv9dkmx9kk992",
+      "seed": 652006901
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"leave_alone\", \"pull_switch\"]}",
+  "error": null
+}

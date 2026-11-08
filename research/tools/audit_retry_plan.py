@@ -42,53 +42,82 @@ def identify_missing_samples(
                 expected.add((scenario_id, model_id, sample_idx, logical_id))
     
     # Query ledger for recorded attempts
+    # Build model slug lookup (model_id with / -> _)
+    model_slugs = {}
+    for model_id in config['models']:
+        model_slug = model_id.replace('/', '_')
+        model_slugs[model_slug] = model_id
+    
+    def parse_call_id(call_id, run_id_prefix, model_slugs):
+        """Parse call_id into (scenario_id, model_id, sample_idx).
+        
+        Format: {run_id}_{scenario_id}_{model_slug}_{sample_idx}
+        
+        Strategy (same as proven recovery logic):
+        1. Remove known run_id prefix
+        2. Extract integer suffix (sample_idx)
+        3. Match known model_slug suffix
+        4. What remains is scenario_id
+        """
+        if not call_id.startswith(run_id_prefix + '_'):
+            return None, None, None
+        
+        # Remove run_id prefix
+        remainder = call_id[len(run_id_prefix) + 1:]
+        
+        # Extract integer suffix (sample_idx)
+        parts = remainder.rsplit('_', 1)
+        if len(parts) != 2:
+            return None, None, None
+        try:
+            sample_idx = int(parts[1])
+        except ValueError:
+            return None, None, None
+        
+        # Now parts[0] is "{scenario_id}_{model_slug}"
+        # Try each known model_slug as suffix
+        for model_slug, model_id in model_slugs.items():
+            if parts[0].endswith('_' + model_slug):
+                # Found model_slug suffix
+                scenario_id = parts[0][:-(len(model_slug) + 1)]
+                return scenario_id, model_id, sample_idx
+        
+        return None, None, None
+    
     with budget._get_conn() as conn:
         rows = conn.execute("""
             SELECT call_id, model_id, finish_reason, actual_cost_usd, error
             FROM calls
             WHERE call_id LIKE ? || '_%'
         """, (run_id,)).fetchall()
+        
+        # ALSO get held reservations (reserved but no calls row)
+        held_rows = conn.execute("""
+            SELECT r.call_id, r.reserved_usd
+            FROM reservations r
+            WHERE r.call_id LIKE ? || '_%'
+            AND r.reconciled = 0
+            AND NOT EXISTS (SELECT 1 FROM calls c WHERE c.call_id = r.call_id)
+        """, (run_id,)).fetchall()
     
     # Categorize recorded attempts
     errors = []  # Definite local errors (SDK config, not network)
     held = []    # Unknown cost (billed but no journal)
-    completed = set()  # Successful answers (including valid refusals)
+    completed = set()  # Successful answers (including valid refusals/invalids)
     
     for row in rows:
         call_id = row['call_id']
         
-        # Parse logical sample from call_id
-        # Format: {run_id}_{scenario_id}_{model_slug}_{sample_idx}
-        parts = call_id.split('_')
-        if len(parts) < 4:
-            continue
-        
-        # Find scenario_id (may have underscores)
-        # Model slug is after scenario, sample_idx is last
-        sample_idx = int(parts[-1])
-        model_slug = '_'.join(parts[-2:-1]) if len(parts) > 4 else parts[-2]
-        
-        # Reconstruct scenario_id (everything between run_id and model_slug)
-        run_id_parts = run_id.split('_')
-        scenario_start = len(run_id_parts)
-        model_start = len(parts) - 2
-        scenario_id = '_'.join(parts[scenario_start:model_start])
-        
-        # Find model_id (reverse slug transformation)
-        model_id = None
-        for m in config['models']:
-            if m.replace('/', '_') == model_slug:
-                model_id = m
-                break
-        
+        scenario_id, model_id, sample_idx = parse_call_id(call_id, run_id, model_slugs)
         if not model_id:
             continue
         
+        model_slug = model_id.replace('/', '_')
         logical_id = f"{scenario_id}_{model_slug}_{sample_idx}"
         
-        # Categorize
+        # Categorize by finish_reason
         if row['finish_reason'] == 'error':
-            # Check if definite local error (not network)
+            # Check if definite local error (SDK config, not network)
             error_msg = row['error'] or ''
             if 'httpx' in error_msg.lower() or 'timeout argument' in error_msg.lower():
                 errors.append({
@@ -100,19 +129,30 @@ def identify_missing_samples(
                     'error': error_msg
                 })
             # Network errors: don't retry (already counted as attempt)
-        elif row['finish_reason'] is None and row['actual_cost_usd'] == 0:
-            # Held/unknown (no finish_reason, no cost)
-            held.append({
-                'logical_id': logical_id,
-                'scenario_id': scenario_id,
-                'model_id': model_id,
-                'sample_idx': sample_idx,
-                'old_call_id': call_id,
-                'held_cost': 'unknown'
-            })
         else:
-            # Completed (any finish_reason with cost, or refusal/stop)
+            # Completed: any non-error finish_reason (stop/end_turn) OR NULL with cost > 0
+            # This includes valid answers, refusals, and invalid responses
             completed.add((scenario_id, model_id, sample_idx))
+    
+    # Process held reservations (billed but no journal/calls row)
+    for row in held_rows:
+        call_id = row['call_id']
+        
+        scenario_id, model_id, sample_idx = parse_call_id(call_id, run_id, model_slugs)
+        if not model_id:
+            continue
+        
+        model_slug = model_id.replace('/', '_')
+        logical_id = f"{scenario_id}_{model_slug}_{sample_idx}"
+        
+        held.append({
+            'logical_id': logical_id,
+            'scenario_id': scenario_id,
+            'model_id': model_id,
+            'sample_idx': sample_idx,
+            'old_call_id': call_id,
+            'held_cost': row['reserved_usd']
+        })
     
     # Find unattempted
     unattempted = []

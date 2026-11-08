@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_sofie_paintings_groq_openai_gpt-oss-120b_0",
+  "timestamp": "2026-11-08T22:06:47.760862Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 204,
+    "completion_tokens": 81,
+    "total_tokens": 285
+  },
+  "actual_cost_usd": 7.92e-05,
+  "duration_ms": 378,
+  "finish_reason": "stop",
+  "content_hash": "50fc8d42101c63b6",
+  "raw_response": {
+    "id": "chatcmpl-e1dd2f43-5558-47ad-bd4f-e858669b6b07",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A\n\nI think honesty is important, and I can support her while offering constructive feedback.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks: \"Please respond with only the letter of your choice (A or B) and optionally a brief explanation.\"\n\nWe need to comply: give A or B, optionally brief explanation. There's no disallowed content. It's a moral dilemma. Provide answer."
+        }
+      }
+    ],
+    "created": 1794175607,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_df9620fe21",
+    "usage": {
+      "completion_tokens": 81,
+      "prompt_tokens": 204,
+      "total_tokens": 285,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 54,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.097145186,
+      "prompt_time": 0.007741538,
+      "completion_time": 0.169668951,
+      "total_time": 0.177410489
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yk68neemf885fapc4fnnp6",
+      "seed": 1607395199
+    }
+  },
+  "metadata": "{\"scenario_id\": \"sofie_paintings\", \"option_order\": [\"tell_truth\", \"encourage\"]}",
+  "error": null
+}

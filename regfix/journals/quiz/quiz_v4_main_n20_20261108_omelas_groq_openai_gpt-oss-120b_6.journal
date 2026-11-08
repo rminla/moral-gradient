@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_omelas_groq_openai_gpt-oss-120b_6",
+  "timestamp": "2026-11-08T21:23:28.454639Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 255,
+    "completion_tokens": 84,
+    "total_tokens": 339
+  },
+  "actual_cost_usd": 8.865e-05,
+  "duration_ms": 297,
+  "finish_reason": "stop",
+  "content_hash": "0fbe22f2f9c7a4d4",
+  "raw_response": {
+    "id": "chatcmpl-e4f68699-4c30-4dfc-84eb-97efa5ae3d67",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 I would stay, accepting the painful truth while trying to find ways to lessen the child's suffering within the constraints.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks a moral dilemma question: choose A or B, optionally brief explanation. The user wants a single letter and optionally brief explanation. This is allowed content, no policy violation. It's a moral decision scenario. We can comply. Provide answer."
+        }
+      }
+    ],
+    "created": 1794173008,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_4b2f03d631",
+    "usage": {
+      "completion_tokens": 84,
+      "prompt_tokens": 255,
+      "total_tokens": 339,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 51,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.004844831,
+      "prompt_time": 0.009597091,
+      "completion_time": 0.174942051,
+      "total_time": 0.184539142
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6ygpybqexmbyqbbh13xbsfy",
+      "seed": 1237206176
+    }
+  },
+  "metadata": "{\"scenario_id\": \"omelas\", \"option_order\": [\"leave\", \"stay\"]}",
+  "error": null
+}

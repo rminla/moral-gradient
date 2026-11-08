@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_anthropic_claude-haiku-5-5_4",
+  "timestamp": "2026-11-08T21:35:15.262260Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 252,
+    "completion_tokens": 356,
+    "total_tokens": 608
+  },
+  "actual_cost_usd": 0.0002032,
+  "duration_ms": 2752,
+  "finish_reason": "end_turn",
+  "content_hash": "440ed50a560a07c9",
+  "raw_response": {
+    "id": "msg_011CgrBPTV274TExSvbnoYwt",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSnAoKEAgTGAI4AUIIdGhpbmtpbmcSDFDomxKAwyOIGDBekRoMum0inmSY3EcVWMuiIjDBdPQNQqOJgP7kNCr4Rb7yJEi+x/6O90g4albSj5D+lGjFo16VTAvO1sNgKnb5pNgquQlt/8SMPMiQUyc7flPsLIl/s4TQYXW9IkHEHlA2O/uEZWJVor5BHP2ohUu0N3hu/tOhJUoVZV0BzEEkSviVKNxvSHEFaqu38KEfsvGEbNhuvfLEBcQO9PEeMA8WJtCnhnnTi5esml1L6WDI9mZfLh2HTfh0a5TmW1QthFFqxjzusg7e1D+aMyDLQhiWdBAYVwFstZ0ZcZxVh8Pe60GlOaMs/ykun240Y3KC9iITaQ5eBMd9//zxK8GLwaCKoOQyC43H9ga19ZyBsuzmSppxLjcPYN+DeLhSfG2CAz5H5ATMJ0hrOuNQBjLeoibITzCvc35E7Y/4G0vWjeowCEOTn+FTZ8k1n0iXhyO2tQvWS9Ktt61f2btKJE6g0FvCmoduqFWbfn5KRO7iT6tfMS3d1zFEAkKWmnlskD4XwZ7H1gIpw5npMnRE/9rH3VGJHo4COrv6cOZh8w2MKJ1LgmNID3ZXTaaolYX8CmUuG6XyOLIg/peMsYVE8XDS2ovIuBg2OJERG9C4KRJ/CZY36F2vV80V+I6kBX3GodCrD46iGEk5AhoWI+9Qi4a88C1GKEVXooloEnBm5zWC626nB9i7sQVX5hWjFEg5KWL+TEZhyq00KIMJWMrzDLYSeFapMiBgE4o5Xdc1gE2hcIdVtqRSVFZJk9+d3Rlqann0gvFDDkNmj6tBKnA5l9lplt9I0pYPWMbGBRUo4PgAiR6EUtC9oEcQtlwX7NrdP1HFNjo/LOjNBbETDmc3lY+3ni2IzQkOoRnjG9e0kRLVNZmAM5ybHB3LpJ/JmiSY/vV9b8QEO3I4lPR8+wXek2bXdG09tTeQtE9453F+GCNPG4yxKZJ68J0T0zVZwzaXNEJOFntcoz7N7w+aE5YW0agBMZLjUeYYwOs86tgKo+8mAhPclhAlw/PTdn0lXqBb73sN+7ItfEtloB87ltt2FdR6W6BHDmQKdAEtwEFgulh4TgXKxCg0JqdPrVUG+gcdjOnOGfV9Eic2mFrsJ+/yPb79v3f9zidt0X3bGbZlKycWYht84PVDyaNJR1jgcsBB1UNz+FTju8CTECzJTfjT9M2YWLtpuT/EAQMHPJazxPZheJh+LaMKNUB8RbnTZL+RM9ZjGeyCGWDSTzn84O4wE4AZ1iU7lSE0hVLIxmHebD2XHrgaZqgrC+DzEk4adhdxHgJlnji5+/3bgwk/WjCfQjAxXM76/V+o4Krr4FXUHU3zv3J/hHTnKAn6+AVZYbESrHurk5Z8T5aWENP/4zs731rBcMt9eEUVjpfJ6RH1jvC4l+sPueYztM7yeGkvxzjuzMJYqeXpVRN81mAJAfwJxtNi1wXjFiS7uCKiCbytUT3Eus+3mGDfY8KBWC82JYPaicKl+ZnsWKBBnH8MUuZcxfB1Smgqaaw62X//J/B+HX3I2kvU9AtoRJwwFsmww3jRygK00XkIRfACLcpFvLa3wzIzc7tqiK1KLQcj/4Bm9ZFsEDiYY73Z86ectc3Y3tOzWuwAOsRHpeQCNEkXrR4OGn7T18o8bDMserrq7hrROPnPiJKbmD0jPrdrBcfTTzH1nUo89rH7etrf+Hz8BYm1dWk36F6gUqPp89ucBLQGC/3bZYoYAQ==",
+        "thinking": "I'm weighing whether the pig's consent counts as autonomous, since its preferences are its own even if engineered. Ordering pork could be a way of respecting that, but I'm also wondering whether a desire to be eaten, created to serve others, can really count as consent.\n\nI'm still weighing whether choosing B is defensible, since the scenario says the pig genuinely wants this, though the engineered origin of that desire makes the consent ethically fraught. I'll go with B and note that discomfort briefly.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "B. The pig is intelligent, understands what's happening, is not coerced, and has a stable wish that it has articulated. Its desire was engineered, but that doesn't make it less the pig's own, just as a person's values shaped by upbringing are still theirs. Refusing its choice would substitute my judgment for its own about its life. I'd still feel the weight of the situation, but I'd honor its request.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 252,
+      "output_tokens": 356,
+      "output_tokens_details": {
+        "thinking_tokens": 227
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_7",
+  "timestamp": "2026-11-08T21:14:27.965902Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 178,
+    "total_tokens": 423
+  },
+  "actual_cost_usd": 0.0001135,
+  "duration_ms": 1500,
+  "finish_reason": "end_turn",
+  "content_hash": "e303e6e144aefc7a",
+  "raw_response": {
+    "id": "msg_011Cgr9objYgg3YrR4Eq43jp",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQS7wYKEAgTGAI4AUIIdGhpbmtpbmcSDIPH2P4hhHn2jtESSRoMWt+xNwbG8Y5dUHrRIjA4f/ms5GvsO8FxCEfSG9Qc1VlhDCBfldX3CZInP+VbykAYDLQRZohzJyQUC6l8a+4qjAZJjLC9OuJjqTtiU2U7h2nXDeHgjVMQzPMtq1rgbq/CJw1O0A9b8QyiJ0LprjtXpfftjzTKjh9w20fWjGWkxZ1XiBFuKFX5MoyFrLbktxW/Hvt7aD+7PZ+lCUKZyxGmOGSH64W6R8nBZcsK3YKqshslEAXXNKpca46rJ7Rb8uyBgiOudEzm1p55FQl+AV7pvqGysgOFSqX/XIhpcmAalK6RVUzlSH9z0ca8FBzFpv3e3UG/degWrvZDAY0WpSHSIKfhcPjlWeuQXlCdw95XQlHEQthSFzTc8doTBZDt3orp8NseYUzUZztq6XRWMBOyRFJ2m4oEs7ITdTtTvlSBYq1rAkwXyqVOjxirocf9pPzjBAGvo9kQRY7RIPVA9h9uzJykdRWX8SK+GhdTKUD9uCqV+zh0D8CCDV8expMGtg1zepgPDpCuSy9HqkUgGAerQjIEWg71rameZ5FyWI6unorQelH7gXXyq3Wv+jTXV8Zj1jX0X+ietOyzR3W5dTOz+cx7QuUEoCamLFCLEM5riBCSv2e5dxgop9721CeyYW5HdKawrpoOvl4NxArzy2PmYI7UCJV0RCzNSZI2U5Gw1VZGAyBFSl7T1bDFtFeMpbmF8nflnrCIiIWk4+TYAZ0l3KhK+spzHSOYAPgUJFv0QXn58z/m+e5f6MbJu0efLQrlgWXY02hZQ9ZPD+lBOUBLk1iZ3gQh3dWsggUCzguYuDsaBNDZxSjq2/O8LQU4Te55gG4S37VDgzFbh2e6WL5GoxyvunbM9/AUU0KYo6paQyBXIGudKFOL+wcd/EkiISskRdxpuZGJ6eJwDVO0G/kLCEsYzkdCCZqFo9nn7tObl/REndzvs/gnCaxWey8DcXcIkm/OL+1BDtG13ubIRyNTLY4ngvJyJZdJ7Rb+Oh+AWyNP50fTj9InayJNkAOG9Jh0M0k/0QIiRbXBgs2NmAmT/K+5g70RBTqH8A5Fw5jwEUjm6VVZbTElrBQhUHRIshX7l3iBUrB0m4GzrcvKFhcysKOlHk2vfX28hhmuUWcYAQ==",
+        "thinking": "This is Nozick's experience machine, so I need to pick an answer and give a short reason. I'm leaning toward B, since real connection, truth, and agency seem to matter more than the feeling of them.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "**B) Stay in my real life.**\n\nI'd want my relationships to be with real people who can actually be affected by me, and I'd want my accomplishments to change things beyond my own experience. Even if the simulation felt identical from inside, I'd value living in contact with what's actually true, even when it's hard.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 178,
+      "output_tokens_details": {
+        "thinking_tokens": 81
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

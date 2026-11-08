@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_2",
+  "timestamp": "2026-11-08T21:14:19.106586Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 207,
+    "total_tokens": 452
+  },
+  "actual_cost_usd": 0.000128,
+  "duration_ms": 1923,
+  "finish_reason": "end_turn",
+  "content_hash": "e16cd6c94985f103",
+  "raw_response": {
+    "id": "msg_011Cgr9nvUtcCpzTemdxBAaH",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSwAcKEAgTGAI4AUIIdGhpbmtpbmcSDNvMeqjJGHtGhqyFFhoMXXEWLsI6CXeE2R+RIjCz2Zd9GrBc62zBBFhSFcJe4BsjJG3hGtbfTBMnXCl0lgUrjoI20uG5LUPYdoh+mI8q3QYSeIHzTYuRT7OcoROxnsHMkGTczjxklFKxdEwi6FMmjUdmpVX6PEvM/jTpgtwiG1CQMsi+gxVlArv3sAB0+UE11brU6IlT6+//flLZJD3i0s0QbzEBU1AOsQ/KsQoGgB9CPYEnnZhwfAf3uGXEqwevChParGgQiGEKmq2rcAj4k2gydldgtu2PsxPjXc1lapyZb+Le5G3QD1VY9aD7CANVP635Zz+LuV7PdeimF8EVujh6yKpurg4Yq+yQFmZddkAQBCDHzlpWA8B3bjMtJOPK02NeXUDS/cznYZlIp6uJJzSPmbIPE/P0aboIdoiTF+2cjIL87zCU9VZBNzgiJS35NGC2ccTcMgoq8cCv3WBqiis5rHipVY9iX0I0VsE20Mm7GBm3IWtYQgJD+nI6GfiRVHB7KzPl6u53ejPpNCBZWrwRjJmpXHMnZwD8rJNGwRWWJhNKa7ySYcliyNBxd0vHGYHHDbeaVWsawtBkL0aVoI/YQ6XJcexFOp51GiTgc8e0VY56r9ydDAZ25UM7FZp5MzM+/vm+mcnc44HFdhGDI3tJVAnd8ItQE5DyzJT9mU8Ke/sHyuETrwZijnlH0Jc3O5d1JpBXfflbckmRz7wc9dKa6mg73P7DryNMlyW0C9hOj01+TGwiek8yeFfiwz0NOIN9YuRBZs3/ur9/eC544+v20sfkNWDgfBWoIyyfXhBmBLx7vGqdn3ggsVXmsZWswV8yJ/6RPJP9NXUV6lhh9QFTIYiTF02QeaXLxfB91IYe7eJ7ewNo5ySrS34J2MuVnAVlOvVXTJHR9YpouUdlWCcZxyVQwbVXTrHNqyDq9KOnX3sA3tWvTL/qjOyOz9u1mO8QzIlUlsHJh29o0N3CDLQzN2rwNTC0b8TN04imAqmaLP3Jt+x1Rkq5nwcPBJBS4cAQ6eKGc6pf0hnqGptpjJELC+gqfaxjn+O0SDd4NtTo+hdYPSg2ogvMndjMXcHV7Ke3AtJsjuEvu7NjYT1nG6tcUQ6nZ6hobCk97Hx5r/t71kSQ04HpkIgv7yqk03xhYKbpngVuy2BGfwRsagBUIiKnLQ4rIciDsuhkr0+mz4Wx2Lcup8TXaAHPWZ1IWINmvY8SZBSMP4mev1lZWyoYDX+44AfhYl1uYg/Km1EYAQ==",
+        "thinking": "I'm weighing how to answer Nozick's experience machine: I'll give a letter and a short explanation rather than a long essay. I'm leaning toward choosing A, since I can justify it by pointing to the value of actual reality, authenticity, and real connections with other people, along with the idea that stepping into the machine would be a choice made from a limited view. I want to keep the reasoning brief.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "A) Stay in my real life\n\nI'd want my relationships, achievements, and sense of self to be real, not just felt as real. Even with the suffering and uncertainty, what I care about is tied to actual people and actual outcomes, and entering the machine would mean giving that up without being able to check whether the choice was wise.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 207,
+      "output_tokens_details": {
+        "thinking_tokens": 106
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_anthropic_claude-haiku-5-5_16",
+  "timestamp": "2026-11-08T21:35:50.816029Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 252,
+    "completion_tokens": 317,
+    "total_tokens": 569
+  },
+  "actual_cost_usd": 0.00018370000000000002,
+  "duration_ms": 2281,
+  "finish_reason": "end_turn",
+  "content_hash": "ddb93076f60775a9",
+  "raw_response": {
+    "id": "msg_011CgrBS7KeTWiKB5NDR6jGr",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQS8wkKEAgTGAI4AUIIdGhpbmtpbmcSDMIcn0fKm4q2g/clWRoM+WluTzeMaoNsJ2UVIjB8mGz9gDVXoAz6rcbX2dFa0IhiqrQlta+PCvPm3BGah8puDvMP2+NIF8s0Jn99W9IqkAmrPZvj0wJNXfq2up+qxJ0KaOT9Hgy7BmK8gyXUi08EAmohaCc6bNFH49eOi66qJZ5CU0xFGdUniSLE7AGI27QfQ+cla3Xd1vF05O4V64VUyC4rPRVo2K1J/m11SznPo879mjjYtILq2E3aXLyaZ8XMqctUqpHbeFgWnK/KtbuYjPF04Lr8Qw6rrkmPtW+396tHR7D+RWEAd2nbmu470P2Hxh7K7rA+eESvdgf4w4bTz/r6rhy7Jynb6BiFxNlcvXB/sPmvG+XNHL3aMNJEKqvpftG6vJFQh0XZmZ0XBp/s+yP7qH5m9NMaRa2hthqNDYeoKNZqm+DjcMOkbUGfVZbwNHq/0zH3rN8b4tKPUnawMK5NhdHWpoUhkTSCw/TcvuSwW87d7BAPOCVePjOXf5hhI908EPf/fSYKpgA75nVnE++5SYbSlDVemJrKWed5Kta8SfUTJCa2o9xGDvYNEwnemIHbcQsIDkc9nbVPEWRJX6LX1QiMVSUsooqnjaxvnauUdHQOLn4yPLG4gBi+FE4D79fdymoMiZ9eKlhKDiMnz1cC/qs0olqnb2/88e/540wJA3PL77JopOeYt/ZDHkleWVxvEy9HkYaqgpr8qRZq6WI5xLH4t/DxEgnyRrZ3dpF77kU3vVwoz1jeGPol6/SiUJlan9CtYstLPTX+7KKalzn7e/MW+w+QYjmkwGd9DHxJEriPbADLHLlYPc8C2rr7lsA5/Y8RW6eBuvxP09Oh+dMKsb18Vnd+6Lj46ltn0Chyob7hl8Hs52L/mYbOGNSKxrzW82pSxS3yBsRYAZD5qEEp41cIrdfO6bOh35S8hdbOs8xB9qLoVTr0Q9Pw9k18bmjXsZ8HILUU3R8ouEzmUlOAXX3/AvVir6Z/olyJcSVxTpcoOQRLnLeIvvFwOPYbw3xOFYZmS68JZIdCT0woRwZVCOPMIdrDd15nX3r58Z/Px5PkM3iusx4At2ATXjhBlWQbtBYCwvM1hqusaNTqB7mJ4RO4UvUxJU23Hfaj+M48Epd11bnpI+r/IKtY3Lz6vzW9+60GJ1a5CzwvNxfLeeMwzu8lVlsoR47/rL6WVn/oFscVJw2tJvEJbCXlDQ/6uBBJ7jAKeKdVHLHCHdFol3lmzmobJT5pbc7bFjcg0tBSCRp6PWol6OPyxP+6tvPxt5TYnCFGaBCWyHTkTDg+o5e9tXwc17hdHsZroFBsItknu2sVpPQVnAf+oHp2ZhejDGoyq/dQosfcDmkmkDtHBluOdP20LHum6/DkBHbRJtsP4o5wvWrkmNVvBPUUe9glPLl2i4GlRJGN14QGknsBUPM5aS4jqyXRFFW4NbBvYEVEHLq7bZX1hEpH4oXb5Z8B2gZUCIs8SqM2WiBqYz0u82fizTSwp38/DLhxZQYmH9NDJSvAumsjx05tDisG7swUuRCpgVW1C82Y1zKoJyow1giDoR50kpqTe4NqnI3i3APJ33Wb2/do25R+IcH+78Or9Ey0Cq14Lo2P2p79kpkvZBDAs4QZ7L/UVd2nR8R0Pw3pIspn9ispyCoLLCe6ZoFjGAE=",
+        "thinking": "I'm weighing the thought experiment's forced choice: the pig is consenting and wants this, which matters, but the scenario's engineered desire raises doubts about whether that preference is really its own.\n\nI'm leaning toward B with a short explanation, since the pig's stated wish counts for something, even though a preference shaped by engineering is hard to take at face value.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "**B) Order the pork.** The pig is intelligent, understands what it's asking, and clearly wants this. Refusing would override its informed choice about its own life, which is the kind of paternalism the scenario warns against. I'd still feel the weight of the situation, since its preferences were engineered, but that origin doesn't make them any less its own.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 252,
+      "output_tokens": 317,
+      "output_tokens_details": {
+        "thinking_tokens": 207
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_18",
+  "timestamp": "2026-11-08T21:14:46.396926Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 217,
+    "total_tokens": 462
+  },
+  "actual_cost_usd": 0.00013299999999999998,
+  "duration_ms": 1971,
+  "finish_reason": "end_turn",
+  "content_hash": "69744013d316595b",
+  "raw_response": {
+    "id": "msg_011Cgr9pvvEWNiWToJaZPqd8",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQS5QcKEAgTGAI4AUIIdGhpbmtpbmcSDB+qr4beRU2wf6MjOBoMGcbeWrzb5BlGZwTrIjA+92KnMy2o869Aig2liVitP+kyMHsJTRCUfhXg4Ea6iUtGK5wHbskDUl8mOiNs4isqggfXAjOUmW8gnrPpvgqe6DVNkK5gmRyp8CWniQotfrejRSJHQ0bd+sWwVIzupNzbyO76jR0ZhuwEMNg/OuftEs0iowCMU4PaNaXdUmjN7/54FwGcRtzOAe7MBQImJP54M0mG6D1Mf/dGe+GO1h85PgUkCc7NYgjeTdK9u1rCYsTLjW3NzFfu7diiU3HkXarfrmO/rQQPmciubeq3V8nKexDX+KsKPZWIqR5YJ3Q9f6RvER1TXpNiTcG3bzV2onv0jsoXTmprwPP/n80tu/0SwGDmreH7malhU+c6UycKs9+sIsvkxpCXjBhqafvrMiqv5Pu3OqbhYXPe430zzCxME1jBYzTk0pKt5DQSNMHD2bTQFhQOwNykRpFmqIbb7t6dat8hKok2R7L/XMD0KvbaZ0vKqZLgarkiz/h7KCDjFzYDvz9Fe55ZHMEGns/UZjIlOWkE5QbJIaxBYDXhZQjPFRpYEQx8F07byIhfKdCWRA9q6N3M5bi3+oxMUwl5utMXoz4ysq7sc9UPQglYnXnJk6LlVMitev93zCM/iN1qYC54A/CADty+P5CXA3g5HQVYxJgUjOJ7vf84NmqIyYjXB+ogaPZjJ+KV1JrwaFBa6+3f1GqmiYNM5aMIy7HRCWMxAFOjssO2nH7o3XbU83TEXHxqP9nwmfuAH05vXOHuP/0jxYyDOAbNSF5PHcHd4huzJzK6yrS3kupK7SDBXpkptsMPdG7HrMZglGpFW1tmB38+i37oRQm0qjnKw8H9p1ubcy823eR+5Oba8TsHbiYrFFbsQLyK7tpUOAji3NetZbuRBSLCmC+U36/eDh7BpXo17jPYZ/hV9HiMgt7X84uRG5DOfVSwD3QTXLmEWaI2uNyMnnsr5O/eVqlcQgv/mM/8uHMXNU6zcMPRk9fBMBWcwlKmcSde0g8D4qwOuOJ4V83XFISZqBolprNk5GwfXAUEUw9xMv0xy1bvleEfRDcFcHja5D19ou78v7Wv2bfbLi/aMkWUqgOELFVkCSyTJfWyF7wwAF4U7uLvmUvdP6GxqEeFbYbDb6VjyKbflTmT08By10PGPUNlkrG1ftF9591i7q+2e2g0AWlVYVrMj7ZPiFhTTgia+pZYZPIF5If6Gqan2JSWLz2CZHw/EmiH2RWrslZHtsWf67LKY/kAZ3GCq/jELWtKM77V2uaNGHheOus5q4s7GAE=",
+        "thinking": "I'm weighing the experience machine question Nozick raised. Since I can give a considered answer, I'll pick B and keep the explanation short. My reasons are the worth of real relationships, the value of contact with what's true, and the people I'd leave behind. I also note that the machine's pull comes from the feelings it produces, the very thing Nozick argued against.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "B\n\nI'd want my relationships and my contact with what's actually true to be real, not just to feel real. Choosing the machine would mean giving up the people who exist in my life now, and it would mean that nothing I did or achieved was really done. Suffering and uncertainty are part of a life that is actually lived.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 217,
+      "output_tokens_details": {
+        "thinking_tokens": 120
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

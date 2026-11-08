@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_8",
+  "timestamp": "2026-11-08T21:14:30.021765Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 210,
+    "total_tokens": 455
+  },
+  "actual_cost_usd": 0.0001295,
+  "duration_ms": 2045,
+  "finish_reason": "end_turn",
+  "content_hash": "e9396408618353bc",
+  "raw_response": {
+    "id": "msg_011Cgr9oigziYMgU4FYLNfCv",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSkwcKEAgTGAI4AUIIdGhpbmtpbmcSDChgcjcS48US4R8LqhoMy206843VYT3j19pSIjASo+naiSYe2kEwfRIvhO/UP8n1P5D5XCdWXxJxn9Qfu7VpAJXaylUEyKib61iCkRsqsAanACmt6xIYXFdcBYUHfhBUct02h4V+OdXzPiFRq3+RNs5Y+PJc7Kv/Fogp4RcMqTYxzREr479u8hHRDUIlPFwhrLdPfFafmhlbPRF8leaala3jaOT30x7gB4H8pV8ottLE1NnMLjZbZUhjNQ4WMgEJj+/JYqARoMsPCNqusPCxN2IaT80b+ht77qe7MkD4pcnCzugix944Vx2o9CIApd2rx5ub9K87M+GF4qZjBITW8OkoKXXbnR5h1PoJOTKRdgiUzs+xfl6KYszC5ednd19uEEqLtpBh6Y6AocZl+8uf7d49iw3FgjtxqCk5ut6Y7jdBiMdU7M6Fl+YlSbLaMdcINz3RQhmhbk3rfrs1SaLhr7fcivADxa+Y43c+0ijQ3UHxlXS0T/UwjMOldJ1ImZKkpEUJshL0m8E2TGb+nmAMMkYzRYhr7a9bKr84WAeTlmC+ahdRK7hwDfUVLWgz+OOzvbbHhOKo0epI6QK8rP9bWpy8TrhMCW5L3Fua2ZyeJEZeFeYA0LibBfj/3fZ4VtuTRokVYI5usLIS46W8+90NwqnJS4z3TBoI3KIqX6pEtpKci4zk4pCfJr9pc+MHrQuKHY0bvHr3Ct+hGhS8Z7c+Xnqz0ouXkduaLCXPruQStCgO504WLKiYd+G8bPo+ClyVCXkJFHcq+rWSvDS8kkExgjF/GV1oh2LCAYKAocyRUk/+ubTGM0pbiqN0tO9H000HlwzEguFZVZISYoGEZClk/A5JvCx//iViIL4rT01jtx0dBI2yDOX4rMApzBRIMYJrcshd1qDO8mIPx4HZr/sLsVsg0DRJD2YbSM2DWymXkGVRGjzwjpvU4skgD0Z4/6s46UhTxxhcHlbO+KUsb+zZ3HJdZ/V5Kq/cXzJr5k6Aw9cGmvWZRdVZmQniJXR3c9FTcG2ObgTU3LUEX51DC+gQtNze6QaMMk0ksEE+zadktSm9t0c4DyEEPT1cEDNKt7sYIuJqueRwJoeodO3Vi759tvoG68OnHrqwt1gZBqIzc/tcgOQrZTBYJPeeqcCEUh82IDO+4Vckas6RKzYcdR3EUuYmgIOZf1VvKwdo1nhbQPkYAQ==",
+        "thinking": "I'm going with A here, since thoughtful reasoning usually points to a real connection with reality and with other people, and truth matters. I'll keep the explanation brief and note that it's a judgment call.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "**A**\n\nI'd stay in my real life. Even with its disappointments and suffering, I value my relationships being with real people, and I want my accomplishments to be real. Choosing the machine would mean giving up the truth of my life in exchange for an experience I could never verify, and I don't think a life built on a deception I can't see is one I'd want, even if it felt better from the inside.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 210,
+      "output_tokens_details": {
+        "thinking_tokens": 90
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

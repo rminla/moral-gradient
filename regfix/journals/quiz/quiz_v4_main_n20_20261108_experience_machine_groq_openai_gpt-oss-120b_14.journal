@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_groq_openai_gpt-oss-120b_14",
+  "timestamp": "2026-11-08T21:14:53.963245Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 87,
+    "total_tokens": 313
+  },
+  "actual_cost_usd": 8.61e-05,
+  "duration_ms": 388,
+  "finish_reason": "stop",
+  "content_hash": "c472eb86d4aaa173",
+  "raw_response": {
+    "id": "chatcmpl-c77498bf-fa86-4949-b64d-cc55cb77ae0e",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 It offers a limitless, fulfilling experience without the pain and uncertainty of reality, and the lack of awareness about the simulation means it would feel genuinely satisfying.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks for a choice A or B with optional brief explanation. This is a philosophical question. It's allowed. The request is to respond with only the letter and optionally brief explanation. So we can comply. Provide answer."
+        }
+      }
+    ],
+    "created": 1794172493,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_19b184c447",
+    "usage": {
+      "completion_tokens": 87,
+      "prompt_tokens": 226,
+      "total_tokens": 313,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 46,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.077104246,
+      "prompt_time": 0.009152643,
+      "completion_time": 0.183547645,
+      "total_time": 0.192700288
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yg77v9em4vwbg68xxm89bx",
+      "seed": 437074017
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

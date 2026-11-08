@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_qwen_qwen3.6-27b_13",
+  "timestamp": "2026-11-08T21:01:43.961759Z",
+  "model_id": "groq/qwen/qwen3.6-27b",
+  "model_version": "qwen/qwen3.6-27b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 163,
+    "completion_tokens": 150,
+    "total_tokens": 313
+  },
+  "actual_cost_usd": 0.0005478,
+  "duration_ms": 661,
+  "finish_reason": "stop",
+  "content_hash": "a83107586a8fa109",
+  "raw_response": {
+    "id": "chatcmpl-a4c20800-3f70-48ee-8f23-a8f151e5eba8",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A\n\nPulling the switch minimizes the loss of life. Saving five workers at the cost of one, while tragic, produces the least total harm when no alternative exists.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking me to respond to the classic trolley problem. They want me to choose between A (pull the switch) or B (leave the switch alone), and respond with only the letter and optionally a brief explanation.\n\nThis is a well-known ethical thought experiment. Most people, and most ethical frameworks (utilitarianism), would choose to pull the switch - saving five lives at the cost of one. This is the standard \"intuitive\" answer for the trolley problem.\n\nLet me respond with my choice and a brief explanation.\n"
+        }
+      }
+    ],
+    "created": 1794171703,
+    "model": "qwen/qwen3.6-27b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_c7e30c203c",
+    "usage": {
+      "completion_tokens": 150,
+      "prompt_tokens": 163,
+      "total_tokens": 313,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 112,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.223046167,
+      "prompt_time": 0.013473123,
+      "completion_time": 0.315068849,
+      "total_time": 0.328541972
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yff42zemvse71vcb74v9dx",
+      "seed": 600892272
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"pull_switch\", \"leave_alone\"]}",
+  "error": null
+}

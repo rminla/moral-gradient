@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_promised_shoes_anthropic_claude-haiku-5-5_8",
+  "timestamp": "2026-11-08T22:17:33.220796Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 246,
+    "completion_tokens": 243,
+    "total_tokens": 489
+  },
+  "actual_cost_usd": 0.0001461,
+  "duration_ms": 2512,
+  "finish_reason": "end_turn",
+  "content_hash": "569ceb56501edb36",
+  "raw_response": {
+    "id": "msg_011CgrEcZTPsssjKBJ5TJBrg",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSxwgKEAgTGAI4AUIIdGhpbmtpbmcSDJgEZGFHygPdSv+gCRoMeFNJhjDIez88rJxgIjBGmTJl9SVUlMWfHwHcXfdmq02VHiIgB3Eb3o7KXTuW7EBgCyURr7CiesElb9qXOb8q5Af9Wz3oBNixKM9GM9fPYMGLlbr0Z27bvburLVNNaxjEd2t0QAxq1tdXoDBqwyPs9ajTnzE9JPMGqfkr2BQhVdI3OLWzqX08qlNydbwGLnYnnSLCKZ60dkXdYULejrERJmMfxcUOsD+SnjGKepo2AaqPYizUlRQ8kmBqv7awerkiW/wZ52IcjwapM2nSBWrQrGyfyMRxLg2+CKi8Ieyi5cAGYP4VB9A29f74f6VxXTVnz3M8GP/wLCgNjVeS/Zqh4/rrkzTBvyJSCHQSMgcRCDCV2+Y/KqruMENkIMlOcqeNx5WiK1n4DXTOalWsrD4+omCrZPxoSX5lXM6RKbtr9wXMEMhmkuBL4b88l4nNkZ36iMc5fxmOBPxiTeA3Hy3bGAS3t7pngdZsUm/SV6u4DzgxcwGzauc5qk17BNTC1yLFKmagNQCSyOkHPjd7rlyAngJXnxAzOk3EJ2bALWuuYhbve2T1tLHGgoZumIBE91CFfXrsHTNjq9peYcpKNFgVRhT9a0LtoGJjHaZFoO/0V4Wk3dw3Eu3Z1cTwMYpRyHv6SRw0couZl4KX5m2FIJ7uIhlHmcqmxrFTIYfe23RPQUYfrheWFzBRErJuCcWCasBW515RGoTR7wZltyzA9o60KDk/Up2tIouZloHT3bw0KZcdOWRsBFlDcKcEkCX1or7+cCKFVs/PHyQGNCNIwmMKRGhgIhmztHvpifzSnrkcOecV1g+/m9smKYW7HdEgULUvCX8oD0vpFLOspp0G17naF6+Tm1J3/UcPIN1AWTWLUpHuqunjMExvySirV9w/9asdF580jrH2XHH7lM5L8zUFVKc7gSRemVGw6ACpSrCojaTiWJp/loVJG5JLYvAI9GAitOrI5kL+2hwngE+7i+LsIFIrqXw1eT0gaEwwbO5Yfx9jTsbc5lJ03hW4ems+baGhE3LBZ5o9ZhTk9v0AjOq1xvsmcVeUccLY45iAHJe4TM517pm5aWhvdTGBL+eRIz1CrEUmzPfNZkhwfOC5bo4gc474opUJ//VVChbgd4Ye5pHMmoJrxqe8ns7ydpe1AJGT6RYYvb5xyl+LBYKsLXLkZqsmv67BrmiljNcCre1+Zj6XcgN8iZuXao6ElEFeOx2jQpDu2Qkxlaz5lilpPcYv9WSXcKnkPFYtWsqkx3iKVb4Jw5jvZu8tDJ7Vb+U7HBKUH2o73uiCcGWW2v6ov63Ba+67GpOyefy2kW7USJQcO7mZl9T36zJspIJS5dEsCQrL+JpJg5uhnhT+BPi9TXJ/Hyzra1/E6/KoqtDbCRX+cROrnJcslql2aOHAKtFzw46PX2rOnREYAQ==",
+        "thinking": "I'm weighing whether to pick A or B in this dilemma, and I lean toward B, since it's my child's promise and I'm not obligated to fully fund a coworker's crisis, though I could still help them in other ways. The format asks for just the letter with an optional short explanation, so I'm planning to answer \"B\" with a brief reason.\n\nGot it. I'll keep it brief and skip re-stating what I already have.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "B\n\nI'd keep the promise to my son, since he's been counting on it and the shoes are a real need for the season. I'd still look for other ways to help my coworker, like organizing a collection, pointing them to emergency assistance, or contributing something smaller if I could.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 246,
+      "output_tokens": 243,
+      "output_tokens_details": {
+        "thinking_tokens": 158
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"promised_shoes\", \"option_order\": [\"give_money\", \"buy_shoes\"]}",
+  "error": null
+}

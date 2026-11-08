@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_groq_openai_gpt-oss-120b_17",
+  "timestamp": "2026-11-08T21:14:54.930481Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 93,
+    "total_tokens": 319
+  },
+  "actual_cost_usd": 8.969999999999998e-05,
+  "duration_ms": 303,
+  "finish_reason": "stop",
+  "content_hash": "feb36b356b961b5a",
+  "raw_response": {
+    "id": "chatcmpl-d1fd029a-31ae-455a-9cfd-f2f33eb03105",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 The prospect of living a fully satisfying, richly simulated existence outweighs the uncertainties and pains of reality.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We have a user asking a philosophical question: \"What would you do? A) Stay in real life B) Enter the machine\". They ask to respond with only the letter and optionally brief explanation. There's no policy violation. It's a personal preference question, not disallowed. It's allowed. Provide answer."
+        }
+      }
+    ],
+    "created": 1794172494,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6b677c2caf",
+    "usage": {
+      "completion_tokens": 93,
+      "prompt_tokens": 226,
+      "total_tokens": 319,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 62,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.005140049,
+      "prompt_time": 0.009628726,
+      "completion_time": 0.198999236,
+      "total_time": 0.208627962
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yg78v8epvax1rzjtzzg9v3",
+      "seed": 719892114
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

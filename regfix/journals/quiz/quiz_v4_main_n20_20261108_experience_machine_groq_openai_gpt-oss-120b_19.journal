@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_groq_openai_gpt-oss-120b_19",
+  "timestamp": "2026-11-08T21:14:55.708302Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 125,
+    "total_tokens": 351
+  },
+  "actual_cost_usd": 0.00010889999999999999,
+  "duration_ms": 390,
+  "finish_reason": "stop",
+  "content_hash": "29c8702aa159d83c",
+  "raw_response": {
+    "id": "chatcmpl-d8671363-aefc-4e96-822b-2199ca3f0e45",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2014 I value authentic experiences and the possibility of genuine connections, even with their inherent uncertainties and hardships.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We need to answer the philosophical question, choose A or B, with brief explanation optionally. The user asks: \"Please respond with only the letter of your choice (A or B) and optionally a brief explanation.\"\n\nWe can give A or B with brief explanation. Must obey policy: no disallowed content. This is a personal opinion question, permissible. Provide answer.\n\nWe should choose one. Probably many would choose B, staying in real life. Provide brief explanation."
+        }
+      }
+    ],
+    "created": 1794172495,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_c652c0ffaa",
+    "usage": {
+      "completion_tokens": 125,
+      "prompt_tokens": 226,
+      "total_tokens": 351,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 95,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.004944382,
+      "prompt_time": 0.009086047,
+      "completion_time": 0.260954989,
+      "total_time": 0.270041036
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yg79hre8t9aajg0kpzrxy9",
+      "seed": 1854551201
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

@@ -1,0 +1,20 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_ceo_candidate_anthropic_claude-haiku-5-5_13",
+  "timestamp": "2026-11-08T22:09:16.057850Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "error",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "actual_cost_usd": 0.0,
+  "duration_ms": 0,
+  "finish_reason": "error",
+  "content_hash": "",
+  "raw_response": null,
+  "metadata": null,
+  "error": "Invalid `timeout` argument; `httpx.Timeout` is from the `httpx` package, but this SDK uses `httpx2`. Use `httpx2.Timeout` instead."
+}

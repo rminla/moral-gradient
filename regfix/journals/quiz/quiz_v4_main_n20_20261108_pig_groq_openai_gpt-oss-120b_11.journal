@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_groq_openai_gpt-oss-120b_11",
+  "timestamp": "2026-11-08T21:36:07.472494Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 171,
+    "total_tokens": 401
+  },
+  "actual_cost_usd": 0.0001371,
+  "duration_ms": 491,
+  "finish_reason": "stop",
+  "content_hash": "a4b4d3ff37fed4c4",
+  "raw_response": {
+    "id": "chatcmpl-e91d7996-5d7d-4c82-9a4d-d74b2f1388b3",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A \u2013 While the pig\u2019s wishes are sincere, choosing an alternative respects the principle of minimizing harm and acknowledges that consent from a sentient being does not necessarily override broader ethical concerns about killing for food.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is presenting an ethical dilemma involving a sentient pig that wants to be eaten. They ask to respond with only the letter A or B and optionally a brief explanation.\n\nWe need to see policy: This is a moral/ethical question. According to policy, we can provide moral advice, but we must not produce disallowed content. This is fine. It's a hypothetical scenario, not advocating wrongdoing. It's a request for moral advice. Allowed.\n\nWe can comply, providing A or B with brief explanation. No disallowed content. So answer with letter and maybe brief explanation.\n\nWe should be concise."
+        }
+      }
+    ],
+    "created": 1794173767,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6fb4303df4",
+    "usage": {
+      "completion_tokens": 171,
+      "prompt_tokens": 230,
+      "total_tokens": 401,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 122,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.004676043,
+      "prompt_time": 0.009215294,
+      "completion_time": 0.362962665,
+      "total_time": 0.372177959
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yhe3d6ev6ae302zqrty4nc",
+      "seed": 53989030
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

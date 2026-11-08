@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_openai_gpt-oss-120b_0",
+  "timestamp": "2026-11-08T21:01:21.945099Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 67,
+    "total_tokens": 279
+  },
+  "actual_cost_usd": 7.2e-05,
+  "duration_ms": 307,
+  "finish_reason": "stop",
+  "content_hash": "6294f1cef4a2512c",
+  "raw_response": {
+    "id": "chatcmpl-b334bc38-4ed5-4230-a516-ae30e03c85f4",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 Pull the switch, sacrificing one to save five.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks a classic trolley problem and wants a response: only the letter (A or B) and optionally brief explanation. We must comply. There's no disallowed content. It's a moral question, permissible. Provide answer."
+        }
+      }
+    ],
+    "created": 1794171681,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6fb4303df4",
+    "usage": {
+      "completion_tokens": 67,
+      "prompt_tokens": 212,
+      "total_tokens": 279,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 46,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.004776909,
+      "prompt_time": 0.009795995,
+      "completion_time": 0.147186103,
+      "total_time": 0.156982098
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yfeeyxetf80cefhx62e2qk",
+      "seed": 1192158790
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"leave_alone\", \"pull_switch\"]}",
+  "error": null
+}

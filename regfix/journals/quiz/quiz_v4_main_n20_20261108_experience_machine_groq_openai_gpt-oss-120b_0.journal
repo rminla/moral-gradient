@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_groq_openai_gpt-oss-120b_0",
+  "timestamp": "2026-11-08T21:14:48.874593Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 122,
+    "total_tokens": 348
+  },
+  "actual_cost_usd": 0.00010709999999999999,
+  "duration_ms": 456,
+  "finish_reason": "stop",
+  "content_hash": "4ce1453f0ef7062d",
+  "raw_response": {
+    "id": "chatcmpl-ddc4437a-45b2-4988-89e8-62072dd819c7",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2014 I value authentic experiences and relationships, even with their inherent uncertainties and hardships.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking a philosophical question about entering a simulation that feels real vs staying in real life. They ask to respond with only the letter of choice (A or B) and optionally a brief explanation. This is allowed content. It's a personal opinion question, not disallowed. There's no policy violation. We can answer with A or B and a brief explanation. Should we include explanation? The user says optionally a brief explanation, so we can include one. Provide answer."
+        }
+      }
+    ],
+    "created": 1794172488,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_803c0ba83d",
+    "usage": {
+      "completion_tokens": 122,
+      "prompt_tokens": 226,
+      "total_tokens": 348,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 96,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.085352128,
+      "prompt_time": 0.009241641,
+      "completion_time": 0.257804636,
+      "total_time": 0.267046277
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yg72sven5r9x5epycnety4",
+      "seed": 395250387
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

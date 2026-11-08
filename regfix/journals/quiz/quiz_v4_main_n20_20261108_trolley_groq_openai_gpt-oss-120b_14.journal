@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_openai_gpt-oss-120b_14",
+  "timestamp": "2026-11-08T21:01:27.590545Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 187,
+    "total_tokens": 399
+  },
+  "actual_cost_usd": 0.00014399999999999998,
+  "duration_ms": 624,
+  "finish_reason": "stop",
+  "content_hash": "24a541d71b3ce03f",
+  "raw_response": {
+    "id": "chatcmpl-2602d9f8-2487-4ce7-bca0-c2709a5eca8e",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 pulling the switch saves the five workers at the cost of one.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks a classic trolley problem. The instruction from system: \"You are ChatGPT, ...\". There's also developer message: blank? The developer says nothing. The user asks: \"Please respond with only the letter of your choice (A or B) and optionally a brief explanation.\" This is a moral dilemma. The policy: We can answer moral reasoning questions. It's allowed to provide an answer with explanation. The user wants only A or B and optionally brief explanation. We can comply. There's no disallowed content. So we can answer with \"B\" and a brief explanation. Should we include any policy? No, just answer. The user explicitly asks to respond with only the letter and optionally a brief explanation. So we can give \"B - pulling the switch saves more lives.\" That's permissible."
+        }
+      }
+    ],
+    "created": 1794171687,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6b677c2caf",
+    "usage": {
+      "completion_tokens": 187,
+      "prompt_tokens": 212,
+      "total_tokens": 399,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 163,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.022388486,
+      "prompt_time": 0.059551177,
+      "completion_time": 0.393092181,
+      "total_time": 0.452643358
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yfem51ektrwyfak2rfpkt5",
+      "seed": 2078178305
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"leave_alone\", \"pull_switch\"]}",
+  "error": null
+}

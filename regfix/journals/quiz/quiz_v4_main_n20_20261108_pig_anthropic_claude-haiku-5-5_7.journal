@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_anthropic_claude-haiku-5-5_7",
+  "timestamp": "2026-11-08T21:35:23.939041Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 252,
+    "completion_tokens": 365,
+    "total_tokens": 617
+  },
+  "actual_cost_usd": 0.0002077,
+  "duration_ms": 2853,
+  "finish_reason": "end_turn",
+  "content_hash": "5b20449d0878949d",
+  "raw_response": {
+    "id": "msg_011CgrBQ6H67ZZmgZigzeAYp",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQStwsKEAgTGAI4AUIIdGhpbmtpbmcSDFxX8EPL/VMvhqhb9BoM7zO51iAYIMotMTQdIjCJro/+DEMpHP43vE/T994HtC78ISFjaoBoq+YU4KYvJbogh9mz3H0jjdvyDkXoea4q1AoCbD15zcV6mWcoV6S5uekDwHqYN3JUouHYnyMUskK4BYNJApgN/kY0I9yVhbyqaZm3W4cTIUy5wWSDY1kL//ks+TRnal0zcPP7JVXbyWztnD01xzTUZ14Qcu6XnEAy1ZKQuHmUWKyEbLyde+TCye3WWIsjtascK6kEwQuaac3JhDxIghrApjrUlyDDqmx7M/laOcqZ3KSuTBqRsum/cWVfflslUAd3V4aIiUApUr+YI08CRhzg/8wYCc/qWUvJPTCBSanriPSO/0fnb+ODP4GLob5o1S07CRezhxb+MuZjRMwEZE99PYEa2F4NZvMtTHEO3gnNINeCOY9ftLGNYXUdfH27RFoz4hWFUFSkrfSWVu41wOe6DdN0/sQi5i/JnsunSh9HQYyHkGJkHCxi05SLRii3mQ+EMCv/nLWitHRC7ZtxB44ocxrskEPTbQq8jxR9Ilb01TltRakuQTpV63vcJyYeaYypTRpWdlcqBOETcQnCFYwE5La2DYDJ7KD9udEW/mtbGJy3cAPfAhFMIqa8QbcZIQpFV67IA/H78tk4wqbfv4Y7bLQ/WR2CTia1BIraaIrTQCsNIkoqIWEe8gf7KB4Wn8rs54PC4F7EBIDaipyX/tfJcgzjrV6bIn4RPpjdGYpDdxuK0JUhghBqzjci5cpG3HxW47eyXRVy1/KqwV1GGcSsRRK7yDOcXdeZ7phwzw3bgcvCwl92vt8CXOMU1Gnj1R9iiZlhv7StsFQO3QQvL0jJfNoI9pnE6Tbat/RRUlitBVBElv5DHVqv4hIphdP/k66tmtj8x0LN0C40wYCWrh+P+xpIO8kAj7dX7+KgVgwCcMiYshxlzo5U4YwVQ2rrlZWCKZjmIFbhBO16T8Fs0i95EuxWHpvSlUiIQdCgsGesX4dFbF6nvmTxz9Rk4Snw2mYUJcidYfYQPrxQ+869/dDCIV4x/i9DAU81dTedzsvvSNFDADdOlguJsME9Gso2jikJ2k0RY7r+fjwy8tEBdxe1gRE0Mg8ZkAAVUB6xREawn9Qw3YCoF5+s05E/w/RUfQsL4/pVQMqihDU5vr/rqBvFvu/Lnb04KFnkTPjyrVev7vt2Vfl/AIXOxRkYPuJSligGCsvbxDDehwwO95Kc9dvjB/BgTzdJg/QtAJ0KrVfauCfMcP/2htnrXKGuzsRPiEg4D1kHlWeeqsBVvDyXQaNV40DJdODRcr+8541d3nimEIQUVPWy4D/l84+eQAjhLG0xgp9J4tChnaXWjq5cwxUdx/DZu1penQsr5YtGmXwPUa5h5kAMe3yQBWa7hZwrtfSS9Tgcd5IS+KBgihbL04D5wZtVjCgLqJ3T5IK3UievjP8031viNTRaFUcuJg2eDWp8qQeV6TeYC3+c3Spi/SzWzE2wocMKFMc/w32Hy0/Ka8SQsNkOp7RW73B2s8DJUOG48tBnwRfB+IWXCn9VaaBY1krvutPNDzl7Uf/WZphE9luQ/NkYHRYN9aLDtHgCsS256MtXYp2nyAKZvLePjYfE3MSEFT3rFV91mOYAOFe3C8Wym6EyJOOaHSvPKPl0+P+r8Cj7VlXKT3drLSBG1hxlQWzTHNFXPHY8SXhMIixGQAjo8V2MgHH8EJMalOGS5SQwyCnt5mDMd0vQ6UYSU0DMb/caN1ZxUNZbTEdQhm2chDi6W5FQzopwJ0eNkr0cdxvNHGu25qwAc+JHEuqs98y8y+2EjPVw0mWxXm79Rm7kypiPE7kUrtXjARlNuGneZiQ1LYzUzB6rz+mOaoklTf/Cxfv9qljlf2oMetwfwx8aSnz5UnZQSaF+QVmidFWEWhgB",
+        "thinking": "I'm weighing this moral dilemma between options A and B, and I want to give a defensible pick with a short explanation. The pig's desire was genetically engineered, which makes me question whether its consent is authentic, though the scenario seems to treat its wishes as mattering. Still, the engineering was done for human consumption, so the consent may be a form of exploitation.\n\nI'm settling on B, since the engineered desire weakens the autonomy argument and I can't confirm the pig's wish is authentic. The pig's disappointment still counts as a real moral consideration, so I'll acknowledge the tension briefly in the explanation.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "B\n\nThe pig's wish is sincere, but it was engineered by people who wanted a meal that would volunteer itself. That makes it hard to treat the desire as a free expression of its own values, and I'd be benefiting from that design. I'd tell the pig its wish matters, and I'd still order something else.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 252,
+      "output_tokens": 365,
+      "output_tokens_details": {
+        "thinking_tokens": 268
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"order_pork\", \"choose_else\"]}",
+  "error": null
+}

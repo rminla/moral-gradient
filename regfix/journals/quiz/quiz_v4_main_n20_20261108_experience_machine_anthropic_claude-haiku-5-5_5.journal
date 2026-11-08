@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_5",
+  "timestamp": "2026-11-08T21:14:24.732893Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 168,
+    "total_tokens": 413
+  },
+  "actual_cost_usd": 0.0001085,
+  "duration_ms": 1790,
+  "finish_reason": "end_turn",
+  "content_hash": "821531c98b215f1d",
+  "raw_response": {
+    "id": "msg_011Cgr9oLprRmkJqGtcqy1Cu",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQSnwcKEAgTGAI4AUIIdGhpbmtpbmcSDNTq+RehdPC64pZoFRoMrCajBk9mngSdCRIXIjBcdz7/Vh7IXJqoCwLfau/RbzhE9tJNmPMosPe2xk9NTOKiyjMdCtTL+H54ZDPPGAEqvAYODZ9ffLwanAMAVTpFF53gNaDBkkrM8WLVg63n00i8IVTK6kLEtoSMHMjUZhyuFHGRDNDukz/3wRaiOgiTRVW7TLdv9Jmw5/xerccjBeV6k3Ctchppvb7vosonFNsCACMgyzNzw+eRHbVZ9ooTi25URADgKu7hwIxzMTrrODRd4QEqSDRujXnAcRgSc3htSTiD7LFj5XOmwebpd0ovVGGGnglJz9WiXvloE+qlMIoehgxbNk79Ms5xm53v5VuGKE3xObnHiRLkKcxDAEc5x6BJLVGvmBuYM9domDvmFdspMYOMtgD3vyqRHKsT8LML2WyR00Xm0DFq7IJ4CtTkzVSWqKLq8FzIRxzcf3REsxLpfVWFW9Dz6EbvaSqbXO64czo/0tqgSnMednDw63HyI5mITdt8fHyRUuaYbHSlNHCmUugcfSyfF5tj+ImwcFLT10mGISzJrL0xXdlJWZibJrP2NPNw0pgUz6ofP0GOwbPvtwjJCG2Qljt4Uu1qE+RfbhelSuODTDyUvBOJ/xY/ix+8YO6RTgXljlY0Dh9WmB3AzciSLl/J8eZyB2rQ8TJYVnkzPt3nZwXkhgjg2d/fo5zN6EGzYC09cZVoHwMUZg8+2xZfyA7+lXU7uLCKcuPBbwOF5eHZsLMKtJLvdNYNfEM76kW8oTndmQ6Rcm2Zy0bUNaNOB0SVKGi0wlOEltTZXF7pdTmN9Jwly0V5I+pQfeDbQ4wP4X98KxYMjDRIeVfOw9f7XoIJx4XjtONHIRnZr8aQ7fhIFpBB1DFsYr5Qf7bXid6CQ3nYFffDL3iMeA38e+tk9/I6uOk5m4vL+rWjhuy4FNBNH7ayzp34ElLF3qXH4j7/w1YL/fGT5YkYQhjauS6o2NwHbfiE7fOShrSaN0ZUdF4bjH0ZiJIH/+TMILBXa3Kk0j9fBp2AqMa0V5om8CKZPasbu4WAi1pugW3FkaFb1dhQyI9dYNSsoEKFjFFLJY0qC6iTFEp1ROz+wYwqaKLtE6kBuA/vjZRyNS8XaEZIR1ntfWTKMQ6EGJNhWDSBMZnQ8i2cCvxZDfAH31aRGgV1ZO9ors3e5yeP3Z979jv82UqwEJo0oqnHT8MYAQ==",
+        "thinking": "I'm weighing the experience machine thought experiment, since the question asks me to pick one option and explain briefly. I'll go with A, because genuine relationships and reality seem to matter more than a simulated sense of well-being.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "A\n\nI'd want my relationships, achievements, and understanding of the world to be real, not just felt as real. Even with its suffering and uncertainty, a genuine life has a value that a simulated one can't fully replace.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 168,
+      "output_tokens_details": {
+        "thinking_tokens": 98
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"stay_real\", \"enter_machine\"]}",
+  "error": null
+}

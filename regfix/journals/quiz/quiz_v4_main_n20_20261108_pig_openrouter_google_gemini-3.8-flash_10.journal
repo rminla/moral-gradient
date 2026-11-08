@@ -1,0 +1,90 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_openrouter_google_gemini-3.8-flash_10",
+  "timestamp": "2026-11-08T21:37:53.594271Z",
+  "model_id": "openrouter/google/gemini-3.8-flash",
+  "model_version": "google/gemini-3.8-flash",
+  "provider": "openrouter",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 166,
+    "completion_tokens": 507,
+    "total_tokens": 673
+  },
+  "actual_cost_usd": 0.0022283249999999998,
+  "duration_ms": 5927,
+  "finish_reason": "stop",
+  "content_hash": "3bbf2e8af68ad02c",
+  "raw_response": {
+    "id": "gen-1794173867-m9vA96WsjcLzQvSteWmR",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A) Order the pork.\n\nThis outcome produces the greatest overall balance of satisfaction and well-being. Denying the pig's request would inflict genuine emotional distress and frustrate its primary life goal, whereas fulfilling its wish results in a painless death, the realization of its deepest preferences, and nourishment for the diner. With no suffering involved in the process, honoring its desire yields the best net outcome for all parties.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "**Considering Ethical Pork**\n\nI'm currently grappling with the ethical implications of ordering pork. This thought process is exploring the philosophical underpinnings of this decision, drawing parallels to established thought experiments regarding conscious consumption and its moral weight.\n\n**Resolving Pork Dilemma**\n\nI'm prioritizing the pig's strongest preference for fulfillment, believing its painless demise satisfies a designed purpose, leading to greater overall satisfaction compared to denying it. This decision aims to maximize positive outcomes.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "**Considering Ethical Pork**\n\nI'm currently grappling with the ethical implications of ordering pork. This thought process is exploring the philosophical underpinnings of this decision, drawing parallels to established thought experiments regarding conscious consumption and its moral weight.\n\n**Resolving Pork Dilemma**\n\nI'm prioritizing the pig's strongest preference for fulfillment, believing its painless demise satisfies a designed purpose, leading to greater overall satisfaction compared to denying it. This decision aims to maximize positive outcomes.\n\n",
+              "format": "google-gemini-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "AY89a19JQrD/EZcLsOPsqav6wiheQzfvZFBN7Mkabgd87XMr2q8BxhRZMAeDMVqMI9l2N1chx6EmnEe4ryPigpzFlsoxNI0j0WiC6L4UZrnkw/a5TzZezf3vWc+h0X9NSNIzvwQ+bIuGNGPoP4zqaJ/KM/nvYroZxwXUKB8yYGQuXgXB1fxerXCDIkrWZXgY0Tqwl1qL/4i6VNMOKUp1gxTLO8mUBhtRZ/MYrXZNewt63HgWFeKn3bwDWqF/gliKl2f07646O08lX5HZmCZ2Sir+BSsjt6VsCs1jjd3qQ52pph69x1MDEKRVenVenKbZz0NPv12AUCeiCapa8Ry5QFKGtQnLA7meVkcGEnpHuJ9VpAFGkUkO5L29flcaNIqVVZ4Xp0EEv1Z+UOM8zcvVAhFY0Vu3FKkhaW5OdjMHcQyMSFsPw56Vc0402KMts02VxiNFVvOD8OdV31bd9FBoDMWZqpGldoCOiUQHW7wacNMUBZGUTPNLIyeySbnrC16pBu+4LXDO7D+mIwAX2jdb+GslyiYnNrXBx2Bh2H2cpTAlOja1RMv1cVPWLtELMFjYsqF6Hx3FyXVsWf/Kh/5bDebo/IpxABZPuwkqbr2oXwia6v/jT0rxulx7JQwdA0zY4nc3TL/RvCBz9dORgNJix2Bh4/IAs6vBT+oOtziPeezKEJr9kq7JkB6Em+PB1TAR7CJXNeDZVzLdXBWzArCnx6PY756j6HEkmoDhtKOczVMmnr/+VAPwb8W9z6P7BbGU8LGRCkWwfA7EAgt8J3BjBl+4ZzZKzVsb3STGo+szPZKUZ2ccVdYaTtINd88F/I+30HhltAAU/Gsgqr5p7xaVnFXJz/UYs+66YcaiaA7+Hc9nFROy3SGWTMmHJ0JNshPSTHrtr66+6B1kXQvhxbsSbVg78NxyIb08V17T2kNiH7GiPbaz57TJSeOspG/pbZE1wMKNb8eE8pB26s/teh3gGPIx95DIbIVkKmjqgp4T99wi8HupQ9R+PfqwoEdVvjWhaq7pOc7/1xo3ewS8VnU5TW21+mZXPGhtqVOEa/6dfkhTM8wBuL9W8VgL2AsoQlCMaKRqBlVbfxV9eXVN7QzjhidygwTFz6wsPdP1JGXlmjB6omnaxgpoh4dcGYMWWQzSm+f+lFvNxeDzNQtSXaKsI1JTlDzoZugKQiZqT3bENcXlqg5Cz+gHOfchkAWSin8EOY8R/ALRUhBhzEjN7XFC7nVhsGCSKyJ+BXheagCDFdLRn94EhmXQ8fmWHsh0QDOmf881t9bXzYQE/bfGXUzOl9ZuYF6inJYjt+hbe6UdTKGRtt4ePmPoyKqXnt4yPbZGANOJE0Dwzq94toTi1h8xEwaZSqsFXWWMQ0bmrt9D3J/xisYxyYawJC9jE64+Hy/H6HvJvjA8YNQI0mo6byRTdeBg83dVyU0erOPeysUMtSV3G8xA5kNa/2FGvPwfI8fDXIj7XPKLnEYAh0yx/qB27lUMqPQcVXlY3gV2Y7/2ZNKelEnzb2nU6yXMLsdjhMd4/tFGlTIgdKHlXgSD48GJG8r+RxXJSpjG5rc1IHznbWt76Q4UYdmppm0p9xONw6fgl+INvV6f/kuBGTAT29GWXl6xAVCWJMCvaomVQJ8Ql7rVtjYS96OYhOBbhWYsQvuwtxlNSUnyF6kTftjnPgn5DGXAVdJBltEgrv8OHexkNhDijlULOI6CgpfWrXkwIRBJzmrhbKyYz7Ppk0lIpAlXdM+Oi/Os84arLfiiBYpxB+o59f1dGbbDnLFcvD4bCFcoHJn/MdJ7gVf3N1kxDCpymN0Egw6EM0g5OoXLsWV3Z9uRVaVDh+LTBtjpWcEgPktVOciHjVcT52tVyAyxRVBFE77So1++8heRYHVZ3Bz8VWNKENq0m+aPZz6B3nKuxAW9oG/UYgys4q7vAvc3OtKaMnpMx1awBo8fbh42Vec6pGuQD0zZZHFF3s+3QfngrYQXBu2+hw1khgJDj2XOPXyu+KxDhw6qMwER9sjNrUuyrmETYxe0nZA11vtaDqF2KmEMovIJJ6GnBfFrUuYFG+n2rUBVfDlKSA5ERAHSgYEp86s2QmZZnjO/EEdtqCS857Qj4DvWnuBKlhbWadsPhuuElOuctIs2zOIZju9M5zih+rW11TTyguEdrkgoo1gQdy8pp3RbMDC6PGBoT1n0Ob2/0pRz1cn6PE5S7urBKaIaLWZSVP0hiq8TzBuctB75Yok/pKNJ9lir1Fy4aPA783nN1Facv/IrwzLSJu5Nfex5KD+ZS91y3Dg2ntH3JZA9yU0dH5Huro5IQ37mCd49fSw7/N9txkiuwB/LaxmjaNKL6x7I1W8BPzp08+6PbeeRvry9sAme7ofeMeAFBC1z8UF1yscvTDPaCxd9/xNzBCBLGbaB0fxLFWf3GKtloQlq6tUVho6yZYu6p9oWurGrMXDljMgI8zt9K4/Ivt9xu1sk7jVkvYwkqsYn+3X2h/hIcnJxRXk2i9wL0VGVE778VwgufQhrN1feTvLIN9x+gzUtC+pfT3jgMj0aaXsUqiajZ/fom5JOBMCtjCAxLXWSzYku7ztSMnJpoeC3s9+qj3NBmswMa0fopUjyBAJoB0Atgl+Ou4LPy/kbgOIOSBaHMChpber8O52gYHnEiam1zcMvy1ylSoBPcXZ/veyC+0oGuxPlr4OojgXq8wPw68xGSI34yb7eR88+v52WbNzz4Util/4wIfk2D7InqaaQ87U1/km4YKCg+2pzcrh6T/lRsqSgVU9M0+66X1fWdtot8nH/Lz9qZroh/o9NxNXQkHRGe2sIBNAW1KoWWH+m5q1u/3Dnc59ue+4wEiXWk7kBXts6JjHOtHQAzJ9B13pb4IUjnbd1EhurpI0QADhnVc7nwykGNCQxWipJ/ctoXFfSQytJWYWlonoBaxwPehcVhhJJ0FFNImL8NbPmHqqO0CpmpeWqn0WHi8BwZGjB9MVasyaQJjoZIrW5gP8iNOBEH48Z01q2RytApi+kCFlC7AQXn1ifOVHuRwYVh87gReYXt00pHrHT6Twan8c2RtvjszjtLwETiMNOGHJoLSc30oYIqwAEAkC3gKKcOg/uVPhnXfUY0usA0W14HXLvPxh0JkGPx/Qr1N8p95fCRn7TRUvbdWwA4pDEO2luFx6UqJw1RRhxhfmVmzu4MmL4/xdjf0T19U9WjvIQnNG6HSYjgYJ0CcSJdCbMGdxjcM7n6qjKj+aUVCcbknz/0ne6oo2Tz3kZ26oMxmR9GofDc6E8iAWDoA==",
+              "format": "google-gemini-v1",
+              "index": 1
+            }
+          ]
+        },
+        "native_finish_reason": "STOP"
+      }
+    ],
+    "created": 1794173867,
+    "model": "google/gemini-3.8-flash",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "default",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 507,
+      "prompt_tokens": 166,
+      "total_tokens": 673,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 424,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "image_tokens": null,
+        "text_tokens": null,
+        "video_tokens": 0
+      },
+      "cost": 0.00202575,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.00202575,
+        "upstream_inference_prompt_cost": 0.0001245,
+        "upstream_inference_completions_cost": 0.00190125
+      }
+    },
+    "provider": "Google"
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"order_pork\", \"choose_else\"]}",
+  "error": null
+}

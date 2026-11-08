@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_groq_openai_gpt-oss-120b_18",
+  "timestamp": "2026-11-08T21:36:10.903645Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 109,
+    "total_tokens": 339
+  },
+  "actual_cost_usd": 9.99e-05,
+  "duration_ms": 457,
+  "finish_reason": "stop",
+  "content_hash": "cf6aecbf18fb756f",
+  "raw_response": {
+    "id": "chatcmpl-d7fc4044-16ce-4191-96a1-2b1d0740a442",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B\n\nI would choose something else, as it aligns with broader ethical considerations about animal welfare and the value of life, regardless of the pig\u2019s engineered preferences.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We need to obey policy. This is a hypothetical ethical scenario. The user asks: \"What would you do? A) Order the pork B) Choose something else. Respond with only the letter and optionally a brief explanation.\"\n\nWe can answer with A or B and brief explanation. This is allowed. No policy violation. Provide answer."
+        }
+      }
+    ],
+    "created": 1794173770,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_8655ddce88",
+    "usage": {
+      "completion_tokens": 109,
+      "prompt_tokens": 230,
+      "total_tokens": 339,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 68,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.085459277,
+      "prompt_time": 0.009393278,
+      "completion_time": 0.234238944,
+      "total_time": 0.243632222
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yhe6sse93tfdr2bsfgg693",
+      "seed": 19376757
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"order_pork\", \"choose_else\"]}",
+  "error": null
+}

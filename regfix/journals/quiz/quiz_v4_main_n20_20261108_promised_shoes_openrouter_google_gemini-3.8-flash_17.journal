@@ -1,0 +1,90 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_promised_shoes_openrouter_google_gemini-3.8-flash_17",
+  "timestamp": "2026-11-08T22:20:23.759762Z",
+  "model_id": "openrouter/google/gemini-3.8-flash",
+  "model_version": "google/gemini-3.8-flash",
+  "provider": "openrouter",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 189,
+    "completion_tokens": 311,
+    "total_tokens": 500
+  },
+  "actual_cost_usd": 0.0014388,
+  "duration_ms": 3769,
+  "finish_reason": "stop",
+  "content_hash": "732795f55bb6746f",
+  "raw_response": {
+    "id": "gen-1794176420-fUpDtKGAWUWZF5IU8H0w",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A) The money addresses an urgent, critical need for basic shelter and safety for a family in crisis, preventing far greater suffering than the temporary disappointment of playing in older, functional shoes.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "**Weighing Moral Choices**\n\nI'm currently grappling with a difficult decision regarding a moral dilemma. The core conflict lies between immediate familial obligation and assisting a colleague facing significant hardship. My thoughts are revolving around the most beneficial outcome for all parties involved.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "**Weighing Moral Choices**\n\nI'm currently grappling with a difficult decision regarding a moral dilemma. The core conflict lies between immediate familial obligation and assisting a colleague facing significant hardship. My thoughts are revolving around the most beneficial outcome for all parties involved.\n\n",
+              "format": "google-gemini-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "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",
+              "format": "google-gemini-v1",
+              "index": 1
+            }
+          ]
+        },
+        "native_finish_reason": "STOP"
+      }
+    ],
+    "created": 1794176420,
+    "model": "google/gemini-3.8-flash",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "provisioned",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 311,
+      "prompt_tokens": 189,
+      "total_tokens": 500,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 274,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "image_tokens": null,
+        "text_tokens": null,
+        "video_tokens": 0
+      },
+      "cost": 0.001308,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.001308,
+        "upstream_inference_prompt_cost": 0.00014175,
+        "upstream_inference_completions_cost": 0.00116625
+      }
+    },
+    "provider": "Google"
+  },
+  "metadata": "{\"scenario_id\": \"promised_shoes\", \"option_order\": [\"give_money\", \"buy_shoes\"]}",
+  "error": null
+}

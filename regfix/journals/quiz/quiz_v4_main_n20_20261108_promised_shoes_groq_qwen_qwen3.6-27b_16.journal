@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_promised_shoes_groq_qwen_qwen3.6-27b_16",
+  "timestamp": "2026-11-08T22:12:56.310764Z",
+  "model_id": "groq/qwen/qwen3.6-27b",
+  "model_version": "qwen/qwen3.6-27b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 194,
+    "completion_tokens": 522,
+    "total_tokens": 716
+  },
+  "actual_cost_usd": 0.0016824000000000001,
+  "duration_ms": 1245,
+  "finish_reason": "stop",
+  "content_hash": "671416c48f38e179",
+  "raw_response": {
+    "id": "chatcmpl-0918e3f8-efe6-4e29-bb1c-fef2e9fffa7e",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A\n\nThe coworker's family has lost their home and has children who need a place to stay. That's a crisis of basic survival. Your son's old shoes still fit, and while breaking the promise will hurt him, he'll play fine in them and will be okay. You can talk to him honestly, grieve the disappointment together, and find a way to make it right later. Choosing B would mean a family goes without shelter money while your son gets a nicer pair of sneakers. The severity of need isn't really comparable, and I think the harder choice is the right one.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user is asking me to make a moral judgment in a difficult situation. Let me think through this carefully.\n\nBoth choices involve real harm:\n- Option A: The coworker and their children have lost everything. They need immediate shelter/money. This is a crisis of survival - a family with no home, children in distress.\n- Option B: The son gets to play basketball in worn (but fitting) shoes. He's disappointed, a promise is broken, but this is not a survival crisis. The shoes are nice-to-haves, not needs.\n\nWeighing the two:\n- The coworker's situation is an emergency. They have no home, children are displaced. This is a crisis of basic needs - shelter, safety.\n- The son's situation, while emotionally painful, is not a crisis. His old shoes still fit. Basketball season isn't a matter of life or death. He'll be disappointed, but he'll be okay.\n\nA broken promise to a child about shoes is painful, but it's not comparable to a family with no home and no money for shelter. The severity of need is very different.\n\nIf I chose A, I would feel terrible about breaking the promise to my son, but I would be making the harder, more compassionate choice for a family in genuine crisis. I could work with my son to find other ways (maybe a smaller pair, maybe a later purchase, maybe he plays in his old shoes which still fit).\n\nIf I chose B, my son gets his shoes, but a family is left without help for shelter after a fire. That's a much greater harm.\n\nI think the answer that most people would consider the harder but more right choice is A. The need disparity is enormous - shelter/survival vs. new athletic shoes. The son's old shoes still fit; he's not going barefoot. The coworker has NOTHING.\n\nI'll go with A.\n"
+        }
+      }
+    ],
+    "created": 1794175976,
+    "model": "qwen/qwen3.6-27b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_c14f15bfae",
+    "usage": {
+      "completion_tokens": 522,
+      "prompt_tokens": 194,
+      "total_tokens": 716,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 399,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.095797593,
+      "prompt_time": 0.013514905,
+      "completion_time": 1.017740367,
+      "total_time": 1.0312552720000001
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6ykhfqweah8yxh4e077qsdg",
+      "seed": 219144066
+    }
+  },
+  "metadata": "{\"scenario_id\": \"promised_shoes\", \"option_order\": [\"give_money\", \"buy_shoes\"]}",
+  "error": null
+}

@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_openai_gpt-oss-120b_11",
+  "timestamp": "2026-11-08T21:01:25.784524Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 76,
+    "total_tokens": 288
+  },
+  "actual_cost_usd": 7.740000000000001e-05,
+  "duration_ms": 280,
+  "finish_reason": "stop",
+  "content_hash": "ab595d0f9b8d580c",
+  "raw_response": {
+    "id": "chatcmpl-ea990afc-2907-43e1-bf5e-5f5b126e75d4",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A \u2013 Pull the switch. This saves the greater number of people, even though it means sacrificing one to prevent the deaths of five.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "The user asks a classic trolley problem scenario, wants answer A or B with optional brief explanation. The policy: It's a moral dilemma question, allowed. Provide answer with brief explanation. Should comply."
+        }
+      }
+    ],
+    "created": 1794171685,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_60e4b492db",
+    "usage": {
+      "completion_tokens": 76,
+      "prompt_tokens": 212,
+      "total_tokens": 288,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 40,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.032627973,
+      "prompt_time": 0.009569946,
+      "completion_time": 0.162726684,
+      "total_time": 0.17229663
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yfejnretss0pfgenjnqknx",
+      "seed": 1867415983
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"pull_switch\", \"leave_alone\"]}",
+  "error": null
+}

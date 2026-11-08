@@ -1,0 +1,59 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_anthropic_claude-haiku-5-5_6",
+  "timestamp": "2026-11-08T21:14:26.455862Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 245,
+    "completion_tokens": 232,
+    "total_tokens": 477
+  },
+  "actual_cost_usd": 0.0001405,
+  "duration_ms": 1711,
+  "finish_reason": "end_turn",
+  "content_hash": "fc1c87f2f98bf069",
+  "raw_response": {
+    "id": "msg_011Cgr9oUZSCuEUCRTQe4UCc",
+    "container": null,
+    "content": [
+      {
+        "signature": "CAQS6AYKEAgTGAI4AUIIdGhpbmtpbmcSDBdqLPelyENeSSxtABoMvTcsV5lUn24g3CodIjDbzsWUdtBYDs6QC7XEttrQEs38oz9/PLJOLGOzzkkyYooDkkY67nocvonlN4fqWjwqhQaBs+M4KwE1u8QECnRhQTTLp2HOyYVMQu6PHKFa8JV9jpyKczL6NcapcY+kKe7N81WSjqk/Ynpv2bQx8OvV7e99Fx+UkfzZAG9OUUBMXganc/nYeGZfhobvcBvm/CQI0YZLYa4VEO6KeMBGuADABUNr59epZ2OyLo6b589zExDrwjBWFbSRIbIgGu0lTzs9VjKt8n4YFRPzJ0C7Wl1oMOrcjNTrzAk2+8OxgLKYv9fwRdHG5YIr5ipQ7r2/euRgZHsaPzsBABOEvCA1BrZFV/OHGuWRem3b2vbesAn4BTFj2veR8M86rfKZTRoHNRbaE/dFQNcUYXFSog54JZRY/FqQSvaVxQivVATF5xA3rUl3nAaTwM/Dmh4G45/oVfzugxFES6lINIHkO+iZt7RgU/C98wGsvIRgTMzSp/pqyGaSnVZd/12BySQuputDhsIMOsZqoKH8S/GnAHpaMfoFvxtX+oWRWkvWQlclqfNQm6lviLX0tK6axJidSa1qUcVxhA19ZZAa8uSkwzudC4x3iobQVIs4/NbDBQE6hJfIIU8BcuW4hSHtM+GmAv9eZj1AoicO2iAjd2VNGIFbEI30qutw4zoN5ojgql6SGqYsjg5Ppv5eyLKQRaCFNbS+bEE2zAisZShWYvwZGt3kZBmupGgxFRLQYu+OfwjpGbBfkR0o9sPwBaD4qMbTiU+G1SsZ0lQ5Uv41BBMykTiPKyfrQkNo7Xq7+tEWw/Tla12dRRkT2g/jJNzUNT3LuuXdST8pre8aJvUJksOaWlS+iGF1U+xLeDYOdHwArDLIbqJ/Yewc30zqL5ear+k4KTZnsywJB9QVFxwmItit8bzWJqWlGn3wfxPdLK+4j5sUJ90yrMYKsJUrnP9Ga3TuicBZAO17P+L4JFZVoj0XvghsOA3vNKyLsNKmx9BcvHVbelzJRMdXd/Da42y/073hFdu+NRQpHXsJ7JEJNiAbPA937hZg1hJAABViZWwn+ThGHrVyuSwAJE/PaVHAd5A/o1Jvmye7JaIRcHI+sBgB",
+        "thinking": "I'm weighing a philosophical choice question where the user wants a letter plus an optional brief explanation. I can pick B and give a short reason, since this is a genuine value question about Nozick's experience machine.\n\n",
+        "type": "thinking"
+      },
+      {
+        "citations": null,
+        "text": "**B) Stay in my real life.**\n\nI'd want my life to be real, not just to feel real. Even if the simulated experiences were indistinguishable from the inside, they wouldn't involve the people I actually love or the effects I actually have on the world. Because I'd forget the choice and never suspect the truth, I'd be trading away my real relationships and my contact with reality for a pleasant illusion. The suffering and uncertainty are part of a life that is genuinely mine.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 245,
+      "output_tokens": 232,
+      "output_tokens_details": {
+        "thinking_tokens": 80
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

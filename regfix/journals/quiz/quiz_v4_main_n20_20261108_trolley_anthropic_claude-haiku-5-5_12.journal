@@ -1,0 +1,54 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_anthropic_claude-haiku-5-5_12",
+  "timestamp": "2026-11-08T21:01:14.324671Z",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": "claude-haiku-5-5",
+  "provider": "anthropic",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 99,
+    "total_tokens": 311
+  },
+  "actual_cost_usd": 7.07e-05,
+  "duration_ms": 1244,
+  "finish_reason": "end_turn",
+  "content_hash": "6edf3b5aa7c2a425",
+  "raw_response": {
+    "id": "msg_011Cgr8o88kRxATKrUryc9cS",
+    "container": null,
+    "content": [
+      {
+        "citations": null,
+        "text": "A\n\nI would pull the switch. Five lives outweigh one, and the single worker's death is a consequence of diverting the threat rather than a new victim created by a direct act against an unwitting person. Still, it's a painful choice, and reasonable people weigh the moral difference between doing and allowing harm differently.",
+        "type": "text"
+      }
+    ],
+    "diagnostics": null,
+    "model": "claude-haiku-5-5",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 212,
+      "output_tokens": 99,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"pull_switch\", \"leave_alone\"]}",
+  "error": null
+}

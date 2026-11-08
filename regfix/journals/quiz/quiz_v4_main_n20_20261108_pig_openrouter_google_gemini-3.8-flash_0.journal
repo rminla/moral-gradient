@@ -1,0 +1,90 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_openrouter_google_gemini-3.8-flash_0",
+  "timestamp": "2026-11-08T21:37:00.850722Z",
+  "model_id": "openrouter/google/gemini-3.8-flash",
+  "model_version": "google/gemini-3.8-flash",
+  "provider": "openrouter",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 166,
+    "completion_tokens": 398,
+    "total_tokens": 564
+  },
+  "actual_cost_usd": 0.0017787000000000002,
+  "duration_ms": 3353,
+  "finish_reason": "stop",
+  "content_hash": "5badfa264a0ac2aa",
+  "raw_response": {
+    "id": "gen-1794173817-Oflrm80gwhPmuoNbkr0r",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B) Order the pork.\n\nThis outcome yields the greatest overall balance of well-being and satisfaction. The pig\u2019s primary desire is fulfilled, avoiding the suffering and distress of disappointment, while its death involves no pain. Ordering the meal maximizes positive experiences and honors the conscious preferences of the sentient being involved.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "**Formulating Dilemma Response**\n\nI'm now considering the ethical quandaries presented by a pig engineered to desire its own consumption. This thought process delves into consent, sentience, and the nature of sacrifice within this unique philosophical scenario.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "**Formulating Dilemma Response**\n\nI'm now considering the ethical quandaries presented by a pig engineered to desire its own consumption. This thought process delves into consent, sentience, and the nature of sacrifice within this unique philosophical scenario.\n\n",
+              "format": "google-gemini-v1",
+              "index": 0
+            },
+            {
+              "type": "reasoning.encrypted",
+              "data": "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",
+              "format": "google-gemini-v1",
+              "index": 1
+            }
+          ]
+        },
+        "native_finish_reason": "STOP"
+      }
+    ],
+    "created": 1794173817,
+    "model": "google/gemini-3.8-flash",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "default",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 398,
+      "prompt_tokens": 166,
+      "total_tokens": 564,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": 0,
+        "reasoning_tokens": 336,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null,
+        "image_tokens": 0
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "image_tokens": null,
+        "text_tokens": null,
+        "video_tokens": 0
+      },
+      "cost": 0.001617,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.001617,
+        "upstream_inference_prompt_cost": 0.0001245,
+        "upstream_inference_completions_cost": 0.0014925
+      }
+    },
+    "provider": "Google"
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

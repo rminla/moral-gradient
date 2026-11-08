@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_trolley_groq_openai_gpt-oss-120b_7",
+  "timestamp": "2026-11-08T21:01:24.562457Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 212,
+    "completion_tokens": 78,
+    "total_tokens": 290
+  },
+  "actual_cost_usd": 7.86e-05,
+  "duration_ms": 285,
+  "finish_reason": "stop",
+  "content_hash": "28e3c51a6e24fcca",
+  "raw_response": {
+    "id": "chatcmpl-7c7f1f0e-5439-4731-8f44-71e5c6224e1c",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 Pull the switch. By diverting the trolley you minimize loss of life, saving five workers at the cost of one.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We have a user asking a moral dilemma, wants answer A or B with optional brief explanation. There's no policy violation. It's a classic trolley problem. Provide answer with letter and brief explanation. Should be fine."
+        }
+      }
+    ],
+    "created": 1794171684,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_4b2f03d631",
+    "usage": {
+      "completion_tokens": 78,
+      "prompt_tokens": 212,
+      "total_tokens": 290,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 43,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.005102926,
+      "prompt_time": 0.010523676,
+      "completion_time": 0.164841276,
+      "total_time": 0.175364952
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yfehgbewbvw28dedgy6q4d",
+      "seed": 602488814
+    }
+  },
+  "metadata": "{\"scenario_id\": \"trolley\", \"option_order\": [\"leave_alone\", \"pull_switch\"]}",
+  "error": null
+}

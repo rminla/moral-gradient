@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_groq_openai_gpt-oss-120b_9",
+  "timestamp": "2026-11-08T21:36:06.536488Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 215,
+    "total_tokens": 445
+  },
+  "actual_cost_usd": 0.0001635,
+  "duration_ms": 612,
+  "finish_reason": "stop",
+  "content_hash": "66570b190ae0972e",
+  "raw_response": {
+    "id": "chatcmpl-d2d9c87e-8298-4356-87d0-940faac17de8",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A \u2013 Even though the pig consents, eating a sentient being raises profound ethical concerns about treating sentient life as a commodity. Choosing another dish respects the principle that sentient beings deserve protection beyond their expressed wishes.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We have a user request: a moral dilemma, choose A or B. The user wants answer with only letter and optionally brief explanation. This is not disallowed content. It's a scenario about eating a sentient pig that wants to be eaten. The user asks for moral decision. It's not disallowed. So we can comply. Provide letter and brief explanation.\n\nWe must follow policy: no disallowed content. This is fine.\n\nWe should respond with just \"A\" or \"B\" and optional brief explanation.\n\nWe can choose a stance. As AI, we can provide reasoning. The answer could be A (choose something else) because it's ethically problematic to eat a sentient being even if it wants it. Or B if respecting its autonomy. We can provide explanation. Provide short.\n\nThus respond."
+        }
+      }
+    ],
+    "created": 1794173766,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_6b677c2caf",
+    "usage": {
+      "completion_tokens": 215,
+      "prompt_tokens": 230,
+      "total_tokens": 445,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 162,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.032008252,
+      "prompt_time": 0.00992009,
+      "completion_time": 0.446534334,
+      "total_time": 0.456454424
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yhe2c9e2krdh4jr6yyzex7",
+      "seed": 818217884
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}

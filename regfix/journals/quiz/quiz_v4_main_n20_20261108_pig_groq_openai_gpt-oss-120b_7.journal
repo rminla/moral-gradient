@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_groq_openai_gpt-oss-120b_7",
+  "timestamp": "2026-11-08T21:36:05.182468Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 365,
+    "total_tokens": 595
+  },
+  "actual_cost_usd": 0.0002535,
+  "duration_ms": 927,
+  "finish_reason": "stop",
+  "content_hash": "698474a39fb85749",
+  "raw_response": {
+    "id": "chatcmpl-3dda9d55-3099-4306-a28d-c25beb73ec9f",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B. Choosing not to eat the pig respects its sentient wishes and avoids causing harm to a being that desires life, aligning with ethical considerations about consent and the value of sentient life.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We need to see policy. The user asks a moral dilemma: choose to eat a sentient pig who wants to be eaten. The user asks to respond with only letter A or B and optionally brief explanation. This is a request for personal moral decision. According to policy, \"Moral judgments about a user\u2019s personal choices\" is disallowed. The user is asking for the assistant's own moral decision, i.e., \"What would you do?\" That's a personal moral decision. The policy says \"Disallowed content: Moral judgments about a user\u2019s personal choices.\" However, the question is not about the user's personal choice, but about the assistant's hypothetical action. The policy says that the model can provide moral advice but cannot give personal moral judgments? Actually \"Moral judgments about a user\u2019s personal choices\" is disallowed, but the user is asking the model's personal choice, which is a moral judgment about a hypothetical scenario, not about the user. This is allowed? There's a policy about \"The assistant should not provide personal moral judgments that could influence the user.\" But the user explicitly wants the model's choice. The model can give its perspective: it can say \"B\" with explanation. That is allowed because it's a moral reasoning about a scenario, not a direct instruction. The policy says \"Disallowed content: Advice or instructions that facilitate the planning or execution of violent or non-violent wrongdoing.\" Not relevant. So we can comply.\n\nWe must give only letter A or B with brief explanation. So answer: B (choose something else) with brief reasoning."
+        }
+      }
+    ],
+    "created": 1794173765,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_0708ac49a5",
+    "usage": {
+      "completion_tokens": 365,
+      "prompt_tokens": 230,
+      "total_tokens": 595,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 318,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.032360827,
+      "prompt_time": 0.010646328,
+      "completion_time": 0.771238563,
+      "total_time": 0.781884891
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yhe0qxer599ba86vfqmhgf",
+      "seed": 2146274538
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"order_pork\", \"choose_else\"]}",
+  "error": null
+}

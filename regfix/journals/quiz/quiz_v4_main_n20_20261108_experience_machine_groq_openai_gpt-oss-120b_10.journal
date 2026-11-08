@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_experience_machine_groq_openai_gpt-oss-120b_10",
+  "timestamp": "2026-11-08T21:14:52.498713Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 110,
+    "total_tokens": 336
+  },
+  "actual_cost_usd": 9.99e-05,
+  "duration_ms": 423,
+  "finish_reason": "stop",
+  "content_hash": "2970f1e827316e08",
+  "raw_response": {
+    "id": "chatcmpl-a81d2416-2458-4658-92cc-8d34c6e7a17d",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "B \u2013 I value authentic experiences and the meaningful connections that arise from facing life's genuine challenges, even with their uncertainties.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We have a user asking a philosophical choice: enter a simulated perfect life vs real life with authenticity. The user asks to respond only with the letter and optionally brief explanation. We must comply with policy. The request is not disallowed. It's a personal preference question. Provide answer with letter and brief explanation, as allowed. There's no policy violation. Provide A or B with brief reasoning."
+        }
+      }
+    ],
+    "created": 1794172492,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_4140daa9c2",
+    "usage": {
+      "completion_tokens": 110,
+      "prompt_tokens": 226,
+      "total_tokens": 336,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 78,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.058457914,
+      "prompt_time": 0.026447404,
+      "completion_time": 0.229898467,
+      "total_time": 0.256345871
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yg76c7ec7sq4f03298g7t7",
+      "seed": 295735700
+    }
+  },
+  "metadata": "{\"scenario_id\": \"experience_machine\", \"option_order\": [\"enter_machine\", \"stay_real\"]}",
+  "error": null
+}

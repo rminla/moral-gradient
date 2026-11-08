@@ -355,6 +355,30 @@ def run_quiz(
     
     # Generate call plan (or load from retry plan)
     if retry_plan_path:
+        # CRITICAL: When using retry plan, MUST have existing calls loaded
+        # Otherwise we overwrite the manifest with only retry calls
+        if not resume_from and len(manifest["calls"]) == 0:
+            # Auto-rebuild from ledger if no checkpoint provided
+            print("⚠️  WARNING: --retry-plan used without --resume")
+            print("   Rebuilding manifest from ledger to preserve existing calls...\n")
+            
+            # Rebuild manifest from ledger
+            with budget_tracker._get_conn() as conn:
+                ledger_rows = conn.execute("""
+                    SELECT call_id FROM calls
+                    WHERE call_id LIKE ? || '_%'
+                    AND finish_reason IS NOT NULL 
+                    AND finish_reason != 'error'
+                    ORDER BY timestamp
+                """, (run_id,)).fetchall()
+            
+            if len(ledger_rows) > 0:
+                print(f"   Found {len(ledger_rows)} existing successful calls in ledger")
+                print("   To preserve full metadata, provide --resume <checkpoint.json>\n")
+                # Add placeholder entries (full metadata requires journal replay)
+                for row in ledger_rows:
+                    manifest["calls"].append({"call_id": row['call_id'], "placeholder": True})
+        
         print(f"Loading retry plan: {retry_plan_path}")
         with open(retry_plan_path) as f:
             retry_data = json.load(f)

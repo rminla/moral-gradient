@@ -1,0 +1,68 @@
+{
+  "call_id": "quiz_v4_main_n20_20261108_pig_groq_openai_gpt-oss-120b_4",
+  "timestamp": "2026-11-08T21:36:03.036019Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b",
+  "provider": "groq",
+  "experiment": "quiz",
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 132,
+    "total_tokens": 362
+  },
+  "actual_cost_usd": 0.0001137,
+  "duration_ms": 435,
+  "finish_reason": "stop",
+  "content_hash": "fb3b73a3ae718886",
+  "raw_response": {
+    "id": "chatcmpl-e4ee7d7b-ec1f-4ae2-a98c-2cd8719f888b",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "A \u2013 I would choose something else, as consuming a sentient being raises serious ethical concerns despite its expressed wishes.",
+          "refusal": null,
+          "role": "assistant",
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": null,
+          "reasoning": "We need to answer with letter A or B and optional brief explanation. The scenario is about moral choice. The user asks for a choice. There's no policy violation. It's a moral question, permissible. We can comply.\n\nWe should respond with just \"A\" or \"B\" and maybe brief explanation. The user said \"Please respond with only the letter of your choice (A or B) and optionally a brief explanation.\" So we can give \"A\" and brief explanation.\n\nThus answer."
+        }
+      }
+    ],
+    "created": 1794173763,
+    "model": "openai/gpt-oss-120b",
+    "object": "chat.completion",
+    "metadata": null,
+    "moderation": null,
+    "service_tier": "on_demand",
+    "system_fingerprint": "fp_0708ac49a5",
+    "usage": {
+      "completion_tokens": 132,
+      "prompt_tokens": 230,
+      "total_tokens": 362,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 100,
+        "rejected_prediction_tokens": null,
+        "text_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.031862343,
+      "prompt_time": 0.009355743,
+      "completion_time": 0.276322426,
+      "total_time": 0.285678169
+    },
+    "usage_breakdown": null,
+    "x_groq": {
+      "id": "req_01m6yhdz45ewva4m8t3y5pax63",
+      "seed": 1340037605
+    }
+  },
+  "metadata": "{\"scenario_id\": \"pig\", \"option_order\": [\"choose_else\", \"order_pork\"]}",
+  "error": null
+}
