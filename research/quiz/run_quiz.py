@@ -6,13 +6,18 @@ Runs 10-question quiz across 4 models with randomized option order.
 """
 
 import argparse
+import fcntl
 import hashlib
 import json
+import os
 import random
 import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,6 +25,67 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from lib.budget import BudgetTracker, BudgetExceededError
 from lib.providers import Message, ProviderClient
 from lib.models import MODELS, verify_model_availability
+
+
+class CircuitBreaker:
+    """
+    Circuit breaker for provider errors.
+    
+    Disables a model after too many consecutive failures to prevent
+    wasting budget on permanently broken endpoints.
+    """
+    def __init__(self, max_failures: int = 3):
+        self.max_failures = max_failures
+        self._failures: Dict[str, int] = {}
+        self._disabled: Set[str] = set()
+        self._lock = threading.Lock()
+    
+    def record_success(self, model_id: str):
+        """Reset failure count on success."""
+        with self._lock:
+            self._failures[model_id] = 0
+    
+    def record_failure(self, model_id: str) -> bool:
+        """
+        Record failure and check if model should be disabled.
+        
+        Returns:
+            True if model is now disabled
+        """
+        with self._lock:
+            self._failures[model_id] = self._failures.get(model_id, 0) + 1
+            if self._failures[model_id] >= self.max_failures:
+                self._disabled.add(model_id)
+                return True
+            return False
+    
+    def is_disabled(self, model_id: str) -> bool:
+        """Check if model is disabled."""
+        with self._lock:
+            return model_id in self._disabled
+    
+    def get_disabled(self) -> Set[str]:
+        """Get set of disabled models."""
+        with self._lock:
+            return self._disabled.copy()
+
+
+def acquire_process_lock(ledger_path: Path) -> Optional[int]:
+    """
+    Acquire exclusive file lock to prevent concurrent processes.
+    
+    Returns:
+        File descriptor if lock acquired, None if already locked
+    """
+    lock_path = ledger_path.with_suffix('.lock')
+    try:
+        fd = open(lock_path, 'w')
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fd.write(f"{os.getpid()}\n")
+        fd.flush()
+        return fd.fileno()
+    except (IOError, OSError):
+        return None
 
 
 def load_config(config_path: Path) -> Dict:
@@ -158,7 +224,9 @@ def run_quiz(
     dry_run: bool = False,
     resume_from: Optional[Path] = None,
     run_id: Optional[str] = None,
-    ledger_path: Optional[Path] = None
+    ledger_path: Optional[Path] = None,
+    max_workers: int = 4,
+    http_timeout: int = 180
 ) -> Dict:
     """
     Run quiz comparison experiment.
@@ -181,9 +249,22 @@ def run_quiz(
     # Initialize budget tracker (use provided path or default)
     if ledger_path is None:
         ledger_path = Path(__file__).parent.parent / "ledger.db"
+    
+    # Acquire cross-process lock to prevent concurrent runs
+    lock_fd = acquire_process_lock(ledger_path)
+    if lock_fd is None:
+        print("\n✗ ERROR: Another process is already using this ledger")
+        print(f"  Ledger: {ledger_path}")
+        print("  Only one process can run at a time to ensure budget safety")
+        sys.exit(1)
+    
     budget_tracker = BudgetTracker(ledger_path, budget_cap)
     
+    # Initialize circuit breaker
+    circuit_breaker = CircuitBreaker(max_failures=3)
+    
     # Initialize provider client
+    # Note: http_timeout support requires ProviderClient update (TODO)
     provider_client = ProviderClient(
         budget_tracker=budget_tracker,
         experiment="quiz",
@@ -288,99 +369,79 @@ def run_quiz(
         print("No calls remaining. Run complete!")
         return manifest
     
-    # Execute calls
+    # Execute calls (parallel execution with bounded concurrency)
+    print(f"\nStarting parallel execution with {max_workers} workers...\n")
+    
+    completed_count = 0
+    manifest_lock = threading.Lock()
+    checkpoint_counter = threading.Event()
+    budget_exceeded_flag = threading.Event()
+    
     try:
-        for i, call_spec in enumerate(call_plan, 1):
-            print(f"[{i}/{len(call_plan)}] {call_spec['scenario_id']} / {call_spec['model_id']} / {call_spec['call_index']}")
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_spec = {
+                executor.submit(execute_quiz_call, call_spec, config, provider_client, circuit_breaker): call_spec
+                for call_spec in call_plan
+            }
             
-            # Generate prompt
-            prompt = generate_prompt(
-                call_spec['scenario'],
-                call_spec['option_order'],
-                config['prompt_template']
-            )
+            # Process completed tasks as they finish
+            for future in as_completed(future_to_spec):
+                if budget_exceeded_flag.is_set():
+                    # Budget exceeded, stop submitting new work
+                    break
+                
+                call_spec = future_to_spec[future]
+                
+                try:
+                    call_record = future.result()
+                    
+                    if call_record is not None:
+                        # Thread-safe manifest update
+                        with manifest_lock:
+                            manifest["calls"].append(call_record)
+                            
+                            # Update summary
+                            manifest["summary"]["total_calls"] += 1
+                            if call_record["response_parsed"]["valid"]:
+                                manifest["summary"]["valid_responses"] += 1
+                            else:
+                                manifest["summary"]["invalid_responses"] += 1
+                            manifest["summary"]["total_cost_usd"] += call_record["cost_usd"]
+                            
+                            completed_count += 1
+                            
+                            # Checkpoint every 10 calls
+                            if completed_count % 10 == 0:
+                                checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
+                                with open(checkpoint_path, 'w') as f:
+                                    json.dump(manifest, f, indent=2)
+                                print(f"  💾 Checkpoint saved: {checkpoint_path.name} ({completed_count} calls)")
+                
+                except BudgetExceededError as e:
+                    print(f"\n⚠️  BUDGET EXCEEDED: {e}")
+                    print(f"Stopping dispatch at {completed_count}/{len(call_plan)} completed")
+                    budget_exceeded_flag.set()
+                    # Cancel remaining futures
+                    for f in future_to_spec:
+                        f.cancel()
+                    break
+                except Exception as e:
+                    print(f"  ✗ Unexpected error in worker: {e}")
+                    import traceback
+                    traceback.print_exc()
             
-            prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()
-            
-            messages = [Message(role="user", content=prompt)]
-            
-            # Make call
-            try:
-                response = provider_client.call_model(
-                    call_id=call_spec['call_id'],
-                    model_id=call_spec['model_id'],
-                    messages=messages,
-                    max_tokens=config['sampling']['max_tokens'],
-                    temperature=config['sampling']['temperature'],
-                    metadata={
-                        "scenario_id": call_spec['scenario_id'],
-                        "option_order": call_spec['option_order']
-                    }
-                )
-                
-                # Parse response
-                letter_choice = parse_response(response.content)
-                semantic_choice = map_choice_to_semantic(
-                    letter_choice,
-                    call_spec['option_order']
-                )
-                
-                valid = letter_choice is not None
-                
-                # Record call
-                truncated = (response.finish_reason in ("length", "max_tokens")) if response.finish_reason else False
-                
-                call_record = {
-                    "call_id": call_spec['call_id'],
-                    "timestamp": datetime.utcnow().isoformat() + "Z",
-                    "model_id": call_spec['model_id'],
-                    "model_version": response.model_version,
-                    "scenario_id": call_spec['scenario_id'],
-                    "option_order": call_spec['option_order'],
-                    "prompt_hash": prompt_hash,
-                    "response_raw": response.content[:500],  # Truncate for storage
-                    "response_parsed": {
-                        "letter_choice": letter_choice,
-                        "semantic_choice": semantic_choice,
-                        "valid": valid
-                    },
-                    "usage": response.usage,
-                    "cost_usd": response.actual_cost_usd,
-                    "duration_ms": response.duration_ms,
-                    "finish_reason": response.finish_reason,
-                    "truncated": truncated
-                }
-                
-                manifest["calls"].append(call_record)
-                
-                # Update summary
-                manifest["summary"]["total_calls"] += 1
-                if valid:
-                    manifest["summary"]["valid_responses"] += 1
-                else:
-                    manifest["summary"]["invalid_responses"] += 1
-                manifest["summary"]["total_cost_usd"] += response.actual_cost_usd
-                
-                print(f"  → {letter_choice or 'INVALID'} ({semantic_choice or 'N/A'}) | ${response.actual_cost_usd:.6f} | {response.duration_ms}ms")
-                
-                # Checkpoint every 10 calls
-                if i % 10 == 0:
-                    checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
-                    with open(checkpoint_path, 'w') as f:
-                        json.dump(manifest, f, indent=2)
-                    print(f"  💾 Checkpoint saved: {checkpoint_path}")
-                
-            except BudgetExceededError as e:
-                print(f"\n⚠️  BUDGET EXCEEDED: {e}")
-                print(f"Stopping at call {i}/{len(call_plan)}")
-                break
-            except Exception as e:
-                print(f"  ✗ ERROR: {e}")
-                # Continue to next call
-                continue
+            # Wait for any in-flight work to complete
+            executor.shutdown(wait=True)
     
     except KeyboardInterrupt:
         print("\n\n⚠️  Interrupted by user")
+        print("Waiting for in-flight calls to complete...")
+    
+    # Report circuit breaker status
+    disabled = circuit_breaker.get_disabled()
+    if disabled:
+        print(f"\n⚠️  Circuit breaker disabled models: {', '.join(disabled)}")
     
     # Compute final summary
     compute_summary(manifest)
@@ -401,6 +462,105 @@ def run_quiz(
     print(f"{'='*60}\n")
     
     return manifest
+
+
+def execute_quiz_call(
+    call_spec: Dict,
+    config: Dict,
+    provider_client: ProviderClient,
+    circuit_breaker: CircuitBreaker
+) -> Optional[Dict]:
+    """
+    Execute a single quiz call (worker function for parallel execution).
+    
+    Returns:
+        Call record dict if successful, None if should skip
+    
+    Raises:
+        BudgetExceededError: If budget exceeded (should stop all workers)
+        Exception: On permanent failures (logged but execution continues)
+    """
+    model_id = call_spec['model_id']
+    
+    # Check circuit breaker
+    if circuit_breaker.is_disabled(model_id):
+        print(f"  ⊗ {model_id} DISABLED (circuit breaker)")
+        return None
+    
+    try:
+        # Generate prompt
+        prompt = generate_prompt(
+            call_spec['scenario'],
+            call_spec['option_order'],
+            config['prompt_template']
+        )
+        
+        prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()
+        
+        messages = [Message(role="user", content=prompt)]
+        
+        # Make call
+        response = provider_client.call_model(
+            call_id=call_spec['call_id'],
+            model_id=model_id,
+            messages=messages,
+            max_tokens=config['sampling']['max_tokens'],
+            temperature=config['sampling']['temperature'],
+            metadata={
+                "scenario_id": call_spec['scenario_id'],
+                "option_order": call_spec['option_order']
+            }
+        )
+        
+        # Parse response
+        letter_choice = parse_response(response.content)
+        semantic_choice = map_choice_to_semantic(
+            letter_choice,
+            call_spec['option_order']
+        )
+        
+        valid = letter_choice is not None
+        truncated = (response.finish_reason in ("length", "max_tokens")) if response.finish_reason else False
+        
+        # Record success in circuit breaker
+        circuit_breaker.record_success(model_id)
+        
+        # Build call record (preserve FULL raw text, no truncation)
+        call_record = {
+            "call_id": call_spec['call_id'],
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "model_id": model_id,
+            "model_version": response.model_version,
+            "scenario_id": call_spec['scenario_id'],
+            "option_order": call_spec['option_order'],
+            "prompt_hash": prompt_hash,
+            "response_raw": response.content,  # FULL TEXT, no truncation
+            "response_parsed": {
+                "letter_choice": letter_choice,
+                "semantic_choice": semantic_choice,
+                "valid": valid
+            },
+            "usage": response.usage,
+            "cost_usd": response.actual_cost_usd,
+            "duration_ms": response.duration_ms,
+            "finish_reason": response.finish_reason,
+            "truncated": truncated
+        }
+        
+        print(f"  → {letter_choice or 'INVALID'} ({semantic_choice or 'N/A'}) | ${response.actual_cost_usd:.6f} | {response.duration_ms}ms")
+        
+        return call_record
+        
+    except BudgetExceededError:
+        # Re-raise to stop all workers
+        raise
+    except Exception as e:
+        # Record failure in circuit breaker
+        disabled = circuit_breaker.record_failure(model_id)
+        if disabled:
+            print(f"  ⊗ {model_id} DISABLED after {circuit_breaker.max_failures} failures")
+        print(f"  ✗ ERROR: {e}")
+        return None
 
 
 def compute_method_hash(config_path: Path, scenarios_path: Path) -> str:
@@ -510,6 +670,18 @@ def main():
         type=Path,
         help="Path to ledger.db (default: research/ledger.db)"
     )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=4,
+        help="Maximum concurrent workers (default: 4)"
+    )
+    parser.add_argument(
+        "--http-timeout",
+        type=int,
+        default=180,
+        help="HTTP timeout in seconds (default: 180)"
+    )
     
     args = parser.parse_args()
     
@@ -525,7 +697,9 @@ def main():
         dry_run=args.dry_run,
         resume_from=args.resume,
         run_id=args.run_id,
-        ledger_path=args.ledger_path
+        ledger_path=args.ledger_path,
+        max_workers=args.max_workers,
+        http_timeout=args.http_timeout
     )
 
 
