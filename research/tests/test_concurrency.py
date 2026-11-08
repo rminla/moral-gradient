@@ -2,6 +2,8 @@
 
 import json
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -277,6 +279,68 @@ def test_duplicate_call_id_rejection():
         
         # Only ONE should succeed
         assert success_count.value == 1
+
+
+def test_cross_process_lock():
+    """Test that second process cannot acquire lock while first holds it."""
+    import subprocess
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ledger_path = Path(tmpdir) / "ledger.db"
+        
+        # Create a script that acquires lock and sleeps
+        lock_script = Path(tmpdir) / "hold_lock.py"
+        lock_script.write_text("""
+import sys
+import time
+sys.path.insert(0, '/agent/repos/moral-gradient/research')
+from pathlib import Path
+from quiz.run_quiz import acquire_process_lock
+
+ledger_path = Path(sys.argv[1])
+lock_file = acquire_process_lock(ledger_path)
+if lock_file:
+    print("ACQUIRED", flush=True)
+    time.sleep(2)  # Hold lock for 2 seconds
+    lock_file.close()
+    print("RELEASED", flush=True)
+else:
+    print("BLOCKED", flush=True)
+    sys.exit(1)
+""")
+        
+        # Start first process
+        proc1 = subprocess.Popen(
+            [sys.executable, str(lock_script), str(ledger_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Wait for first process to acquire lock
+        time.sleep(0.2)
+        
+        # Try to acquire with second process (should fail)
+        proc2 = subprocess.Popen(
+            [sys.executable, str(lock_script), str(ledger_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Wait for both to complete
+        out1, err1 = proc1.communicate(timeout=5)
+        out2, err2 = proc2.communicate(timeout=5)
+        
+        print(f"\nProcess 1 output: {out1}")
+        print(f"Process 2 output: {out2}")
+        
+        # First should succeed, second should be blocked
+        assert "ACQUIRED" in out1
+        assert "RELEASED" in out1
+        assert "BLOCKED" in out2
+        assert proc1.returncode == 0
+        assert proc2.returncode == 1
 
 
 if __name__ == "__main__":

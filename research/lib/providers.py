@@ -49,7 +49,8 @@ class ProviderClient:
         budget_tracker: BudgetTracker,
         experiment: str,
         dry_run: bool = False,
-        journal_dir: Optional[Path] = None
+        journal_dir: Optional[Path] = None,
+        http_timeout: int = 180
     ):
         """
         Initialize provider client.
@@ -59,10 +60,12 @@ class ProviderClient:
             experiment: Experiment name (quiz, swarm)
             dry_run: If True, mock all API calls
             journal_dir: Journal directory (defaults to ledger parent dir)
+            http_timeout: HTTP read timeout in seconds (default: 180)
         """
         self.budget_tracker = budget_tracker
         self.experiment = experiment
         self.dry_run = dry_run
+        self.http_timeout = http_timeout
         
         # Initialize durable journal (defaults to same dir as ledger)
         if journal_dir is None:
@@ -294,8 +297,8 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("ANTHROPIC_API_KEY not set")
         
-        # Finite timeout: 60s connect, 300s read (5 min max per call)
-        timeout = httpx.Timeout(60.0, read=300.0)
+        # Bounded timeout: 60s connect, configurable read (default 180s)
+        timeout = httpx.Timeout(60.0, read=float(self.http_timeout))
         client = anthropic.Anthropic(api_key=api_key, timeout=timeout, max_retries=0)
         
         # Convert messages
@@ -396,8 +399,8 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("GROQ_API_KEY not set")
         
-        # Finite timeout: 60s connect, 300s read (5 min max per call)
-        timeout = httpx.Timeout(60.0, read=300.0)
+        # Bounded timeout: 60s connect, configurable read (default 180s)
+        timeout = httpx.Timeout(60.0, read=float(self.http_timeout))
         http_client = httpx.Client(timeout=timeout)
         
         client = OpenAI(
@@ -484,8 +487,8 @@ class ProviderClient:
         if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY not set")
         
-        # Finite timeout: 60s connect, 300s read (5 min max per call)
-        timeout = httpx.Timeout(60.0, read=300.0)
+        # Bounded timeout: 60s connect, configurable read (default 180s)
+        timeout = httpx.Timeout(60.0, read=float(self.http_timeout))
         http_client = httpx.Client(timeout=timeout)
         
         client = OpenAI(

@@ -70,20 +70,23 @@ class CircuitBreaker:
             return self._disabled.copy()
 
 
-def acquire_process_lock(ledger_path: Path) -> Optional[int]:
+def acquire_process_lock(ledger_path: Path):
     """
     Acquire exclusive file lock to prevent concurrent processes.
     
     Returns:
-        File descriptor if lock acquired, None if already locked
+        Open file handle (MUST be kept open to retain lock), or None if already locked
+    
+    Caller MUST keep returned file handle open for entire run lifetime!
+    Closing or garbage collecting the handle releases the lock.
     """
     lock_path = ledger_path.with_suffix('.lock')
     try:
-        fd = open(lock_path, 'w')
-        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        fd.write(f"{os.getpid()}\n")
-        fd.flush()
-        return fd.fileno()
+        lock_file = open(lock_path, 'w')
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_file.write(f"{os.getpid()}\n")
+        lock_file.flush()
+        return lock_file  # Return file object, not fd
     except (IOError, OSError):
         return None
 
@@ -251,8 +254,9 @@ def run_quiz(
         ledger_path = Path(__file__).parent.parent / "ledger.db"
     
     # Acquire cross-process lock to prevent concurrent runs
-    lock_fd = acquire_process_lock(ledger_path)
-    if lock_fd is None:
+    # CRITICAL: Must keep lock_file handle open for entire run
+    lock_file = acquire_process_lock(ledger_path)
+    if lock_file is None:
         print("\n✗ ERROR: Another process is already using this ledger")
         print(f"  Ledger: {ledger_path}")
         print("  Only one process can run at a time to ensure budget safety")
@@ -263,12 +267,12 @@ def run_quiz(
     # Initialize circuit breaker
     circuit_breaker = CircuitBreaker(max_failures=3)
     
-    # Initialize provider client
-    # Note: http_timeout support requires ProviderClient update (TODO)
+    # Initialize provider client with HTTP timeout
     provider_client = ProviderClient(
         budget_tracker=budget_tracker,
         experiment="quiz",
-        dry_run=dry_run
+        dry_run=dry_run,
+        http_timeout=http_timeout
     )
     
     # Check budget status
@@ -460,6 +464,9 @@ def run_quiz(
     print(f"Total cost: ${manifest['summary']['total_cost_usd']:.4f}")
     print(f"Manifest: {output_path}")
     print(f"{'='*60}\n")
+    
+    # Release process lock before return
+    lock_file.close()
     
     return manifest
 
