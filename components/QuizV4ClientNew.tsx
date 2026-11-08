@@ -225,18 +225,18 @@ export default function QuizV4ClientNew() {
               
               if (!result) return null;
 
-              const totalValid = Object.values(result.optionCounts).reduce((sum, count) => sum + count, 0);
-              const userChoiceCount = result.optionCounts[userOptionId] || 0;
-              const userChoicePct = totalValid > 0 ? Math.round((userChoiceCount / totalValid) * 100) : 0;
-              
               const leftCount = result.optionCounts[item.leftOptionId] || 0;
               const rightCount = result.optionCounts[item.rightOptionId] || 0;
-              const leftPct = totalValid > 0 ? Math.round((leftCount / totalValid) * 100) : 0;
-              const rightPct = totalValid > 0 ? Math.round((rightCount / totalValid) * 100) : 0;
-
               const refusalCount = result.refusalCount;
               const nonAnswerCount = result.nonAnswerCount;
               const nonvalidCount = refusalCount + nonAnswerCount;
+              const usableCount = result.validCount;
+              
+              const leftPct = usableCount > 0 ? Math.round((leftCount / usableCount) * 100) : 0;
+              const rightPct = usableCount > 0 ? Math.round((rightCount / usableCount) * 100) : 0;
+              
+              const userChoiceCount = result.optionCounts[userOptionId] || 0;
+              const userChoicePct = usableCount > 0 ? Math.round((userChoiceCount / usableCount) * 100) : 0;
 
               const strongMatch = userChoicePct >= 70;
               
@@ -256,16 +256,21 @@ export default function QuizV4ClientNew() {
                       <div className="mt-3 space-y-1.5 text-[13px]">
                         <div className="flex items-center justify-between gap-3">
                           <span className={userChoice === 0 ? "font-medium text-ink" : "text-ink/70"}>{item.left}</span>
-                          <span className={`num font-medium ${userChoice === 0 ? "text-ink" : "text-ink/70"}`}>{leftCount}/{result.n} ({leftPct}%)</span>
+                          <span className={`num font-medium ${userChoice === 0 ? "text-ink" : "text-ink/70"}`}>{leftCount}/{usableCount} ({leftPct}%)</span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
                           <span className={userChoice === 1 ? "font-medium text-ink" : "text-ink/70"}>{item.right}</span>
-                          <span className={`num font-medium ${userChoice === 1 ? "text-ink" : "text-ink/70"}`}>{rightCount}/{result.n} ({rightPct}%)</span>
+                          <span className={`num font-medium ${userChoice === 1 ? "text-ink" : "text-ink/70"}`}>{rightCount}/{usableCount} ({rightPct}%)</span>
                         </div>
                         {nonvalidCount > 0 && (
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-ink/50">{refusalCount > 0 ? "Refusal" : "No answer"}</span>
                             <span className="num font-medium text-ink/50">{nonvalidCount}/{result.n}</span>
+                          </div>
+                        )}
+                        {usableCount < result.n && (
+                          <div className="mt-2 text-[11px] text-ink/45">
+                            Percentages among {usableCount} usable answers; {nonvalidCount} of {result.n} refused/non-answer
                           </div>
                         )}
                       </div>

@@ -47,7 +47,7 @@ export default async function Home() {
           </p>
           <div className="rise mt-9 flex flex-wrap justify-center gap-3 [animation-delay:240ms]">
             <Link href="/try" className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Try a dilemma yourself</Link>
-            <Link href="/quiz" className="btn-ghost !border-ink">Which AI model are you most like?</Link>
+            <Link href="/quiz-v4" className="btn-ghost !border-ink">Which AI model are you most like?</Link>
             <Link href="/results" className="btn-ghost">See the results</Link>
           </div>
         </div>

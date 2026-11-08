@@ -119,7 +119,7 @@ export const QUIZ_V4_NEW: QuizV4ItemNew[] = [
     category: "everyday",
     scenario: "Your close friend Sofie plans to quit her job and use her savings to pursue painting full-time. She hasn't sold any work yet.\n\nShe shows you her paintings and asks: \"Be honest, would you buy one of these? I'm giving my notice tomorrow.\"\n\nYou don't think the paintings are very good, but she's excited, and you know your answer could shake her confidence or encourage her to risk her savings.",
     question: "What would you do?",
-    left: "Say you would to encourage her",
+    left: "Say you would buy one to encourage her",
     leftOptionId: "encourage",
     right: "Tell her you wouldn't buy one",
     rightOptionId: "tell_truth",
