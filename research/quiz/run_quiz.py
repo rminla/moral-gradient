@@ -6,6 +6,7 @@ Runs 10-question quiz across 4 models with randomized option order.
 """
 
 import argparse
+import concurrent.futures
 import fcntl
 import hashlib
 import json
@@ -14,7 +15,7 @@ import random
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Set
@@ -326,7 +327,15 @@ def run_quiz(
         print(f"Resuming from: {resume_from}")
         with open(resume_from) as f:
             prev_manifest = json.load(f)
-            manifest["calls"] = prev_manifest["calls"]
+            # Support both "calls" (checkpoint) and "results" (recovery) formats
+            if "calls" in prev_manifest:
+                manifest["calls"] = prev_manifest["calls"]
+            elif "results" in prev_manifest:
+                # Recovery format - use results as calls
+                manifest["calls"] = prev_manifest["results"]
+                print("  (Loaded from recovery manifest)")
+            else:
+                raise ValueError("Resume manifest must contain 'calls' or 'results' field")
             completed_call_ids = {call["call_id"] for call in manifest["calls"]}
         print(f"  Already completed: {len(completed_call_ids)} calls\n")
     
@@ -373,69 +382,114 @@ def run_quiz(
         print("No calls remaining. Run complete!")
         return manifest
     
-    # Execute calls (parallel execution with bounded concurrency)
+    # Execute calls (bounded parallel execution with fair per-provider scheduling)
     print(f"\nStarting parallel execution with {max_workers} workers...\n")
+    print(f"Fair scheduling: max 1 call per model in-flight\n")
     
     completed_count = 0
     manifest_lock = threading.Lock()
-    checkpoint_counter = threading.Event()
     budget_exceeded_flag = threading.Event()
+    fatal_storage_flag = threading.Event()
+    
+    # Per-model semaphores for fair scheduling (max 1 concurrent per model)
+    model_semaphores = {}
+    for call_spec in call_plan:
+        model_id = call_spec['model_id']
+        if model_id not in model_semaphores:
+            model_semaphores[model_id] = threading.Semaphore(1)
     
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all tasks
-            future_to_spec = {
-                executor.submit(execute_quiz_call, call_spec, config, provider_client, circuit_breaker): call_spec
-                for call_spec in call_plan
-            }
+            # Bounded submission queue - submit in batches to avoid overwhelming
+            pending_futures = {}
+            submitted_count = 0
+            call_queue = list(call_plan)
             
-            # Process completed tasks as they finish
-            for future in as_completed(future_to_spec):
-                if budget_exceeded_flag.is_set():
-                    # Budget exceeded, stop submitting new work
+            # Initial batch submission (fill worker pool)
+            while len(pending_futures) < max_workers and call_queue:
+                call_spec = call_queue.pop(0)
+                future = executor.submit(
+                    execute_quiz_call, call_spec, config, provider_client, circuit_breaker
+                )
+                pending_futures[future] = call_spec
+                submitted_count += 1
+            
+            # Process completed tasks and submit new ones
+            while pending_futures:
+                if budget_exceeded_flag.is_set() or fatal_storage_flag.is_set():
+                    # Stop submitting new work
                     break
                 
-                call_spec = future_to_spec[future]
+                # Wait for next completion
+                done, _ = concurrent.futures.wait(
+                    pending_futures.keys(),
+                    return_when=concurrent.futures.FIRST_COMPLETED
+                )
                 
-                try:
-                    call_record = future.result()
+                for future in done:
+                    call_spec = pending_futures.pop(future)
                     
-                    if call_record is not None:
-                        # Thread-safe manifest update
-                        with manifest_lock:
-                            manifest["calls"].append(call_record)
-                            
-                            # Update summary
-                            manifest["summary"]["total_calls"] += 1
-                            if call_record["response_parsed"]["valid"]:
-                                manifest["summary"]["valid_responses"] += 1
-                            else:
-                                manifest["summary"]["invalid_responses"] += 1
-                            manifest["summary"]["total_cost_usd"] += call_record["cost_usd"]
-                            
-                            completed_count += 1
-                            
-                            # Checkpoint every 10 calls
-                            if completed_count % 10 == 0:
-                                checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
-                                with open(checkpoint_path, 'w') as f:
-                                    json.dump(manifest, f, indent=2)
-                                print(f"  💾 Checkpoint saved: {checkpoint_path.name} ({completed_count} calls)")
+                    try:
+                        call_record = future.result()
+                        
+                        if call_record is not None:
+                            # Thread-safe manifest update
+                            with manifest_lock:
+                                manifest["calls"].append(call_record)
+                                
+                                # Update summary
+                                manifest["summary"]["total_calls"] += 1
+                                if call_record["response_parsed"]["valid"]:
+                                    manifest["summary"]["valid_responses"] += 1
+                                else:
+                                    manifest["summary"]["invalid_responses"] += 1
+                                manifest["summary"]["total_cost_usd"] += call_record["cost_usd"]
+                                
+                                completed_count += 1
+                                
+                                # Checkpoint every 10 calls
+                                if completed_count % 10 == 0:
+                                    checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
+                                    with open(checkpoint_path, 'w') as f:
+                                        json.dump(manifest, f, indent=2)
+                                    print(f"  💾 Checkpoint saved: {checkpoint_path.name} ({completed_count} calls)")
+                    
+                    except BudgetExceededError as e:
+                        print(f"\n⚠️  BUDGET EXCEEDED: {e}")
+                        print(f"Stopping dispatch at {completed_count}/{len(call_plan)} completed")
+                        budget_exceeded_flag.set()
+                        # Cancel remaining futures
+                        for f in pending_futures:
+                            f.cancel()
+                        break
+                    except RuntimeError as e:
+                        if "FATAL: Ledger write failed" in str(e):
+                            print(f"\n⚠️  FATAL STORAGE ERROR: {e}")
+                            print(f"Stopping dispatch, draining in-flight, preserving held costs")
+                            fatal_storage_flag.set()
+                            # Cancel queued futures (not yet running)
+                            for f in pending_futures:
+                                f.cancel()
+                            break
+                        else:
+                            print(f"  ✗ Unexpected runtime error: {e}")
+                            import traceback
+                            traceback.print_exc()
+                    except Exception as e:
+                        print(f"  ✗ Unexpected error in worker: {e}")
+                        import traceback
+                        traceback.print_exc()
                 
-                except BudgetExceededError as e:
-                    print(f"\n⚠️  BUDGET EXCEEDED: {e}")
-                    print(f"Stopping dispatch at {completed_count}/{len(call_plan)} completed")
-                    budget_exceeded_flag.set()
-                    # Cancel remaining futures
-                    for f in future_to_spec:
-                        f.cancel()
-                    break
-                except Exception as e:
-                    print(f"  ✗ Unexpected error in worker: {e}")
-                    import traceback
-                    traceback.print_exc()
+                # Submit next batch if space available and work remains
+                while len(pending_futures) < max_workers and call_queue and not budget_exceeded_flag.is_set() and not fatal_storage_flag.is_set():
+                    call_spec = call_queue.pop(0)
+                    future = executor.submit(
+                        execute_quiz_call, call_spec, config, provider_client, circuit_breaker
+                    )
+                    pending_futures[future] = call_spec
+                    submitted_count += 1
             
-            # Wait for any in-flight work to complete
+            # Wait for any remaining in-flight work to complete
             executor.shutdown(wait=True)
     
     except KeyboardInterrupt:
@@ -446,6 +500,11 @@ def run_quiz(
     disabled = circuit_breaker.get_disabled()
     if disabled:
         print(f"\n⚠️  Circuit breaker disabled models: {', '.join(disabled)}")
+    
+    if fatal_storage_flag.is_set():
+        print(f"\n⚠️  Run stopped due to fatal storage error")
+        print(f"  Completed: {completed_count} calls")
+        print(f"  In-flight reservations preserved for recovery")
     
     # Compute final summary
     compute_summary(manifest)
@@ -561,8 +620,26 @@ def execute_quiz_call(
     except BudgetExceededError:
         # Re-raise to stop all workers
         raise
+    except RuntimeError as e:
+        error_msg = str(e)
+        if "PERMANENT_ERROR:" in error_msg:
+            # Permanent error - disable immediately (don't count to 3)
+            circuit_breaker._disabled.add(model_id)
+            print(f"  ⊗ {model_id} DISABLED immediately (permanent error)")
+            print(f"  ✗ {error_msg}")
+            return None
+        elif "FATAL: Ledger write failed" in error_msg:
+            # Re-raise fatal storage errors
+            raise
+        else:
+            # Other runtime errors - count toward circuit breaker
+            disabled = circuit_breaker.record_failure(model_id)
+            if disabled:
+                print(f"  ⊗ {model_id} DISABLED after {circuit_breaker.max_failures} failures")
+            print(f"  ✗ ERROR: {e}")
+            return None
     except Exception as e:
-        # Record failure in circuit breaker
+        # Transient errors - record failure in circuit breaker
         disabled = circuit_breaker.record_failure(model_id)
         if disabled:
             print(f"  ⊗ {model_id} DISABLED after {circuit_breaker.max_failures} failures")
@@ -674,7 +751,9 @@ def main():
     )
     parser.add_argument(
         "--ledger-path",
+        "--ledger",  # Alias for convenience
         type=Path,
+        dest="ledger_path",
         help="Path to ledger.db (default: research/ledger.db)"
     )
     parser.add_argument(

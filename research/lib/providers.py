@@ -342,10 +342,13 @@ class ProviderClient:
             duration_ms = int((time.time() - start_time) * 1000)
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
-            # Check for permanent errors that should circuit break
+            # Check for PERMANENT errors that should disable model immediately
             error_str = str(e).lower()
-            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota', 'overloaded']):
-                raise RuntimeError(f"Anthropic permanent error (circuit break): {e}")
+            if any(code in error_str for code in ['400', '401', '403', '404']):
+                raise RuntimeError(f"PERMANENT_ERROR: Anthropic {e}")
+            if any(word in error_str for word in ['credit', 'quota', 'overloaded', 'rate_limit_error']):
+                raise RuntimeError(f"PERMANENT_ERROR: Anthropic quota/rate limit {e}")
+            # Transient errors (timeout, 500, 503) - let circuit breaker count to 3
             raise
         
         # Extract content (concatenate all text blocks, thinking may come first)
@@ -442,10 +445,13 @@ class ProviderClient:
             duration_ms = int((time.time() - start_time) * 1000)
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
-            # Check for permanent errors that should circuit break
+            # Check for PERMANENT errors that should disable model immediately
             error_str = str(e).lower()
-            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota']):
-                raise RuntimeError(f"Groq permanent error (circuit break): {e}")
+            if any(code in error_str for code in ['400', '401', '403', '404']):
+                raise RuntimeError(f"PERMANENT_ERROR: Groq {e}")
+            if any(word in error_str for word in ['credit', 'quota', 'rate_limit_error']):
+                raise RuntimeError(f"PERMANENT_ERROR: Groq quota/rate limit {e}")
+            # Transient errors - let circuit breaker count to 3
             raise
         
         # Extract content
@@ -526,10 +532,13 @@ class ProviderClient:
             duration_ms = int((time.time() - start_time) * 1000)
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
-            # Check for permanent errors that should circuit break
+            # Check for PERMANENT errors that should disable model immediately
             error_str = str(e).lower()
-            if any(code in error_str for code in ['400', '401', '403', '404', 'credit', 'quota']):
-                raise RuntimeError(f"OpenRouter permanent error (circuit break): {e}")
+            if any(code in error_str for code in ['400', '401', '403', '404']):
+                raise RuntimeError(f"PERMANENT_ERROR: OpenRouter {e}")
+            if any(word in error_str for word in ['credit', 'quota', 'rate_limit_error']):
+                raise RuntimeError(f"PERMANENT_ERROR: OpenRouter quota/rate limit {e}")
+            # Transient errors - let circuit breaker count to 3
             raise
         
         # Extract content
