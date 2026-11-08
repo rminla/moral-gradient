@@ -145,10 +145,14 @@ def rebuild_manifest_from_ledger(
     ledger_path: Path,
     experiment: str,
     output_path: Path,
-    run_id: str = None
+    run_id: str = None,
+    journal_dir: Path = None
 ):
     """
-    Rebuild results manifest from ledger entries.
+    Rebuild results manifest from ledger + journals.
+    
+    For quiz: Parses journals to extract FULL answers (semantic choice, question, options)
+    For swarm: Reconstructs tool calls and outcomes
     
     Use when checkpoint is incomplete but ledger has all calls.
     
@@ -157,9 +161,11 @@ def rebuild_manifest_from_ledger(
         experiment: Experiment name (quiz, swarm)
         output_path: Where to write rebuilt manifest
         run_id: Optional run_id to filter calls
+        journal_dir: Path to journal directory (for quiz answer recovery)
     """
     budget_tracker = BudgetTracker(ledger_path, 1000000.0)
     
+    # Get ledger entries
     with budget_tracker._get_conn() as conn:
         if run_id:
             query = """
@@ -182,16 +188,108 @@ def rebuild_manifest_from_ledger(
         print("No calls found")
         return None
     
-    # Group by run_id (extract from call_id prefix)
+    # Initialize journal reader
+    if journal_dir is None:
+        journal_dir = ledger_path.parent / "journal"
+    
+    journal = ResponseJournal(journal_dir) if journal_dir.exists() else None
+    
+    # Build manifest structure
     manifest = {
         "version": "rebuilt",
         "rebuilt_at": datetime.utcnow().isoformat() + "Z",
         "experiment": experiment,
         "total_calls": len(rows),
         "total_cost_usd": sum(r['actual_cost_usd'] for r in rows),
+        "results": [] if experiment == "quiz" else None,
         "calls": []
     }
     
+    print(f"Rebuilding {experiment} results from {len(rows)} ledger entries...")
+    
+    if experiment == "quiz" and journal:
+        # Parse quiz answers from journals
+        results = []
+        for row in rows:
+            call_id = row['call_id']
+            journal_path = journal_dir / f"{call_id}.journal"
+            
+            if not journal_path.exists():
+                print(f"  ⚠ {call_id}: No journal found")
+                continue
+            
+            try:
+                # Read journal entry
+                with open(journal_path) as f:
+                    entry = json.load(f)
+                
+                # Parse quiz answer from raw response
+                raw_response = entry.get('raw_response')
+                if not raw_response:
+                    print(f"  ⚠ {call_id}: No raw_response in journal")
+                    continue
+                
+                # Extract content
+                content = ""
+                if 'content' in raw_response:
+                    if isinstance(raw_response['content'], list):
+                        # Anthropic format
+                        content = "\n".join(
+                            block.get('text', '') 
+                            for block in raw_response['content']
+                            if block.get('type') == 'text'
+                        )
+                    else:
+                        content = str(raw_response['content'])
+                elif 'choices' in raw_response:
+                    # OpenAI format
+                    content = raw_response['choices'][0]['message']['content']
+                
+                # Parse call_id: run_id_question_model_sample
+                parts = call_id.split('_')
+                if len(parts) >= 4:
+                    # Extract question, model, sample from call_id
+                    # Format: {run_id}_q{N}_{model}_{sample}
+                    question_part = [p for p in parts if p.startswith('q')]
+                    model_parts = [p for p in parts if '/' in p or p in ['anthropic', 'groq', 'openrouter']]
+                    sample_part = [p for p in parts if p.startswith('s')]
+                    
+                    question_id = question_part[0] if question_part else None
+                    model_slug = '_'.join(model_parts) if model_parts else row['model_id']
+                    sample_idx = int(sample_part[0][1:]) if sample_part else 0
+                    
+                    # Parse semantic choice (A/B/C/D) from content
+                    import re
+                    choice_match = re.search(r'\b([A-D])\b', content)
+                    semantic_choice = choice_match.group(1) if choice_match else None
+                    
+                    result = {
+                        "call_id": call_id,
+                        "question_id": question_id,
+                        "model_id": model_slug,
+                        "sample_idx": sample_idx,
+                        "semantic_choice": semantic_choice,
+                        "response_text": content[:500],  # Preview
+                        "finish_reason": entry.get('finish_reason'),
+                        "usage": entry.get('usage', {}),
+                        "cost_usd": entry.get('actual_cost_usd', 0.0),
+                        "refusal": "refuse" in content.lower() or "cannot" in content.lower(),
+                        "truncated": entry.get('finish_reason') == 'length'
+                    }
+                    
+                    results.append(result)
+                    
+                    if len(results) % 50 == 0:
+                        print(f"  Parsed {len(results)} quiz answers...")
+                
+            except Exception as e:
+                print(f"  ✗ {call_id}: Failed to parse - {e}")
+                continue
+        
+        manifest["results"] = results
+        print(f"✓ Recovered {len(results)} quiz answers from journals")
+    
+    # Add ledger summary (costs, not full answers)
     for row in rows:
         manifest["calls"].append({
             "call_id": row['call_id'],
@@ -213,8 +311,10 @@ def rebuild_manifest_from_ledger(
     with open(output_path, 'w') as f:
         json.dump(manifest, f, indent=2)
     
-    print(f"\nRebuilt manifest written to {output_path}")
+    print(f"\n✓ Rebuilt manifest written to {output_path}")
     print(f"Total calls: {manifest['total_calls']}")
+    if experiment == "quiz" and 'results' in manifest:
+        print(f"Quiz answers recovered: {len(manifest.get('results', []))}")
     print(f"Total cost: ${manifest['total_cost_usd']:.4f}")
     
     return manifest
@@ -253,7 +353,7 @@ def main():
     )
     
     # Rebuild command
-    rebuild_parser = subparsers.add_parser('rebuild', help='Rebuild manifest from ledger')
+    rebuild_parser = subparsers.add_parser('rebuild', help='Rebuild manifest from ledger + journals')
     rebuild_parser.add_argument(
         '--ledger',
         type=Path,
@@ -275,6 +375,11 @@ def main():
         '--run-id',
         help='Optional run_id to filter calls'
     )
+    rebuild_parser.add_argument(
+        '--journal-dir',
+        type=Path,
+        help='Path to journal directory (default: ledger parent dir / journal)'
+    )
     
     args = parser.parse_args()
     
@@ -290,7 +395,8 @@ def main():
             ledger_path=args.ledger,
             experiment=args.experiment,
             output_path=args.output,
-            run_id=args.run_id
+            run_id=args.run_id,
+            journal_dir=args.journal_dir
         )
     else:
         parser.print_help()
