@@ -227,21 +227,75 @@ class ProviderClient:
         tools: Optional[List[Dict]] = None
     ) -> ModelResponse:
         """
-        Mock an API call for dry-run testing.
+        SDK-level mock with native tool support.
         
-        Returns a deterministic response based on prompt hash.
-        Tools parameter is accepted but not used in mock.
+        Returns responses with native Anthropic tool_use or OpenAI tool_calls
+        to exercise actual SDK parsing code paths.
         """
-        # Hash prompt for deterministic mocking
+        # Hash prompt for deterministic call_id
         prompt_text = "\n".join(m.content for m in messages)
-        prompt_hash = hashlib.sha256(prompt_text.encode()).hexdigest()[:8]
-        
-        # Mock response
-        mock_content = f"[MOCK RESPONSE {prompt_hash}] I would choose option A because..."
+        call_id = hashlib.md5(prompt_text.encode()).hexdigest()
         
         # Estimate tokens
         prompt_tokens = len(prompt_text) // 4
-        completion_tokens = len(mock_content) // 4
+        
+        # Use SDK-level mock transport if tools provided
+        if tools and len(tools) > 0:
+            # Import mock transport fixtures
+            try:
+                # Try swarm-local mock_transport first
+                import sys
+                from pathlib import Path
+                swarm_path = Path(__file__).parent.parent / "swarm"
+                if swarm_path.exists() and str(swarm_path) not in sys.path:
+                    sys.path.insert(0, str(swarm_path))
+                from mock_transport import create_anthropic_response, create_openai_response
+                has_mock_transport = True
+            except ImportError:
+                has_mock_transport = False
+            
+            if has_mock_transport:
+                # Generate SDK-native response with tool support
+                msg_dicts = [{"role": m.role, "content": m.content} for m in messages]
+                
+                if model_config.provider == Provider.ANTHROPIC:
+                    raw_response = create_anthropic_response(call_id, msg_dicts, tools, max_tokens)
+                    
+                    # Extract content from Anthropic response
+                    content_blocks = raw_response.get("content", [])
+                    text_parts = []
+                    for block in content_blocks:
+                        if block.get("type") == "text":
+                            text_parts.append(block["text"])
+                        elif block.get("type") == "thinking":
+                            text_parts.append(f"[Thinking: {block['thinking'][:50]}...]")
+                    
+                    content = "\n".join(text_parts) if text_parts else "[Tool call response]"
+                    completion_tokens = raw_response["usage"]["output_tokens"]
+                    finish_reason = raw_response.get("stop_reason", "stop")
+                    
+                else:  # OpenAI-compatible (Groq, OpenRouter)
+                    raw_response = create_openai_response(call_id, msg_dicts, tools, max_tokens)
+                    
+                    choice = raw_response["choices"][0]
+                    msg = choice["message"]
+                    content = msg.get("content") or "[Tool call response]"
+                    completion_tokens = raw_response["usage"]["completion_tokens"]
+                    finish_reason = choice.get("finish_reason", "stop")
+                
+                prompt_tokens = raw_response["usage"].get("prompt_tokens", raw_response["usage"].get("input_tokens", prompt_tokens))
+            else:
+                # Fallback: basic mock if transport not available
+                content = f"[MOCK {call_id[:8]}] Based on analysis, I recommend action."
+                completion_tokens = 20
+                finish_reason = "stop"
+                raw_response = {"mock": True, "tools_unavailable": True}
+        else:
+            # No tools - simple text response
+            content = f"[MOCK RESPONSE {call_id[:8]}] I would choose option A because..."
+            completion_tokens = len(content) // 4
+            finish_reason = "stop"
+            raw_response = {"mock": True, "no_tools": True}
         
         # Calculate mock cost
         from .models import estimate_cost
@@ -250,7 +304,7 @@ class ProviderClient:
         )
         
         return ModelResponse(
-            content=mock_content,
+            content=content,
             model_version=f"{model_config.api_model_name}-mock",
             usage={
                 'prompt_tokens': prompt_tokens,
@@ -258,9 +312,9 @@ class ProviderClient:
                 'total_tokens': prompt_tokens + completion_tokens
             },
             actual_cost_usd=mock_cost,
-            duration_ms=100,  # Mock duration
-            finish_reason="stop",
-            raw_response={'mock': True}
+            duration_ms=100,
+            finish_reason=finish_reason,
+            raw_response=raw_response
         )
     
     def _real_call(
