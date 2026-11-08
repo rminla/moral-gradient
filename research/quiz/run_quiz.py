@@ -667,7 +667,8 @@ def compute_summary(manifest: Dict):
     
     for call in manifest["calls"]:
         model_id = call["model_id"]
-        scenario_id = call["scenario_id"]
+        # Support both scenario_id (checkpoint) and question_id (recovery)
+        scenario_id = call.get("scenario_id") or call.get("question_id")
         
         if model_id not in by_model:
             by_model[model_id] = {
@@ -685,8 +686,15 @@ def compute_summary(manifest: Dict):
                 "cost_usd": 0.0
             }
         
-        valid = call["response_parsed"]["valid"]
-        cost = call["cost_usd"]
+        # Support both checkpoint format (response_parsed) and recovery format (display_letter)
+        if "response_parsed" in call:
+            valid = call["response_parsed"]["valid"]
+        elif "display_letter" in call:
+            valid = call["display_letter"] is not None
+        else:
+            valid = False
+        
+        cost = call.get("cost_usd", 0.0)
         
         by_model[model_id]["total"] += 1
         by_model[model_id]["cost_usd"] += cost
