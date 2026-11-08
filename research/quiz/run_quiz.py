@@ -322,7 +322,7 @@ def run_quiz(
         }
     }
     
-    # Resume handling
+    # Resume handling - load from checkpoint AND check ledger for all recorded calls
     completed_call_ids = set()
     if resume_from:
         print(f"Resuming from: {resume_from}")
@@ -338,7 +338,19 @@ def run_quiz(
             else:
                 raise ValueError("Resume manifest must contain 'calls' or 'results' field")
             completed_call_ids = {call["call_id"] for call in manifest["calls"]}
-        print(f"  Already completed: {len(completed_call_ids)} calls\n")
+        print(f"  Loaded from checkpoint: {len(completed_call_ids)} calls")
+    
+    # ALSO check ledger for any recorded calls (including errors) to avoid duplicates
+    # Error rows (cost=0, finish_reason='error') are NOT completed answers but ARE recorded attempts
+    with budget_tracker._get_conn() as conn:
+        ledger_calls = conn.execute("SELECT call_id, finish_reason FROM calls").fetchall()
+        ledger_call_ids = {row['call_id'] for row in ledger_calls}
+        error_call_ids = {row['call_id'] for row in ledger_calls if row['finish_reason'] == 'error'}
+        
+    # Completed = checkpoint OR ledger (skip ALL recorded attempts to avoid 'already exists')
+    completed_call_ids |= ledger_call_ids
+    print(f"  Total recorded in ledger: {len(ledger_call_ids)} ({len(error_call_ids)} errors)")
+    print(f"  Will skip: {len(completed_call_ids)} already recorded\n")
     
     # Generate call plan
     random.seed(config["randomization_seed"])
@@ -538,7 +550,24 @@ def run_quiz(
         json.dump(manifest, f, indent=2)
     
     print(f"\n{'='*60}")
-    print(f"Quiz Complete")
+    
+    # Check logical coverage (expected calls vs actual)
+    expected_calls = len(config['models']) * len(scenarios_data['scenarios']) * config['n_per_question']
+    actual_calls = manifest['summary']['total_calls']
+    coverage_complete = (actual_calls >= expected_calls)
+    
+    manifest['coverage_complete'] = coverage_complete
+    manifest['expected_calls'] = expected_calls
+    manifest['missing_calls'] = max(0, expected_calls - actual_calls)
+    
+    if coverage_complete:
+        print(f"Quiz Complete")
+    else:
+        print(f"Quiz Incomplete")
+        print(f"  Expected: {expected_calls} logical samples")
+        print(f"  Completed: {actual_calls} calls")
+        print(f"  Missing: {expected_calls - actual_calls} calls")
+    
     print(f"{'='*60}")
     print(f"Total calls: {manifest['summary']['total_calls']}")
     print(f"Valid responses: {manifest['summary']['valid_responses']}")
@@ -643,6 +672,18 @@ def execute_quiz_call(
     except BudgetExceededError:
         # Re-raise to stop all workers
         raise
+    except ValueError as e:
+        error_msg = str(e)
+        # Internal errors (already reserved, already exists) - SKIP WITHOUT COUNTING
+        if "already reserved" in error_msg.lower() or "already exists" in error_msg.lower() or "already recorded" in error_msg.lower():
+            print(f"  ⊘ {call_id}: Skipped (internal: {error_msg})")
+            return None  # Skip silently, don't count as failure
+        # Other ValueError - count as failure
+        disabled = circuit_breaker.record_failure(model_id)
+        if disabled:
+            print(f"  ⊗ {model_id} DISABLED after {circuit_breaker.max_failures} failures")
+        print(f"  ✗ ERROR: {e}")
+        return None
     except RuntimeError as e:
         error_msg = str(e)
         if "PERMANENT_ERROR:" in error_msg:
@@ -662,7 +703,7 @@ def execute_quiz_call(
             print(f"  ✗ ERROR: {e}")
             return None
     except Exception as e:
-        # Transient errors - record failure in circuit breaker
+        # Transient network errors - record failure in circuit breaker
         disabled = circuit_breaker.record_failure(model_id)
         if disabled:
             print(f"  ⊗ {model_id} DISABLED after {circuit_breaker.max_failures} failures")
@@ -806,7 +847,7 @@ def main():
     args.output_dir.mkdir(parents=True, exist_ok=True)
     
     # Run quiz
-    run_quiz(
+    manifest = run_quiz(
         config_path=args.config,
         scenarios_path=args.scenarios,
         output_dir=args.output_dir,
@@ -818,6 +859,10 @@ def main():
         max_workers=args.max_workers,
         http_timeout=args.http_timeout
     )
+    
+    # Exit with code 2 if coverage incomplete (for box automation)
+    if not manifest.get('coverage_complete', True):
+        sys.exit(2)
 
 
 if __name__ == "__main__":

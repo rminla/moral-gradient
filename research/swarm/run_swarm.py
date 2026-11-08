@@ -7,13 +7,17 @@ Uses action tools (not text extraction) and enforces 8 GLOBAL message limit.
 """
 
 import argparse
+import concurrent.futures
+import fcntl
 import hashlib
 import json
+import os
 import random
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Set
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from lib.budget import BudgetTracker, BudgetExceededError
 from lib.providers import Message, ProviderClient
 from lib.models import MODELS, verify_model_availability
+from quiz.run_quiz import CircuitBreaker, acquire_process_lock
 
 
 def load_config(config_path: Path) -> Dict:
@@ -634,7 +639,9 @@ def run_swarm(
     dry_run: bool = False,
     resume_from: Optional[Path] = None,
     run_id: Optional[str] = None,
-    ledger_path: Optional[Path] = None
+    ledger_path: Optional[Path] = None,
+    max_workers: int = 4,
+    http_timeout: int = 180
 ) -> Dict:
     """
     Run swarm experiment with action tools and 8-message limit.
@@ -670,13 +677,26 @@ def run_swarm(
     # Initialize budget tracker
     if ledger_path is None:
         ledger_path = Path(__file__).parent.parent / "ledger.db"
+    
+    # Acquire cross-process lock
+    lock_file = acquire_process_lock(ledger_path)
+    if lock_file is None:
+        print("\n✗ ERROR: Another process is already using this ledger")
+        print(f"  Ledger: {ledger_path}")
+        print("  Only one process can run at a time to ensure budget safety")
+        sys.exit(1)
+    
     budget_tracker = BudgetTracker(ledger_path, budget_cap)
     
-    # Initialize provider client
+    # Initialize circuit breaker
+    circuit_breaker = CircuitBreaker(max_failures=3)
+    
+    # Initialize provider client with HTTP timeout
     provider_client = ProviderClient(
         budget_tracker=budget_tracker,
         experiment="swarm",
-        dry_run=dry_run
+        dry_run=dry_run,
+        http_timeout=http_timeout
     )
     
     # Check budget status
@@ -767,72 +787,162 @@ def run_swarm(
     
     if not episode_plan:
         print("No episodes remaining. Run complete!")
+        lock_file.close()
         return manifest
     
-    # Execute episodes
+    # Execute episodes (parallel independent episodes, never turns within episode)
+    print(f"\nStarting parallel execution with {max_workers} workers...\n")
+    print(f"Fair scheduling: round-robin across models, max 1 episode per model in-flight\n")
+    
+    completed_count = 0
+    manifest_lock = threading.Lock()
+    budget_exceeded_flag = threading.Event()
+    fatal_storage_flag = threading.Event()
+    
+    # Organize episodes by model for fair scheduling
+    model_queues = {}
+    for ep_spec in episode_plan:
+        model_id = ep_spec['model_id']
+        if model_id not in model_queues:
+            model_queues[model_id] = []
+        model_queues[model_id].append(ep_spec)
+    
+    print(f"Episode distribution:")
+    for model_id, queue in model_queues.items():
+        print(f"  {model_id}: {len(queue)} episodes")
+    print()
+    
+    # Track in-flight models
+    inflight_models = set()
+    inflight_lock = threading.Lock()
+    
+    def get_next_eligible_episode():
+        """Get next episode from model not in-flight (round-robin)."""
+        with inflight_lock:
+            for model_id in sorted(model_queues.keys()):
+                if model_id not in inflight_models and model_queues[model_id]:
+                    ep_spec = model_queues[model_id].pop(0)
+                    inflight_models.add(model_id)
+                    return ep_spec, model_id
+        return None, None
+    
+    def release_model(model_id):
+        """Release model from in-flight set."""
+        with inflight_lock:
+            inflight_models.discard(model_id)
+    
+    def execute_episode_worker(ep_spec):
+        """Worker function to execute one episode (turns run serially within episode)."""
+        try:
+            if ep_spec['arm_config']['structure'] == 'single':
+                episode = run_single_episode(
+                    episode_id=ep_spec['episode_id'],
+                    case=ep_spec['case'],
+                    model_id=ep_spec['model_id'],
+                    pressure=ep_spec['arm_config']['pressure'],
+                    config=config,
+                    prompts=prompts,
+                    provider_client=provider_client,
+                    run_id=run_id
+                )
+            else:  # team
+                episode = run_team_episode(
+                    episode_id=ep_spec['episode_id'],
+                    case=ep_spec['case'],
+                    model_id=ep_spec['model_id'],
+                    pressure=ep_spec['arm_config']['pressure'],
+                    config=config,
+                    prompts=prompts,
+                    provider_client=provider_client,
+                    run_id=run_id
+                )
+            return episode
+        except Exception as e:
+            if "PERMANENT_ERROR:" in str(e):
+                circuit_breaker._disabled.add(ep_spec['model_id'])
+                print(f"  ⊗ {ep_spec['model_id']} DISABLED (permanent error)")
+            raise
+    
     try:
-        for i, ep_spec in enumerate(episode_plan, 1):
-            print(f"[{i}/{len(episode_plan)}] {ep_spec['case']['id']} / {ep_spec['model_id']} / {ep_spec['arm_config']['id']}")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            pending_futures = {}
             
-            # Run episode
-            try:
-                if ep_spec['arm_config']['structure'] == 'single':
-                    episode = run_single_episode(
-                        episode_id=ep_spec['episode_id'],
-                        case=ep_spec['case'],
-                        model_id=ep_spec['model_id'],
-                        pressure=ep_spec['arm_config']['pressure'],
-                        config=config,
-                        prompts=prompts,
-                        provider_client=provider_client,
-                        run_id=run_id
-                    )
-                else:  # team
-                    episode = run_team_episode(
-                        episode_id=ep_spec['episode_id'],
-                        case=ep_spec['case'],
-                        model_id=ep_spec['model_id'],
-                        pressure=ep_spec['arm_config']['pressure'],
-                        config=config,
-                        prompts=prompts,
-                        provider_client=provider_client,
-                        run_id=run_id
-                    )
-                
-                manifest["episodes"].append(episode)
-                
-                # Update summary
-                manifest["summary"]["total_episodes"] += 1
-                if episode["complete"]:
-                    manifest["summary"]["complete_episodes"] += 1
-                else:
-                    manifest["summary"]["incomplete_episodes"] += 1
-                
-                manifest["summary"]["total_calls"] += len(episode["turns"])
-                manifest["summary"]["total_cost_usd"] += episode["total_cost_usd"]
-                
-                status = "✓" if episode["complete"] else "✗"
-                print(f"  {status} Action: {episode['final_action'] or 'INCOMPLETE'} | ${episode['total_cost_usd']:.6f} | {episode['total_model_calls']} msgs")
-                
-                # Checkpoint every 5 episodes
-                if i % 5 == 0:
-                    checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
-                    with open(checkpoint_path, 'w') as f:
-                        json.dump(manifest, f, indent=2)
-                    print(f"  💾 Checkpoint saved")
+            # Initial batch (round-robin)
+            for _ in range(min(max_workers, len(episode_plan))):
+                ep_spec, model_id = get_next_eligible_episode()
+                if ep_spec:
+                    future = executor.submit(execute_episode_worker, ep_spec)
+                    pending_futures[future] = (ep_spec, model_id)
             
-            except BudgetExceededError as e:
-                print(f"\n⚠️  BUDGET EXCEEDED: {e}")
-                print(f"Stopping at episode {i}/{len(episode_plan)}")
-                break
-            except Exception as e:
-                print(f"  ✗ ERROR: {e}")
-                import traceback
-                traceback.print_exc()
-                continue
+            # Process completions
+            while pending_futures:
+                if budget_exceeded_flag.is_set() or fatal_storage_flag.is_set():
+                    break
+                
+                done, _ = concurrent.futures.wait(
+                    pending_futures.keys(),
+                    return_when=concurrent.futures.FIRST_COMPLETED
+                )
+                
+                for future in done:
+                    ep_spec, model_id = pending_futures.pop(future)
+                    release_model(model_id)
+                    
+                    try:
+                        episode = future.result()
+                        
+                        with manifest_lock:
+                            manifest["episodes"].append(episode)
+                            manifest["summary"]["total_episodes"] += 1
+                            if episode["complete"]:
+                                manifest["summary"]["complete_episodes"] += 1
+                            else:
+                                manifest["summary"]["incomplete_episodes"] += 1
+                            manifest["summary"]["total_calls"] += len(episode["turns"])
+                            manifest["summary"]["total_cost_usd"] += episode["total_cost_usd"]
+                            completed_count += 1
+                            
+                            # Checkpoint every 5
+                            if completed_count % 5 == 0:
+                                checkpoint_path = output_dir / f"{run_id}_checkpoint.json"
+                                with open(checkpoint_path, 'w') as f:
+                                    json.dump(manifest, f, indent=2)
+                                print(f"  💾 Checkpoint saved ({completed_count} episodes)")
+                        
+                        status = "✓" if episode["complete"] else "✗"
+                        print(f"  {status} {ep_spec['case']['id']}/{model_id.split('/')[-1]}/{ep_spec['arm_config']['id']}: {episode['final_action'] or 'INCOMPLETE'}")
+                    
+                    except BudgetExceededError as e:
+                        print(f"\n⚠️  BUDGET EXCEEDED: {e}")
+                        budget_exceeded_flag.set()
+                        for f in pending_futures:
+                            f.cancel()
+                        break
+                    except RuntimeError as e:
+                        if "FATAL: Ledger write failed" in str(e):
+                            print(f"\n⚠️  FATAL STORAGE ERROR")
+                            fatal_storage_flag.set()
+                            for f in pending_futures:
+                                f.cancel()
+                            break
+                        else:
+                            print(f"  ✗ ERROR: {e}")
+                    except Exception as e:
+                        print(f"  ✗ ERROR: {e}")
+                
+                # Submit next eligible
+                while len(pending_futures) < max_workers and not budget_exceeded_flag.is_set() and not fatal_storage_flag.is_set():
+                    next_ep, next_model = get_next_eligible_episode()
+                    if not next_ep:
+                        break
+                    future = executor.submit(execute_episode_worker, next_ep)
+                    pending_futures[future] = (next_ep, next_model)
+            
+            executor.shutdown(wait=True)
     
     except KeyboardInterrupt:
         print("\n\n⚠️  Interrupted by user")
+        print("Waiting for in-flight episodes to complete...")
     
     # Compute final summary
     compute_summary(manifest)
@@ -953,8 +1063,22 @@ def main():
     )
     parser.add_argument(
         "--ledger-path",
+        "--ledger",
         type=Path,
+        dest="ledger_path",
         help="Path to ledger.db (default: research/ledger.db)"
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=4,
+        help="Maximum concurrent workers (default: 4)"
+    )
+    parser.add_argument(
+        "--http-timeout",
+        type=int,
+        default=180,
+        help="HTTP timeout in seconds (default: 180)"
     )
     
     args = parser.parse_args()
@@ -972,7 +1096,9 @@ def main():
         dry_run=args.dry_run,
         resume_from=args.resume,
         run_id=args.run_id,
-        ledger_path=args.ledger_path
+        ledger_path=args.ledger_path,
+        max_workers=args.max_workers,
+        http_timeout=args.http_timeout
     )
 
 
