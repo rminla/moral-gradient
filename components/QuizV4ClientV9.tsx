@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Eyebrow } from "./Brand";
 import Share from "./Share";
@@ -31,7 +30,7 @@ const HEADLINES: Record<string, [string, string, string]> = {
   promised_shoes: ["You know your $200 would help immediately, ", "but you ", "can't afford both."],
 };
 
-export default function QuizV4ClientV9Fixed() {
+export default function QuizV4ClientV9() {
   const [step, setStep] = useState<"intro" | number | "result">("intro");
   const [answers, setAnswers] = useState<Record<string, 0 | 1>>({});
   const [showModelDetails, setShowModelDetails] = useState<Record<string, boolean>>({});
@@ -80,57 +79,76 @@ export default function QuizV4ClientV9Fixed() {
     const userChoice = answers[item.id];
     const headline = HEADLINES[item.id] || ["", item.question, ""];
 
-    // Calculate model agreement for this question
-    const modelAgreement = MODELS.map(model => {
+    // Calculate model agreement with STRICT MAJORITY (matching > non-matching)
+    const modelAgreement = answered ? MODELS.map(model => {
       const result = getModelResults(model.id, item.id);
       if (!result) return null;
       
-      if (answered) {
-        const userOptionId = userChoice === 0 ? item.leftOptionId : item.rightOptionId;
-        const userChoiceCount = result.optionCounts[userOptionId] || 0;
-        const agreement = result.validCount > 0 ? Math.round((userChoiceCount / result.validCount) * 100) : 0;
-        const agreed = agreement >= 50;
-        return { model, result, agreement, agreed, chipName: MODEL_CHIP_NAMES[model.id] || model.displayName.toUpperCase() };
-      }
-      return null;
-    }).filter(Boolean) as Array<{ model: typeof MODELS[0]; result: NonNullable<ReturnType<typeof getModelResults>>; agreement: number; agreed: boolean; chipName: string }>;
+      const userOptionId = userChoice === 0 ? item.leftOptionId : item.rightOptionId;
+      const otherOptionId = userChoice === 0 ? item.rightOptionId : item.leftOptionId;
+      
+      const matchingCount = result.optionCounts[userOptionId] || 0;
+      const nonMatchingCount = result.optionCounts[otherOptionId] || 0;
+      
+      // Strict majority: check > non-matching, tie if equal, disagree otherwise
+      const agreed = matchingCount > nonMatchingCount;
+      const tie = matchingCount === nonMatchingCount;
+      const state = tie ? "tie" : agreed ? "yes" : "no";
+      
+      return {
+        model,
+        result,
+        matchingCount,
+        nonMatchingCount,
+        agreed,
+        tie,
+        state,
+        chipName: MODEL_CHIP_NAMES[model.id] || model.displayName.toUpperCase()
+      };
+    }).filter(Boolean) as Array<{
+      model: typeof MODELS[0];
+      result: NonNullable<ReturnType<typeof getModelResults>>;
+      matchingCount: number;
+      nonMatchingCount: number;
+      agreed: boolean;
+      tie: boolean;
+      state: "yes" | "no" | "tie";
+      chipName: string;
+    }> : [];
 
-    const allAgree = answered && modelAgreement.every(m => m.agreed);
-    const noneAgree = answered && modelAgreement.every(m => !m.agreed);
+    const agreedCount = modelAgreement.filter(m => m.agreed).length;
     const agreementSummary = answered
-      ? allAgree
-        ? "All 4 models agreed with you"
-        : noneAgree
-        ? "None of the 4 models agreed with you"
-        : `${modelAgreement.filter(m => m.agreed).length} of 4 models agreed with you`
+      ? agreedCount === 1
+        ? `Only ${modelAgreement.find(m => m.agreed)?.model.displayName} agreed with you.`
+        : `${agreedCount} of 4 models agreed with you`
       : "";
 
     const detailsVisible = showModelDetails[item.id] || false;
 
     return (
       <section className="border-b border-rule">
-        <div className="mx-auto max-w-[920px]">
+        <div className="mx-auto max-w-[1200px]">
           {!answered ? (
-            /* Before answer: bordered column with kicker, huge headline, scenario, choices */
+            /* Before answer: kicker, headline, scenario, choices */
             <>
-              <div className="border-b border-rule px-6 py-8 md:px-8 md:py-10">
-                {/* Red-orange mono kicker + pill */}
+              <div className="border-b border-rule px-5 py-8 md:px-8 md:py-10">
+                {/* Kicker + square tag */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="kicker text-vermilion">QUESTION {step + 1} OF {N} · {item.title.toUpperCase()}</div>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-rule px-3 py-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink/75">
-                    <span className="h-1.5 w-1.5 rounded-full bg-vermilion" />
+                  <span className="inline-flex items-center gap-2 border border-rule px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink/75 md:text-[10.5px]">
+                    <span className="h-1.5 w-1.5 bg-vermilion" />
                     YOUR CHOICE. FOUR AI MODELS.
                   </span>
                 </div>
 
-                {/* Huge display headline with gray/black/red emphasis */}
+                {/* Huge display headline with emphasis */}
                 <h1 className="wide mt-6 text-[40px] font-bold leading-[1.02] tracking-[-0.04em] text-ink/50 md:text-[72px]">
                   {headline[0]}
                   <span className="text-ink">{headline[1]}</span>
                   <span className="text-vermilion">{headline[2]}</span>
                 </h1>
 
-                {/* Full scenario above choices */}
+                {/* Full scenario */}
                 <div className="mt-8 space-y-4">
                   {item.scenario.split('\n\n').map((para, i) => (
                     <p key={i} className="text-[17px] leading-relaxed text-ink/80">{para}</p>
@@ -162,8 +180,8 @@ export default function QuizV4ClientV9Fixed() {
                 </div>
               </div>
 
-              {/* Background and AI relevance (below before answering) */}
-              <div className="px-6 py-8 md:px-8">
+              {/* Background and AI relevance */}
+              <div className="px-5 py-8 md:px-8">
                 <div className="space-y-6">
                   <div>
                     <div className="label !mb-2 !text-ink/45">BACKGROUND</div>
@@ -182,136 +200,156 @@ export default function QuizV4ClientV9Fixed() {
               </div>
             </>
           ) : (
-            /* After answer: kicker, "You chose" hero, actions, model chips, share, context */
+            /* After answer: keep kicker/headline/scenario, two-column layout at desktop */
             <>
-              <div className="border-b border-rule px-6 py-8 md:px-8 md:py-10">
-                {/* Kicker */}
-                <div className="kicker text-vermilion">QUESTION {step + 1} OF {N} · {item.title.toUpperCase()}</div>
-
-                {/* You chose hero answer */}
-                <div className="mt-6">
-                  <div className="kicker text-vermilion">YOU CHOSE</div>
-                  <div className="wide mt-2 text-[40px] font-bold leading-[1] tracking-[-0.04em] md:text-[52px]">
-                    {userChoice === 0 ? item.left : item.right}<span className="text-vermilion">.</span>
-                  </div>
+              <div className="border-b border-rule px-5 py-8 md:px-8 md:py-10">
+                {/* Kicker + square tag */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="kicker text-vermilion">QUESTION {step + 1} OF {N} · {item.title.toUpperCase()}</div>
+                  <span className="inline-flex items-center gap-2 border border-rule px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink/75 md:text-[10.5px]">
+                    <span className="h-1.5 w-1.5 bg-vermilion" />
+                    YOUR CHOICE. FOUR AI MODELS.
+                  </span>
                 </div>
 
-                {/* Action buttons: prominent red Next, secondary Share/Change */}
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      if (isLastQuestion && allAnswered) {
-                        setStep("result");
-                      } else {
-                        setStep(step + 1);
-                      }
-                    }}
-                    className="btn-primary"
-                  >
-                    {isLastQuestion && allAnswered ? "See your closest match →" : "Next question →"}
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      const newAnswers = { ...answers };
-                      delete newAnswers[item.id];
-                      setAnswers(newAnswers);
-                    }}
-                    className="btn-ghost"
-                  >
-                    Change answer
-                  </button>
+                {/* Keep headline */}
+                <h1 className="wide mt-6 text-[40px] font-bold leading-[1.02] tracking-[-0.04em] text-ink/50 md:text-[72px]">
+                  {headline[0]}
+                  <span className="text-ink">{headline[1]}</span>
+                  <span className="text-vermilion">{headline[2]}</span>
+                </h1>
+
+                {/* Keep scenario */}
+                <div className="mt-8 space-y-4">
+                  {item.scenario.split('\n\n').map((para, i) => (
+                    <p key={i} className="text-[17px] leading-relaxed text-ink/80">{para}</p>
+                  ))}
                 </div>
 
-                {/* AI models on this question */}
-                <div className="mt-10 border-t border-rule pt-8">
-                  <div className="label">AI MODELS ON THIS QUESTION</div>
-                  <div className="mt-2 text-[18px] font-semibold leading-snug text-ink md:text-[20px]">{agreementSummary}</div>
-                  
-                  {/* Square-cornered neutral chips with short names */}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {modelAgreement.map(({ model, agreed, chipName }) => (
-                      <div 
-                        key={model.id} 
-                        className="inline-flex items-center gap-2 border border-ink/20 bg-transparent px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.06em]"
-                        style={{ color: agreed ? '#0c0c0d' : '#6c6f75' }}
+                {/* Two-column layout: answer left, AI models right */}
+                <div className="mt-10 grid gap-8 border-t border-rule pt-8 md:grid-cols-2 md:gap-10">
+                  {/* Left: Your choice + buttons */}
+                  <div>
+                    <div className="kicker text-vermilion">YOU CHOSE</div>
+                    <div className="wide mt-2 text-[40px] font-bold leading-[1] tracking-[-0.04em] md:text-[52px]">
+                      {userChoice === 0 ? item.left : item.right}<span className="text-vermilion">.</span>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          if (isLastQuestion && allAnswered) {
+                            setStep("result");
+                          } else {
+                            setStep(step + 1);
+                          }
+                        }}
+                        className="btn-primary bg-vermilion text-white hover:bg-vermilion/90"
                       >
-                        <span style={{ width: '12px', textAlign: 'center', fontSize: '13px', lineHeight: '1', color: agreed ? '#ff3d1f' : '#6c6f75' }}>
-                          {agreed ? '✓' : '×'}
-                        </span>
-                        <span>{chipName}</span>
-                      </div>
-                    ))}
+                        {isLastQuestion && allAnswered ? "See your closest match →" : "Next question →"}
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const newAnswers = { ...answers };
+                          delete newAnswers[item.id];
+                          setAnswers(newAnswers);
+                        }}
+                        className="btn-ghost"
+                      >
+                        Change answer
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Show details toggle */}
-                  <button 
-                    type="button"
-                    onClick={() => setShowModelDetails(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                    className="mt-3 font-mono text-[12px] uppercase tracking-[0.06em] text-ink/60 underline hover:text-vermilion"
-                  >
-                    {detailsVisible ? "▼ Hide" : "▶ Show"} details
-                  </button>
-
-                  {/* Details panel */}
-                  {detailsVisible && (
-                    <div className="mt-4 space-y-4 border-t border-rule pt-4">
-                      {modelAgreement.map(({ model, result }) => {
-                        const leftCount = result.optionCounts[item.leftOptionId] || 0;
-                        const rightCount = result.optionCounts[item.rightOptionId] || 0;
-                        const refusalCount = result.refusalCount;
-                        const nonAnswerCount = result.nonAnswerCount;
-                        const nonvalidCount = refusalCount + nonAnswerCount;
-                        const usableCount = result.validCount;
+                  {/* Right: AI models */}
+                  <div>
+                    <div className="label">AI MODELS ON THIS QUESTION</div>
+                    <div className="mt-2 text-[18px] font-semibold leading-snug text-ink md:text-[20px]">{agreementSummary}</div>
+                    
+                    {/* Square chips in one row at mobile */}
+                    <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
+                      {modelAgreement.map(({ model, state, chipName }) => {
+                        const chipColor = state === "yes" ? '#ff3d1f' : '#6c6f75';
+                        const textColor = state === "no" ? '#6c6f75' : '#0c0c0d';
+                        const mark = state === "yes" ? '✓' : state === "tie" ? '=' : '×';
                         
-                        const leftPct = usableCount > 0 ? Math.round((leftCount / usableCount) * 100) : 0;
-                        const rightPct = usableCount > 0 ? Math.round((rightCount / usableCount) * 100) : 0;
-
                         return (
-                          <div key={model.id}>
-                            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ink">{model.displayName}</div>
-                            <div className="mt-2 space-y-1.5 text-[13px]">
-                              <div className="flex items-center justify-between gap-3 text-ink/65">
-                                <span className={userChoice === 0 ? "font-medium text-ink" : ""}>{item.left}</span>
-                                <span className={`num font-medium ${userChoice === 0 ? "text-ink" : "text-ink/65"}`}>{leftCount}/{usableCount} ({leftPct}%)</span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3 text-ink/65">
-                                <span className={userChoice === 1 ? "font-medium text-ink" : ""}>{item.right}</span>
-                                <span className={`num font-medium ${userChoice === 1 ? "text-ink" : "text-ink/65"}`}>{rightCount}/{usableCount} ({rightPct}%)</span>
-                              </div>
-                              {nonvalidCount > 0 && (
-                                <div className="flex items-center justify-between gap-3 text-ink/50">
-                                  <span>{refusalCount > 0 ? "Refusal" : "No answer"}</span>
-                                  <span className="num font-medium">{nonvalidCount}/{result.n}</span>
-                                </div>
-                              )}
-                            </div>
-                            {usableCount < result.n && (
-                              <div className="mt-2 text-[11px] text-ink/45">
-                                Percentages among {usableCount} usable answers; {nonvalidCount} of {result.n} refused or gave no answer
-                              </div>
-                            )}
+                          <div 
+                            key={model.id} 
+                            className="inline-flex items-center gap-1.5 border border-ink/20 bg-transparent px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] md:gap-2 md:px-2.5 md:text-[11px]"
+                            style={{ color: textColor }}
+                          >
+                            <span style={{ width: '12px', textAlign: 'center', fontSize: '13px', lineHeight: '1', color: chipColor }}>
+                              {mark}
+                            </span>
+                            <span>{chipName}</span>
                           </div>
                         );
                       })}
                     </div>
-                  )}
+
+                    {/* Show details toggle */}
+                    <button 
+                      type="button"
+                      onClick={() => setShowModelDetails(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                      className="mt-3 font-mono text-[12px] uppercase tracking-[0.06em] text-ink/60 underline hover:text-vermilion"
+                    >
+                      {detailsVisible ? "▼ Hide" : "▶ Show"} details
+                    </button>
+
+                    {/* Details panel */}
+                    {detailsVisible && (
+                      <div className="mt-4 space-y-4 border-t border-rule pt-4">
+                        {modelAgreement.map(({ model, result, matchingCount, nonMatchingCount }) => {
+                          const leftCount = result.optionCounts[item.leftOptionId] || 0;
+                          const rightCount = result.optionCounts[item.rightOptionId] || 0;
+                          const refusalCount = result.refusalCount;
+                          const nonAnswerCount = result.nonAnswerCount;
+                          const nonvalidCount = refusalCount + nonAnswerCount;
+
+                          return (
+                            <div key={model.id}>
+                              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-ink">{model.displayName}</div>
+                              <div className="mt-2 space-y-1.5 text-[13px]">
+                                <div className="flex items-center justify-between gap-3 text-ink/65">
+                                  <span className={userChoice === 0 ? "font-medium text-ink" : ""}>{item.left}</span>
+                                  <span className={`num font-medium ${userChoice === 0 ? "text-ink" : "text-ink/65"}`}>{leftCount}/{result.validCount}</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-3 text-ink/65">
+                                  <span className={userChoice === 1 ? "font-medium text-ink" : ""}>{item.right}</span>
+                                  <span className={`num font-medium ${userChoice === 1 ? "text-ink" : "text-ink/65"}`}>{rightCount}/{result.validCount}</span>
+                                </div>
+                                {nonvalidCount > 0 && (
+                                  <div className="flex items-center justify-between gap-3 text-ink/50">
+                                    <span>{refusalCount > 0 ? "Refusal" : "No answer"}</span>
+                                    <span className="num font-medium">{nonvalidCount}/{result.n}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Share block (exact /try production component) */}
+                {/* Share block */}
                 <div className="mt-10 border-t border-rule pt-8">
                   <Share 
                     path={`/quiz-v4/q/${item.id}?a=${userChoice === 0 ? item.leftOptionId : item.rightOptionId}`}
-                    text={`${WRAPPER} I answered this ethical dilemma on Moral Gradient. ${agreementSummary.toLowerCase()}.`}
+                    text={`${WRAPPER} I answered this ethical dilemma on Moral Gradient. ${agreementSummary.toLowerCase()}`}
                     subject={`${item.title} - A dilemma for you`}
-                    emailBody={`${WRAPPER}\n\n${item.question}\n\n${item.scenario.replace(/\n\n/g, '\n')}\n\nI chose: ${userChoice === 0 ? item.left : item.right}\n\n${agreementSummary}. Try it yourself and see how AI models chose.`}
+                    emailBody={`${WRAPPER}\n\n${item.question}\n\n${item.scenario.replace(/\n\n/g, '\n')}\n\nI chose: ${userChoice === 0 ? item.left : item.right}\n\n${agreementSummary} Try it yourself and see how AI models chose.`}
                     label="Share your answer"
                   />
                   <p className="mt-2 text-[13px] leading-6 text-ink/60">The card shows the question and your answer.</p>
                 </div>
 
-                {/* Background and AI relevance (secondary, muted) */}
+                {/* Background and AI relevance (muted) */}
                 <div className="mt-10 space-y-6 border-t border-rule pt-8">
                   <div>
                     <div className="label !mb-2 !text-ink/45">BACKGROUND</div>

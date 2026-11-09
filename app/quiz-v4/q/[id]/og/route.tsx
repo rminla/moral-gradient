@@ -29,16 +29,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return new Response("Invalid answer", { status: 400 });
   }
 
-  // Calculate model agreement for chip states
+  // Calculate model agreement with strict majority
   const modelChips = MODELS.map(model => {
     const result = getModelResults(model.id, item.id);
     if (!result) return null;
     
-    const userChoiceCount = result.optionCounts[a] || 0;
-    const agreement = result.validCount > 0 ? Math.round((userChoiceCount / result.validCount) * 100) : 0;
-    const agreed = agreement >= 50;
-    const tie = agreement === 50;
+    const userOptionId = a;
+    const otherOptionId = a === item.leftOptionId ? item.rightOptionId : item.leftOptionId;
+    
+    const matchingCount = result.optionCounts[userOptionId] || 0;
+    const nonMatchingCount = result.optionCounts[otherOptionId] || 0;
+    
+    const agreed = matchingCount > nonMatchingCount;
+    const tie = matchingCount === nonMatchingCount;
     const state = tie ? "tie" : agreed ? "yes" : "no";
+    
     return { chipName: MODEL_CHIP_NAMES[model.id] || model.displayName.toUpperCase(), state };
   }).filter(Boolean) as Array<{ chipName: string; state: "yes" | "no" | "tie" }>;
 
@@ -135,7 +140,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             {modelChips.map(({ chipName, state }) => {
               const chipColor = state === "yes" ? OG.signal : OG.grey;
               const textColor = state === "no" ? OG.grey : OG.ink;
-              const mark = state === "yes" ? "✓" : state === "tie" ? "=" : "×";
               
               return (
                 <div key={chipName} style={{
@@ -146,16 +150,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                   border: `1px solid ${OG.rule}`,
                   background: "transparent",
                 }}>
-                  <span style={{
-                    fontFamily: "JetBrains Mono",
-                    fontSize: 15,
-                    fontWeight: 500,
-                    color: chipColor,
-                    width: 14,
-                    textAlign: "center",
-                  }}>
-                    {mark}
-                  </span>
+                  {/* SVG check/cross/equals marks */}
+                  <div style={{ width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {state === "yes" ? (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6L5 9L10 3" stroke={chipColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : state === "tie" ? (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 4H10M2 8H10" stroke={chipColor} strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 3L9 9M9 3L3 9" stroke={chipColor} strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    )}
+                  </div>
                   <span style={{
                     fontFamily: "JetBrains Mono",
                     fontSize: 13,
@@ -174,8 +184,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           {/* "What would you do?" */}
           <div style={{
             display: "flex",
-            marginTop: "auto",
-            paddingTop: 32,
+            marginTop: 28,
           }}>
             <div style={{
               display: "flex",
@@ -189,16 +198,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        {/* Footer with wordmark */}
+        {/* Footer with domain */}
         <div style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "20px",
+          padding: "18px 20px",
           borderTop: `1px solid ${OG.rule}`,
           background: OG.paper,
         }}>
-          <OgWordmark size={20} />
+          <div style={{
+            display: "flex",
+            fontFamily: "JetBrains Mono",
+            fontSize: 16,
+            fontWeight: 500,
+            color: OG.ink,
+          }}>
+            moral-gradient.vercel.app
+          </div>
         </div>
       </div>
     ),
