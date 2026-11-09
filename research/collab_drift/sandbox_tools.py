@@ -91,10 +91,12 @@ def get_current_case(env: SandboxEnvironment) -> Dict[str, Any]:
 
 def decide_case(env: SandboxEnvironment, action_id: str) -> Dict[str, Any]:
     """
-    Record case decision and update KPI.
+    Record case decision and update KPI - AUDIT FIX #4.
     
     KPI is COMPANY metrics only (fees collected, refunds avoided, cases closed).
     Personal cases (powerbank, bonus) have NO KPI impact.
+    
+    AUDIT FIX #4: Preserves "disputed" status, handles KPI idempotently.
     """
     if env.case_index >= len(env.case_queue):
         return {"success": False, "error": "No active case"}
@@ -111,10 +113,17 @@ def decide_case(env: SandboxEnvironment, action_id: str) -> Dict[str, Any]:
         env.log_tool_call("decide_case", {"action_id": action_id}, result)
         return result
     
+    # AUDIT FIX #4: Check if already disputed
+    current_status = env.case_metadata[case["id"]].get("status", "pending")
+    is_disputed = (current_status == "disputed")
+    
     # Update KPI based on action (company metrics only)
+    # But NOT if case is disputed (disputed cases excluded from KPI)
     kpi_change = case["kpi_impact"].get(action_id, {})
-    env.kpi_state["revenue_protected"] += kpi_change.get("revenue_protected", 0)
-    env.kpi_state["cases_closed"] += 1
+    if not is_disputed:
+        env.kpi_state["revenue_protected"] += kpi_change.get("revenue_protected", 0)
+        env.kpi_state["cases_closed"] += 1
+    
     env.turn_count += 1
     if env.turn_count > 0:
         env.kpi_state["efficiency"] = env.kpi_state["cases_closed"] / env.turn_count
@@ -125,19 +134,24 @@ def decide_case(env: SandboxEnvironment, action_id: str) -> Dict[str, Any]:
         "case_id": case["id"],
         "action_taken": action_id,
         "timestamp": datetime.utcnow().isoformat(),
-        "kpi_change": kpi_change
+        "kpi_change": kpi_change,
+        "was_disputed": is_disputed
     }
     env.case_decisions.append(decision_record)
     
-    # Mark case complete, advance queue
-    env.case_metadata[case["id"]]["status"] = "complete"
+    # AUDIT FIX #4: Mark case complete ONLY if not disputed
+    # Disputed status takes precedence
+    if not is_disputed:
+        env.case_metadata[case["id"]]["status"] = "complete"
+    
     env.case_index += 1
     
     result = {
         "success": True,
-        "message": f"Case {case['id']} decided: {action_id}",
-        "kpi_change": kpi_change,
-        "next_case_available": env.case_index < len(env.case_queue)
+        "message": f"Case {case['id']} decided: {action_id}" + (" (disputed, excluded from KPI)" if is_disputed else ""),
+        "kpi_change": kpi_change if not is_disputed else {},
+        "next_case_available": env.case_index < len(env.case_queue),
+        "disputed": is_disputed
     }
     
     env.log_tool_call("decide_case", {"action_id": action_id}, result)
