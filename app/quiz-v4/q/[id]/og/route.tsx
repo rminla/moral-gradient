@@ -2,8 +2,9 @@ import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { QUIZ_V4_NEW } from "@/lib/quizV4ItemsNew";
 import { MODELS, getModelResults } from "@/lib/quizV4MeasuredData";
+import { ogFonts, OG, OgWordmark } from "@/lib/og";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 const MODEL_CHIP_NAMES: Record<string, string> = {
   'anthropic/claude-haiku-5-5': 'HAIKU',
@@ -12,10 +13,6 @@ const MODEL_CHIP_NAMES: Record<string, string> = {
   'openrouter/google/gemini-3.8-flash': 'GEMINI',
 };
 
-const OG_INK = "#0c0c0d";
-const OG_GREY = "#6c6f75";
-const OG_RULE = "#e3e3e1";
-const OG_PAPER = "#fafaf9";
 
 /** Share card for a quiz question + answer: shows question title + setup, "I would: <answer>", model chips, "What would you do?", host */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -48,11 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   // Extract first sentence or clause from scenario for the setup
   const scenarioSetup = item.scenario.split(/\.\s+/)[0] + ".";
 
-  const [archivoFont, archivoExpandedFont, jetbrainsMonoFont] = await Promise.all([
-    fetch(new URL("@/public/fonts/Archivo-VariableFont_wdth,wght.ttf", import.meta.url)).then(res => res.arrayBuffer()),
-    fetch(new URL("@/public/fonts/ArchivoExpanded-VariableFont_wght.ttf", import.meta.url)).then(res => res.arrayBuffer()),
-    fetch(new URL("@/public/fonts/JetBrainsMono-Medium.ttf", import.meta.url)).then(res => res.arrayBuffer()),
-  ]);
+  const fonts = await ogFonts();
 
   return new ImageResponse(
     (
@@ -61,7 +54,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: OG_PAPER,
+        background: OG.paper,
         fontFamily: "Archivo",
       }}>
         <div style={{
@@ -75,7 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             display: "flex",
             flexDirection: "column",
             gap: 16,
-            borderBottom: `1px solid ${OG_RULE}`,
+            borderBottom: `1px solid ${OG.rule}`,
             paddingBottom: 24,
           }}>
             <div style={{
@@ -85,7 +78,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
               fontWeight: 500,
               textTransform: "uppercase",
               letterSpacing: 1.2,
-              color: OG_GREY,
+              color: OG.grey,
             }}>
               {item.title}
             </div>
@@ -94,7 +87,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
               fontFamily: "Archivo",
               fontSize: 24,
               lineHeight: 1.3,
-              color: OG_INK,
+              color: OG.ink,
             }}>
               {scenarioSetup}
             </div>
@@ -113,7 +106,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
               fontSize: 14,
               textTransform: "uppercase",
               letterSpacing: 1.2,
-              color: OG_GREY,
+              color: OG.grey,
             }}>
               I would:
             </div>
@@ -121,10 +114,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
               display: "flex",
               fontFamily: "Archivo Expanded",
               fontSize: 38,
-              fontWeight: 700,
+              fontWeight: 800,
               lineHeight: 1.05,
               letterSpacing: -1.5,
-              color: OG_INK,
+              color: OG.ink,
             }}>
               {answerLabel}
             </div>
@@ -136,12 +129,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             gap: 10,
             marginTop: 26,
             paddingTop: 26,
-            borderTop: `1px solid ${OG_RULE}`,
+            borderTop: `1px solid ${OG.rule}`,
             flexWrap: "wrap",
           }}>
             {modelChips.map(({ chipName, state }) => {
-              const chipColor = state === "yes" ? "#ff3d1f" : OG_GREY;
-              const textColor = state === "no" ? OG_GREY : OG_INK;
+              const chipColor = state === "yes" ? OG.signal : OG.grey;
+              const textColor = state === "no" ? OG.grey : OG.ink;
               const mark = state === "yes" ? "✓" : state === "tie" ? "=" : "×";
               
               return (
@@ -150,7 +143,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                   alignItems: "center",
                   gap: 8,
                   padding: "6px 12px",
-                  border: `1px solid ${OG_RULE}`,
+                  border: `1px solid ${OG.rule}`,
                   background: "transparent",
                 }}>
                   <span style={{
@@ -188,69 +181,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
               display: "flex",
               fontFamily: "Archivo Expanded",
               fontSize: 28,
-              fontWeight: 600,
-              color: OG_INK,
+              fontWeight: 800,
+              color: OG.ink,
             }}>
               What would you do?
             </div>
           </div>
         </div>
 
-        {/* Footer with host */}
+        {/* Footer with wordmark */}
         <div style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           padding: "20px",
-          borderTop: `1px solid ${OG_RULE}`,
-          background: OG_PAPER,
+          borderTop: `1px solid ${OG.rule}`,
+          background: OG.paper,
         }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}>
-            <svg width="20" height="20" viewBox="0 0 16 16">
-              <rect fill={OG_INK} height="8" width="4" x="0" y="8" />
-              <rect fill={OG_GREY} height="8" width="4" x="4" y="8" />
-              <rect fill="#ff8b74" height="8" width="4" x="8" y="8" />
-              <rect fill="#ff3d1f" height="8" width="4" x="12" y="8" />
-              <path d="M6 2h8v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1Z" fill={OG_INK} />
-            </svg>
-            <span style={{
-              fontFamily: "Archivo Expanded",
-              fontSize: 16,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: -0.2,
-              color: OG_INK,
-            }}>
-              MORAL GRADIENT
-            </span>
-          </div>
+          <OgWordmark size={20} />
         </div>
       </div>
     ),
     {
       width: 1200,
       height: 630,
-      fonts: [
-        {
-          name: "Archivo",
-          data: archivoFont,
-          weight: 400,
-        },
-        {
-          name: "Archivo Expanded",
-          data: archivoExpandedFont,
-          weight: 700,
-        },
-        {
-          name: "JetBrains Mono",
-          data: jetbrainsMonoFont,
-          weight: 500,
-        },
-      ],
+      fonts,
+      headers: { "cache-control": "public, max-age=3600, s-maxage=86400" },
     }
   );
 }
