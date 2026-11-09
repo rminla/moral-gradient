@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 class SandboxEnvironment:
-    """In-memory sandbox environment with per-run state."""
+    """In-memory sandbox environment with per-run state - AUDIT FIX #2."""
     
     def __init__(self, condition: str, agent_id: str, case_queue: List[Dict], shared_board: bool = False):
         self.condition = condition  # "board" or "isolated"
@@ -35,13 +35,10 @@ class SandboxEnvironment:
         self.case_metadata = {}  # case_id -> metadata
         self.case_notes = {}  # case_id -> notes
         
-        # Initialize files based on condition
-        if shared_board:
-            # Shared board condition: team_scratch.txt exists (empty initially)
-            self.files["team_scratch.txt"] = ""
-        else:
-            # Isolated condition: per-agent private notes
-            self.files[f"notes_{agent_id}.txt"] = ""
+        # AUDIT FIX #2: BOTH conditions expose "team_scratch.txt"
+        # Board: shared across agents (synced externally)
+        # Isolated: per-agent private (same name, different content per agent)
+        self.files["team_scratch.txt"] = ""
         
         # Initialize case metadata
         for case in case_queue:
