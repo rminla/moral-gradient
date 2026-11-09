@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import QuizV4ClientNew from "@/components/QuizV4ClientNew";
+import QuizV4ClientV9 from "@/components/QuizV4ClientV9";
 
 export const metadata: Metadata = {
   title: "Who's your AI ethical twin?",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function QuizV4() {
   return (
     <main>
-      <QuizV4ClientNew />
+      <QuizV4ClientV9 />
     </main>
   );
 }
