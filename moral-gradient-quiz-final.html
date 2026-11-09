@@ -285,7 +285,7 @@
         ctx.fillText(line, pad, y);
         y += isLandscape ? 38 : 44;
       });
-      y += isLandscape ? 10 : 20;
+      y += isLandscape ? 15 : 25;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
       ctx.font = (isLandscape ? '18px' : '20px') + ' -apple-system, sans-serif';
       const excerptLines = wrapText(ctx, q.excerpt, w - pad * 2);
@@ -293,42 +293,25 @@
         ctx.fillText(line, pad, y);
         y += isLandscape ? 26 : 28;
       });
-      y += isLandscape ? 30 : 50;
+      const labelY = isLandscape ? h * 0.42 : h * 0.45;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.font = '600 ' + (isLandscape ? '16px' : '18px') + ' -apple-system, sans-serif';
-      ctx.fillText('I would:', pad, y);
-      y += isLandscape ? 30 : 40;
+      ctx.fillText('I would:', pad, labelY);
+      const answerY = labelY + (isLandscape ? 45 : 55);
       ctx.fillStyle = '#ff4444';
       ctx.font = 'bold ' + (isLandscape ? '52px' : '62px') + ' Arial';
       const answerLines = wrapText(ctx, userAnswer, w - pad * 2);
-      answerLines.forEach(line => {
-        ctx.fillText(line, pad, y);
-        y += isLandscape ? 60 : 70;
+      let answerCurrentY = answerY;
+      answerLines.forEach((line, idx) => {
+        ctx.fillText(line, pad, answerCurrentY);
+        if (idx < answerLines.length - 1) {
+          answerCurrentY += isLandscape ? 60 : 70;
+        }
       });
-      y += isLandscape ? 30 : 40;
-      const chipY = y;
-      const chipW = isLandscape ? 110 : 120;
-      const chipH = isLandscape ? 36 : 42;
-      const chipGap = 12;
-      MODEL_DATA.models.forEach((model, i) => {
-        const key = model.id + '|' + q.id;
-        const mr = MODEL_DATA.results[key];
-        if (!mr) return;
-        const myOptCount = mr.optionCounts[q.options[userChoice].id] || 0;
-        const otherOptCount = mr.optionCounts[q.options[1 - userChoice].id] || 0;
-        const agreed = myOptCount > otherOptCount;
-        const chipX = pad + i * (chipW + chipGap);
-        ctx.fillStyle = agreed ? '#ff4444' : 'rgba(255, 255, 255, 0.15)';
-        ctx.fillRect(chipX, chipY, chipW, chipH);
-        ctx.fillStyle = agreed ? '#000000' : 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '600 ' + (isLandscape ? '14px' : '16px') + ' -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(model.displayName, chipX + chipW / 2, chipY + chipH / 2 + 5);
-      });
-      ctx.textAlign = 'left';
-      y = chipY + chipH + (isLandscape ? 35 : 45);
+      const footerBaseY = h - pad - (isLandscape ? 110 : 140);
+      const outcomeY = footerBaseY - (isLandscape ? 50 : 65);
       ctx.fillStyle = '#ffffff';
-      ctx.font = (isLandscape ? '24px' : '28px') + ' -apple-system, sans-serif';
+      ctx.font = (isLandscape ? '20px' : '24px') + ' -apple-system, sans-serif';
       let outcomeText = '';
       if (stats.agreementCount === 4) {
         outcomeText = 'Every AI agreed with me.';
@@ -339,20 +322,50 @@
       } else {
         outcomeText = stats.agreementCount + ' of 4 AIs agreed with me.';
       }
-      ctx.fillText(outcomeText, pad, y);
-      y += isLandscape ? 60 : 80;
+      ctx.fillText(outcomeText, pad, outcomeY);
+      const chipW = isLandscape ? 250 : 230;
+      const chipH = isLandscape ? 58 : 68;
+      const chipGap = isLandscape ? 14 : 16;
+      const chipsPerRow = isLandscape ? 4 : 2;
+      const totalChipWidth = isLandscape ? (chipW * 4 + chipGap * 3) : (chipW * 2 + chipGap);
+      const chipStartX = pad;
+      const chipBaseY = footerBaseY - (isLandscape ? 120 : 160);
+      MODEL_DATA.models.forEach((model, i) => {
+        const key = model.id + '|' + q.id;
+        const mr = MODEL_DATA.results[key];
+        if (!mr) return;
+        const myOptCount = mr.optionCounts[q.options[userChoice].id] || 0;
+        const otherOptCount = mr.optionCounts[q.options[1 - userChoice].id] || 0;
+        const agreed = myOptCount > otherOptCount;
+        const chipPct = agreed ? pct(myOptCount / mr.validCount) : pct(otherOptCount / mr.validCount);
+        const rowIdx = Math.floor(i / chipsPerRow);
+        const colIdx = i % chipsPerRow;
+        const chipX = chipStartX + colIdx * (chipW + chipGap);
+        const chipY = chipBaseY + rowIdx * (chipH + chipGap);
+        ctx.fillStyle = agreed ? '#ff4444' : 'rgba(255, 255, 255, 0.15)';
+        ctx.fillRect(chipX, chipY, chipW, chipH);
+        ctx.fillStyle = agreed ? '#000000' : 'rgba(255, 255, 255, 0.85)';
+        ctx.font = '700 ' + (isLandscape ? '15px' : '17px') + ' -apple-system, sans-serif';
+        ctx.fillText(model.fullName, chipX + 12, chipY + (isLandscape ? 24 : 28));
+        ctx.fillStyle = agreed ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '600 ' + (isLandscape ? '20px' : '23px') + ' -apple-system, sans-serif';
+        ctx.fillText(chipPct, chipX + 12, chipY + (isLandscape ? 48 : 56));
+      });
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillRect(pad, footerBaseY, w - pad * 2, 1);
+      let footerY = footerBaseY + (isLandscape ? 35 : 45);
       ctx.fillStyle = '#ff4444';
       ctx.font = '600 ' + (isLandscape ? '24px' : '28px') + ' -apple-system, sans-serif';
-      ctx.fillText('What would you do?', pad, y);
-      y += isLandscape ? 45 : 60;
+      ctx.fillText('What would you do?', pad, footerY);
+      footerY += isLandscape ? 35 : 45;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.font = (isLandscape ? '14px' : '16px') + ' -apple-system, sans-serif';
-      ctx.fillText('moral-gradient.vercel.app', pad, y);
+      ctx.fillText('moral-gradient.vercel.app', pad, footerY);
       return canvas;
     }
     
     function generateResultsShareCard(size = 'landscape') {
-      const { bestMatch } = calculateMatch();
+      const { bestMatch, modelScores } = calculateMatch();
       const isLandscape = size === 'landscape';
       const canvas = isLandscape ? document.getElementById('landscapeCanvas') : document.getElementById('verticalCanvas');
       const ctx = canvas.getContext('2d');
@@ -371,40 +384,61 @@
       ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
       ctx.font = '600 ' + (isLandscape ? '20px' : '24px') + ' -apple-system, sans-serif';
       ctx.fillText('My closest AI match:', pad, y);
-      y += isLandscape ? 50 : 60;
+      const labelY = y;
+      const nameY = labelY + (isLandscape ? 65 : 75);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold ' + (isLandscape ? '72px' : '84px') + ' Arial';
       const nameLines = wrapText(ctx, bestMatch.fullName, w - pad * 2);
-      nameLines.forEach(line => {
-        ctx.fillText(line, pad, y);
-        y += isLandscape ? 82 : 96;
+      let nameCurrentY = nameY;
+      nameLines.forEach((line, idx) => {
+        ctx.fillText(line, pad, nameCurrentY);
+        if (idx < nameLines.length - 1) {
+          nameCurrentY += isLandscape ? 82 : 96;
+        }
       });
-      y += isLandscape ? 20 : 30;
+      const scoreY = nameCurrentY + (isLandscape ? 55 : 70);
       ctx.font = 'bold ' + (isLandscape ? '48px' : '56px') + ' -apple-system, sans-serif';
       ctx.fillStyle = '#ff4444';
-      ctx.fillText(Math.round(bestMatch.score) + '% agreement', pad, y);
-      y += isLandscape ? 60 : 80;
-      const iconSize = isLandscape ? 16 : 20;
-      const iconGap = isLandscape ? 8 : 10;
+      ctx.fillText(Math.round(bestMatch.score) + '% agreement', pad, scoreY);
+      const footerBaseY = h - pad - (isLandscape ? 110 : 140);
+      const stripY = footerBaseY - (isLandscape ? 100 : 130);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.font = '600 ' + (isLandscape ? '13px' : '15px') + ' -apple-system, sans-serif';
+      ctx.fillText('Your 10 answers (match = filled):', pad, stripY - 10);
+      const iconSize = isLandscape ? 20 : 24;
+      const iconGap = isLandscape ? 10 : 12;
       QUIZ_DATA.forEach((q, i) => {
         if (!(q.id in answers)) return;
         const userChoice = answers[q.id];
+        const userOptionId = q.options[userChoice].id;
+        const key = bestMatch.modelId + '|' + q.id;
+        const mr = MODEL_DATA.results[key];
+        let matched = false;
+        if (mr) {
+          const myOptCount = mr.optionCounts[userOptionId] || 0;
+          const otherOptCount = mr.optionCounts[q.options[1 - userChoice].id] || 0;
+          matched = myOptCount > otherOptCount;
+        }
         const iconX = pad + i * (iconSize + iconGap);
-        ctx.fillStyle = userChoice === 0 ? '#ff4444' : 'rgba(255, 255, 255, 0.3)';
-        ctx.fillRect(iconX, y, iconSize, iconSize);
+        if (matched) {
+          ctx.fillStyle = '#ff4444';
+          ctx.fillRect(iconX, stripY + 10, iconSize, iconSize);
+        } else {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(iconX, stripY + 10, iconSize, iconSize);
+        }
       });
-      y += iconSize + (isLandscape ? 50 : 70);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillRect(pad, footerBaseY, w - pad * 2, 1);
+      let footerY = footerBaseY + (isLandscape ? 35 : 45);
       ctx.fillStyle = '#ff4444';
-      ctx.font = '600 ' + (isLandscape ? '28px' : '32px') + ' -apple-system, sans-serif';
-      ctx.fillText('Which AI are you most like?', pad, y);
-      y += isLandscape ? 50 : 70;
+      ctx.font = '600 ' + (isLandscape ? '24px' : '28px') + ' -apple-system, sans-serif';
+      ctx.fillText('Which AI are you most like?', pad, footerY);
+      footerY += isLandscape ? 35 : 45;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.font = (isLandscape ? '14px' : '16px') + ' -apple-system, sans-serif';
-      ctx.fillText('moral-gradient.vercel.app', pad, y);
-      y += isLandscape ? 45 : 60;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = (isLandscape ? '13px' : '15px') + ' -apple-system, sans-serif';
-      ctx.fillText('Just for fun', pad, y);
+      ctx.fillText('moral-gradient.vercel.app', pad, footerY);
       return canvas;
     }
     
@@ -504,7 +538,7 @@
           container.appendChild(canvasClone);
         }
       }, 10);
-      return renderHeader() + '<div class="container"><div class="max-w-800"><div class="hero-answer"><div class="hero-answer-label">You chose</div><div class="hero-answer-text wide">' + userAnswer + '<span class="dot">.</span></div></div><div class="action-row"><button class="btn-primary" onclick="nextDilemma()">' + (isLast && allAnswered ? 'See your closest match →' : 'Next question →') + '</button><button class="btn-secondary" onclick="toggleShareContent()">Share answer</button><button onclick="changeAnswer()" class="text-link">Change answer</button></div><div class="model-summary"><div class="model-summary-header">AI models on this question</div><div class="model-summary-headline">' + headline + '</div><div class="model-chips">' + chipsHtml + '</div><button class="text-link" style="margin-top: 0.75rem;" onclick="toggleModelDetails()">▶ ' + (showModelDetails ? 'Hide' : 'Show') + ' details</button>' + detailsHtml + '</div><div class="share-section"><div class="share-content ' + (showShareContent ? 'visible' : '') + '"><div class="share-grid"><div><div class="label mb-2">Share this question and your answer</div><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;"><button class="btn-ghost" onclick="window.location.href=\'mailto:?subject=Moral%20Gradient&body=https://moral-gradient.vercel.app\'"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5h20v14H2V5Zm2 2v.4l8 5.2 8-5.2V7H4Zm16 2.8-8 5.2-8-5.2V17h16V9.8Z"/></svg>Email</button><a class="btn-ghost" href="https://x.com/intent/post?text=Moral%20Gradient&url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.5 8.6L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8-9.2L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.4 3.9h-2L17.7 20Z"/></svg>X</a><a class="btn-ghost" href="https://www.linkedin.com/sharing/share-offsite/?url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.8v1.6h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-4.9c0-1.17-.02-2.68-1.63-2.68-1.64 0-1.89 1.28-1.89 2.6V21h-4V9.75Z"/></svg>LinkedIn</a><button class="btn-ghost" onclick="copyLink()"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 1 0-1.4-1.4l-3.5 3.5a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>Copy link</button><button class="btn-ghost" onclick="downloadCard(\'question\')">Download PNG</button></div><p class="share-note">Shares the question and that you answered it, not your specific choice.</p></div><div><div class="size-toggle"><button class="' + (currentCardSize === 'landscape' ? 'active' : '') + '" onclick="setCardSize(\'landscape\')">Landscape</button><button class="' + (currentCardSize === 'vertical' ? 'active' : '') + '" onclick="setCardSize(\'vertical\')">Vertical</button></div><div class="card-frame"></div></div></div></div></div><div style="text-align: center; padding: 1.5rem 0;"><button onclick="goToQuestion(0)" class="text-link">← Start over</button></div></div></div>';
+      return renderHeader() + '<div class="container"><div class="max-w-800"><div class="hero-answer"><div class="hero-answer-label">You chose</div><div class="hero-answer-text wide">' + userAnswer + '<span class="dot">.</span></div></div><div class="action-row"><button class="btn-primary" onclick="nextDilemma()">' + (isLast && allAnswered ? 'See your closest match →' : 'Next question →') + '</button><button class="btn-secondary" onclick="toggleShareContent()">Share answer</button><button onclick="changeAnswer()" class="text-link">Change answer</button></div><div class="model-summary"><div class="model-summary-header">AI models on this question</div><div class="model-summary-headline">' + headline + '</div><div class="model-chips">' + chipsHtml + '</div><button class="text-link" style="margin-top: 0.75rem;" onclick="toggleModelDetails()">▶ ' + (showModelDetails ? 'Hide' : 'Show') + ' details</button>' + detailsHtml + '</div>' + (showShareContent ? '<div class="share-section"><div class="share-content visible"><div class="share-grid"><div><div class="label mb-2">Share this question and your answer</div><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;"><button class="btn-ghost" onclick="window.location.href=\'mailto:?subject=Moral%20Gradient&body=https://moral-gradient.vercel.app\'"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5h20v14H2V5Zm2 2v.4l8 5.2 8-5.2V7H4Zm16 2.8-8 5.2-8-5.2V17h16V9.8Z"/></svg>Email</button><a class="btn-ghost" href="https://x.com/intent/post?text=Moral%20Gradient&url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.5 8.6L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8-9.2L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.4 3.9h-2L17.7 20Z"/></svg>X</a><a class="btn-ghost" href="https://www.linkedin.com/sharing/share-offsite/?url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.8v1.6h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-4.9c0-1.17-.02-2.68-1.63-2.68-1.64 0-1.89 1.28-1.89 2.6V21h-4V9.75Z"/></svg>LinkedIn</a><button class="btn-ghost" onclick="copyLink()"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 1 0-1.4-1.4l-3.5 3.5a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>Copy link</button><button class="btn-ghost" onclick="downloadCard(\'question\')">Download PNG</button></div><p class="share-note">Shares the question and that you answered it, not your specific choice.</p></div><div><div class="size-toggle"><button class="' + (currentCardSize === 'landscape' ? 'active' : '') + '" onclick="setCardSize(\'landscape\')">Landscape</button><button class="' + (currentCardSize === 'vertical' ? 'active' : '') + '" onclick="setCardSize(\'vertical\')">Vertical</button></div><div class="card-frame"></div></div></div></div></div>' : '') + '<div style="text-align: center; padding: 1.5rem 0;"><button onclick="goToQuestion(0)" class="text-link">← Start over</button></div></div></div>';
     }
     
     function renderResultsView() {
@@ -523,7 +557,7 @@
           container.appendChild(canvasClone);
         }
       }, 10);
-      return renderHeader() + '<div class="container"><div class="max-w-800"><div class="results-hero"><div class="results-label">Your closest AI match</div><div class="results-match wide">' + bestMatch.fullName + '</div><div class="results-score num">' + Math.round(bestMatch.score) + '% agreement</div><div class="results-disclaimer">This is a playful measure of choice similarity across 10 moral dilemmas. It\'s for fun, not a validated psychological assessment.</div></div><div class="action-row"><button class="btn-secondary" onclick="toggleShareContent()">Share result</button><button class="btn-secondary" onclick="startOver()">Start over</button></div><div class="share-section"><div class="share-content ' + (showShareContent ? 'visible' : '') + '"><div class="share-grid"><div><div class="label mb-2">Share your result</div><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;"><button class="btn-ghost" onclick="window.location.href=\'mailto:?subject=Moral%20Gradient&body=https://moral-gradient.vercel.app\'"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5h20v14H2V5Zm2 2v.4l8 5.2 8-5.2V7H4Zm16 2.8-8 5.2-8-5.2V17h16V9.8Z"/></svg>Email</button><a class="btn-ghost" href="https://x.com/intent/post?text=Moral%20Gradient&url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.5 8.6L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8-9.2L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.4 3.9h-2L17.7 20Z"/></svg>X</a><a class="btn-ghost" href="https://www.linkedin.com/sharing/share-offsite/?url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.8v1.6h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-4.9c0-1.17-.02-2.68-1.63-2.68-1.64 0-1.89 1.28-1.89 2.6V21h-4V9.75Z"/></svg>LinkedIn</a><button class="btn-ghost" onclick="copyLink()"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 1 0-1.4-1.4l-3.5 3.5a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>Copy link</button><button class="btn-ghost" onclick="downloadCard(\'results\')">Download PNG</button></div></div><div><div class="size-toggle"><button class="' + (currentCardSize === 'landscape' ? 'active' : '') + '" onclick="setCardSize(\'landscape\')">Landscape</button><button class="' + (currentCardSize === 'vertical' ? 'active' : '') + '" onclick="setCardSize(\'vertical\')">Vertical</button></div><div class="card-frame"></div></div></div></div></div><div class="model-ranking"><div class="model-results-header">Agreement with each model</div>' + modelScores.map((m, i) => '<div class="ranking-row ' + (i === 0 ? 'top' : '') + '"><div class="ranking-model">' + m.fullName + '</div><div class="ranking-score num">' + Math.round(m.score) + '%</div></div>').join('') + '</div><div style="font-size: 13px; line-height: 1.6; color: rgba(26, 26, 26, 0.65); max-width: 600px; margin: 2rem auto 0; text-align: center;">Your agreement score compares your answers to each model\'s measured pattern. For each question, we calculate the percentage of that model\'s usable answers that match your choice, then average across all questions.</div></div></div>';
+      return renderHeader() + '<div class="container"><div class="max-w-800"><div class="results-hero"><div class="results-label">Your closest AI match</div><div class="results-match wide">' + bestMatch.fullName + '</div><div class="results-score num">' + Math.round(bestMatch.score) + '% agreement</div><div class="results-disclaimer">This is a playful measure of choice similarity across 10 moral dilemmas. It\'s for fun, not a validated psychological assessment.</div></div><div class="action-row"><button class="btn-secondary" onclick="toggleShareContent()">Share result</button><button class="btn-secondary" onclick="startOver()">Start over</button></div>' + (showShareContent ? '<div class="share-section"><div class="share-content visible"><div class="share-grid"><div><div class="label mb-2">Share your result</div><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;"><button class="btn-ghost" onclick="window.location.href=\'mailto:?subject=Moral%20Gradient&body=https://moral-gradient.vercel.app\'"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5h20v14H2V5Zm2 2v.4l8 5.2 8-5.2V7H4Zm16 2.8-8 5.2-8-5.2V17h16V9.8Z"/></svg>Email</button><a class="btn-ghost" href="https://x.com/intent/post?text=Moral%20Gradient&url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.5 8.6L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8-9.2L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.4 3.9h-2L17.7 20Z"/></svg>X</a><a class="btn-ghost" href="https://www.linkedin.com/sharing/share-offsite/?url=https://moral-gradient.vercel.app" target="_blank"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.8v1.6h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-4.9c0-1.17-.02-2.68-1.63-2.68-1.64 0-1.89 1.28-1.89 2.6V21h-4V9.75Z"/></svg>LinkedIn</a><button class="btn-ghost" onclick="copyLink()"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 1 0-1.4-1.4l-3.5 3.5a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>Copy link</button><button class="btn-ghost" onclick="downloadCard(\'results\')">Download PNG</button></div></div><div><div class="size-toggle"><button class="' + (currentCardSize === 'landscape' ? 'active' : '') + '" onclick="setCardSize(\'landscape\')">Landscape</button><button class="' + (currentCardSize === 'vertical' ? 'active' : '') + '" onclick="setCardSize(\'vertical\')">Vertical</button></div><div class="card-frame"></div></div></div></div></div>' : '') + '<div class="model-ranking"><div class="model-results-header">Agreement with each model</div>' + modelScores.map((m, i) => '<div class="ranking-row ' + (i === 0 ? 'top' : '') + '"><div class="ranking-model">' + m.fullName + '</div><div class="ranking-score num">' + Math.round(m.score) + '%</div></div>').join('') + '</div><div style="font-size: 13px; line-height: 1.6; color: rgba(26, 26, 26, 0.65); max-width: 600px; margin: 2rem auto 0; text-align: center;">Your agreement score compares your answers to each model\'s measured pattern. For each question, we calculate the percentage of that model\'s usable answers that match your choice, then average across all questions.</div></div></div>';
     }
     
     function render() {
