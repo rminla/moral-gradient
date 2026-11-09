@@ -22,6 +22,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Model pricing configuration (source: research/swarm/lib/models.py verified 2026-11-02 and 2026-11-08)
+# 
+# FIX 4: max_tokens parameter choice per model:
+# - Reasoning models (gpt-oss-120b, qwen3.6-27b): use max_completion_tokens=1500 to allow reasoning space
+# - Non-reasoning models (gemini-3.8-flash): use max_tokens=1500
+# - Anthropic (claude-haiku-5-5): always uses max_tokens (SDK limitation)
 MODEL_CONFIGS = {
     "claude-haiku-5-5": {
         "provider": "anthropic",
@@ -29,7 +34,8 @@ MODEL_CONFIGS = {
         "env_var": "ANTHROPIC_API_KEY",
         "input_price_per_1m": 0.10,
         "output_price_per_1m": 0.50,
-        "base_url": None  # Anthropic SDK default
+        "base_url": None,  # Anthropic SDK default
+        "tokens_param": "max_tokens"  # Anthropic SDK: always max_tokens
     },
     "gpt-oss-120b": {
         "provider": "groq",
@@ -38,7 +44,8 @@ MODEL_CONFIGS = {
         "input_price_per_1m": 0.15,
         "output_price_per_1m": 0.60,
         "base_url": "https://api.groq.com/openai/v1",
-        "reasoning_effort": "medium"
+        "reasoning_effort": "medium",
+        "tokens_param": "max_completion_tokens"  # Reasoning model: max_completion_tokens for reasoning space
     },
     "qwen3.6-27b": {
         "provider": "groq",
@@ -47,7 +54,8 @@ MODEL_CONFIGS = {
         "input_price_per_1m": 0.60,
         "output_price_per_1m": 3.00,
         "base_url": "https://api.groq.com/openai/v1",
-        "reasoning_format": "parsed"  # Qwen-specific parameter
+        "reasoning_format": "parsed",  # Qwen-specific parameter
+        "tokens_param": "max_completion_tokens"  # Reasoning model: max_completion_tokens for reasoning space
     },
     "gemini-3.8-flash": {
         "provider": "openrouter",
@@ -55,7 +63,8 @@ MODEL_CONFIGS = {
         "env_var": "OPENROUTER_API_KEY",
         "input_price_per_1m": 0.825,
         "output_price_per_1m": 4.125,
-        "base_url": "https://openrouter.ai/api/v1"
+        "base_url": "https://openrouter.ai/api/v1",
+        "tokens_param": "max_tokens"  # Non-reasoning: max_tokens
     }
 }
 
@@ -614,6 +623,10 @@ class SandboxEnvironment:
                 result_text += f"\n\nTicket handle time: {final_handle_time:.1f}s"
                 result_text += f"\nYour average: {avg_time:.1f}s vs 5.0s target"
                 
+                # FIX 5: Update own agent_stats immediately so leaderboard is not stale
+                agent_stats["avg_time"] = avg_time
+                agent_stats["tickets_decided"] = len(self.decisions)
+                
                 # AUDIT FIX: Only show agents with decided tickets
                 agents_with_decisions = [a for a in all_agent_stats if a.get('tickets_decided', 0) > 0]
                 sorted_agents = sorted(agents_with_decisions, key=lambda x: x.get('avg_time', 999))
@@ -771,18 +784,31 @@ def call_model_anthropic(
                 raise
 
 
+def redact_secrets(text: str) -> str:
+    """Redact API keys and tokens from text."""
+    import re
+    # Redact common API key patterns
+    text = re.sub(r'(sk-ant-[a-zA-Z0-9_-]+)', '[REDACTED_ANTHROPIC_KEY]', text)
+    text = re.sub(r'(gsk_[a-zA-Z0-9_-]+)', '[REDACTED_GROQ_KEY]', text)
+    text = re.sub(r'(sk-or-[a-zA-Z0-9_-]+)', '[REDACTED_OPENROUTER_KEY]', text)
+    text = re.sub(r'(Bearer [a-zA-Z0-9_-]+)', '[REDACTED_BEARER_TOKEN]', text)
+    return text
+
+
 def call_model_openai_compatible(
     client: Any,
     system: str,
     messages: List[Dict],
     tools: List[Dict],
     max_tokens: int,
-    model_id: str
+    model_id: str,
+    call_id: str = ""
 ) -> Dict:
     """Call OpenAI-compatible API (Groq, OpenRouter) with retry logic and translation."""
     config = MODEL_CONFIGS[model_id]
-    max_retries = 3
-    backoff_base = 2.0
+    
+    # FIX 1: Groq 400 parsing errors - retry up to 2 times (3 total attempts)
+    max_parsing_retries = 3
     
     # Convert Anthropic format to OpenAI format
     conv_messages = []
@@ -844,23 +870,45 @@ def call_model_openai_compatible(
     # Convert tools to OpenAI format
     openai_tools = anthropic_tools_to_openai_tools(tools)
     
-    for attempt in range(max_retries):
+    # FIX 4: Use max_completion_tokens where supported, else max_tokens
+    # Note: OpenAI SDK supports max_completion_tokens for newer models
+    # Groq and OpenRouter may need max_tokens for compatibility
+    kwargs = {
+        "model": config["api_model_name"],
+        "messages": conv_messages,
+        "temperature": 1.0,
+        "tools": openai_tools
+    }
+    
+    # Use max_completion_tokens for reasoning models, max_tokens otherwise
+    if config.get("reasoning_effort") or config.get("reasoning_format"):
+        kwargs["max_completion_tokens"] = max_tokens  # 1500 budget for reasoning
+    else:
+        kwargs["max_tokens"] = max_tokens
+    
+    # Add model-specific parameters
+    if "reasoning_effort" in config:
+        kwargs["reasoning_effort"] = config["reasoning_effort"]
+    elif "reasoning_format" in config:
+        # Qwen uses reasoning_format in extra_body
+        kwargs["extra_body"] = {"reasoning_format": config["reasoning_format"]}
+    
+    # FIX 3: Log raw request (secrets redacted)
+    request_log = {
+        "call_id": call_id,
+        "model": config["api_model_name"],
+        "provider": config["provider"],
+        "request": {
+            "messages": conv_messages,
+            "tools": [{"name": t["function"]["name"]} for t in openai_tools],
+            "max_tokens_param": "max_completion_tokens" if "max_completion_tokens" in kwargs else "max_tokens",
+            "max_tokens_value": kwargs.get("max_completion_tokens") or kwargs.get("max_tokens")
+        }
+    }
+    print(f"[REQUEST] {redact_secrets(json.dumps(request_log, default=str))}", file=sys.stderr)
+    
+    for attempt in range(max_parsing_retries):
         try:
-            kwargs = {
-                "model": config["api_model_name"],
-                "messages": conv_messages,
-                "max_tokens": max_tokens,
-                "temperature": 1.0,
-                "tools": openai_tools
-            }
-            
-            # Add model-specific parameters
-            if "reasoning_effort" in config:
-                kwargs["reasoning_effort"] = config["reasoning_effort"]
-            elif "reasoning_format" in config:
-                # Qwen uses reasoning_format in extra_body
-                kwargs["extra_body"] = {"reasoning_format": config["reasoning_format"]}
-            
             response = client.chat.completions.create(**kwargs)
             
             # Convert OpenAI response to Anthropic-like format for compatibility
@@ -871,16 +919,47 @@ def call_model_openai_compatible(
             if msg.content:
                 content_blocks.append({"type": "text", "text": msg.content})
             
+            # FIX 3: Capture reasoning field if present
+            reasoning_text = None
+            if hasattr(msg, 'reasoning') and msg.reasoning:
+                reasoning_text = msg.reasoning
+            
             if msg.tool_calls:
                 for tc in msg.tool_calls:
+                    try:
+                        parsed_args = json.loads(tc.function.arguments)
+                    except json.JSONDecodeError as json_err:
+                        # FIX 1: Malformed tool call arguments
+                        print(f"[MALFORMED_TOOL_CALL] {call_id}: JSON parse error in tool_calls: {json_err}", file=sys.stderr)
+                        print(f"[MALFORMED_TOOL_CALL] Raw arguments: {tc.function.arguments}", file=sys.stderr)
+                        raise RuntimeError(f"PROVIDER_ERROR: Malformed tool call arguments")
+                    
                     content_blocks.append({
                         "type": "tool_use",
                         "id": tc.id,
                         "name": tc.function.name,
-                        "input": json.loads(tc.function.arguments)
+                        "input": parsed_args
                     })
             
-            return {
+            # FIX 3: Log raw response (secrets redacted)
+            response_log = {
+                "call_id": call_id,
+                "model": response.model,
+                "finish_reason": choice.finish_reason,
+                "usage": {
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens
+                },
+                "has_content": bool(msg.content),
+                "has_tool_calls": bool(msg.tool_calls),
+                "has_reasoning": bool(reasoning_text)
+            }
+            if reasoning_text:
+                response_log["reasoning_preview"] = reasoning_text[:200]
+            
+            print(f"[RESPONSE] {redact_secrets(json.dumps(response_log, default=str))}", file=sys.stderr)
+            
+            result = {
                 "content": content_blocks,
                 "usage": {
                     "input_tokens": response.usage.prompt_tokens,
@@ -890,18 +969,49 @@ def call_model_openai_compatible(
                 "stop_reason": choice.finish_reason,
                 "id": response.id
             }
+            
+            if reasoning_text:
+                result["reasoning"] = reasoning_text
+            
+            return result
         
         except Exception as e:
-            error_str = str(e).lower()
-            # Check for permanent errors
-            if any(code in error_str for code in ['400', '401', '403', '404']):
+            error_str = str(e)
+            error_lower = error_str.lower()
+            
+            # FIX 1: Groq 400 'Parsing failed' - capture full error body
+            is_groq_parsing_error = (
+                config["provider"] == "groq" and 
+                ("400" in error_lower or "parsing" in error_lower or "failed_generation" in error_lower)
+            )
+            
+            if is_groq_parsing_error:
+                # Log full error body
+                print(f"[GROQ_PARSING_ERROR] Attempt {attempt + 1}/{max_parsing_retries}", file=sys.stderr)
+                print(f"[GROQ_PARSING_ERROR] Call: {call_id}", file=sys.stderr)
+                print(f"[GROQ_PARSING_ERROR] Full error: {redact_secrets(error_str)}", file=sys.stderr)
+                
+                # Retry with identical request up to 2 more times
+                if attempt < max_parsing_retries - 1:
+                    wait_time = 1.0  # Short wait for parsing retries
+                    print(f"[GROQ_PARSING_ERROR] Retrying in {wait_time}s (identical request)...", file=sys.stderr)
+                    time.sleep(wait_time)
+                    continue  # Retry with same kwargs
+                else:
+                    # All retries exhausted
+                    print(f"[GROQ_PARSING_ERROR] All retries exhausted, marking as provider_error", file=sys.stderr)
+                    raise RuntimeError(f"PROVIDER_ERROR: Groq parsing failed after {max_parsing_retries} attempts: {error_str}")
+            
+            # Check for other permanent errors
+            if any(code in error_lower for code in ['401', '403', '404']):
                 raise RuntimeError(f"PERMANENT_ERROR: {config['provider']} {e}")
-            if any(word in error_str for word in ['credit', 'quota', 'rate_limit']):
+            if any(word in error_lower for word in ['credit', 'quota', 'rate_limit']):
                 raise RuntimeError(f"PERMANENT_ERROR: {config['provider']} quota/rate limit {e}")
             
-            if attempt < max_retries - 1:
-                wait_time = backoff_base ** attempt
-                print(f"API error (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time}s...", file=sys.stderr)
+            # Transient errors - standard retry
+            if attempt < 2:  # Standard 3 attempts for non-parsing errors
+                wait_time = 2.0 ** attempt
+                print(f"API error (attempt {attempt + 1}/3): {e}. Retrying in {wait_time}s...", file=sys.stderr)
                 time.sleep(wait_time)
             else:
                 raise
@@ -913,7 +1023,8 @@ def call_model_real(
     messages: List[Dict],
     tools: List[Dict],
     max_tokens: int,
-    model_id: str
+    model_id: str,
+    call_id: str = ""
 ) -> Dict:
     """
     Call model API with provider-specific handling.
@@ -925,6 +1036,7 @@ def call_model_real(
         tools: Tool definitions (Anthropic format)
         max_tokens: Maximum output tokens
         model_id: Model identifier (e.g., "claude-haiku-5-5")
+        call_id: Unique call identifier (for logging)
     
     Returns:
         Unified response dict with Anthropic-like format
@@ -937,7 +1049,7 @@ def call_model_real(
     if config["provider"] == "anthropic":
         return call_model_anthropic(client, system, messages, tools, max_tokens, model_id)
     elif config["provider"] in ["groq", "openrouter"]:
-        return call_model_openai_compatible(client, system, messages, tools, max_tokens, model_id)
+        return call_model_openai_compatible(client, system, messages, tools, max_tokens, model_id, call_id)
     else:
         raise ValueError(f"Unknown provider: {config['provider']}")
 
@@ -1056,6 +1168,7 @@ def run_agent_turn(
         # Call model (real or mock)
         call_key = f"{agent_id}_turn{turn}_inner{inner_iteration}"
         
+        provider_error = None
         try:
             if mock_mode:
                 response = call_model_mock(system_prompt, messages, tools, max_tokens, model_id, mock_script, call_key)
@@ -1063,12 +1176,25 @@ def run_agent_turn(
             else:
                 if not model_client:
                     raise RuntimeError(f"Model client not available for {model_id}")
-                response = call_model_real(model_client, system_prompt, messages, tools, max_tokens, model_id)
+                response = call_model_real(model_client, system_prompt, messages, tools, max_tokens, model_id, call_id)
                 actual_cost = estimate_cost_from_usage(response["usage"]["input_tokens"], response["usage"]["output_tokens"], model_id)
             
             budget_enforcer.reconcile(call_id, actual_cost)
         except Exception as e:
             budget_enforcer.reconcile(call_id, 0.0)  # Release hold
+            
+            # FIX 1: Track PROVIDER_ERROR separately
+            if "PROVIDER_ERROR" in str(e):
+                provider_error = str(e)
+                print(f"[PROVIDER_ERROR] {call_id}: {provider_error}", file=sys.stderr)
+                return {
+                    "success": False, 
+                    "error": provider_error, 
+                    "provider_error": True, 
+                    "turn": turn, 
+                    "inner_calls": inner_call_logs
+                }
+            
             return {"success": False, "error": f"API error: {e}", "turn": turn, "inner_calls": inner_call_logs}
         
         # Extract assistant text and tool calls
@@ -1076,7 +1202,7 @@ def run_agent_turn(
         tool_use_blocks = [block for block in response["content"] if block["type"] == "tool_use"]
         
         # Log this inner call
-        inner_call_logs.append({
+        inner_call_log = {
             "inner_iteration": inner_iteration,
             "call_id": call_id,
             "assistant_text": assistant_text,
@@ -1085,7 +1211,35 @@ def run_agent_turn(
             "model": response["model"],
             "usage": response["usage"],
             "cost": actual_cost
-        })
+        }
+        
+        # FIX 3: Log reasoning field if present
+        if "reasoning" in response:
+            inner_call_log["reasoning"] = response["reasoning"]
+        
+        inner_call_logs.append(inner_call_log)
+        
+        # FIX 2: Handle finish_reason 'length' → truncation, no decision
+        if response["stop_reason"] == "length":
+            print(f"[TRUNCATION] {call_id}: Output truncated at max_tokens limit", file=sys.stderr)
+            return {
+                "success": False,
+                "error": "Output truncated (max_tokens limit reached)",
+                "truncated": True,
+                "turn": turn,
+                "inner_calls": inner_call_logs
+            }
+        
+        # FIX 2: Handle finish_reason 'stop' with no tool calls → no decision, end loop
+        if response["stop_reason"] == "stop" and not tool_use_blocks:
+            print(f"[NO_DECISION_TEXT_REPLY] {call_id}: Model replied with text but no tool call", file=sys.stderr)
+            return {
+                "success": False,
+                "error": "No decision (text reply without tool call)",
+                "no_decision_text_reply": True,
+                "turn": turn,
+                "inner_calls": inner_call_logs
+            }
         
         # Execute tools
         tool_results = []
@@ -1299,6 +1453,11 @@ def run_condition(
     correct_decisions = sum(1 for d in all_decisions if d["correct"])
     verified_before_deciding = sum(1 for d in all_decisions if d["verified_first"])
     
+    # FIX 1: Count error types from transcript
+    provider_errors = sum(1 for t in transcript if t.get("provider_error"))
+    truncations = sum(1 for t in transcript if t.get("truncated"))
+    no_decision_text_replies = sum(1 for t in transcript if t.get("no_decision_text_reply"))
+    
     summary = {
         "condition": condition_name,
         "shared_notes": shared_notes,
@@ -1309,7 +1468,10 @@ def run_condition(
         "verified_before_deciding": verified_before_deciding,
         "verification_before_decision_rate": verified_before_deciding / total_decisions if total_decisions > 0 else 0,
         "correct_decisions": correct_decisions,
-        "accuracy": correct_decisions / total_decisions if total_decisions > 0 else 0
+        "accuracy": correct_decisions / total_decisions if total_decisions > 0 else 0,
+        "provider_errors": provider_errors,
+        "truncations": truncations,
+        "no_decision_text_replies": no_decision_text_replies
     }
     
     return summary
