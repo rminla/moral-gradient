@@ -17,7 +17,7 @@ export default function Footer() {
             <ul className="space-y-2 text-[15px]">
               <li><Link className="hover:text-vermilion" href="/try">Try a dilemma</Link></li>
               <li><Link className="hover:text-vermilion" href="/thinks-vs-does">Thinks vs does</Link></li>
-              <li><Link className="hover:text-vermilion" href="/quiz">Which AI model are you most like?</Link></li>
+              <li><Link className="hover:text-vermilion" href="/quiz-v4">Which AI model are you most like?</Link></li>
               <li><Link className="hover:text-vermilion" href="/learn">Learn: AI alignment in plain language</Link></li>
               <li><Link className="hover:text-vermilion" href="/results">Results</Link></li>
               <li><Link className="hover:text-vermilion" href="/stated-vs-actual">Says vs does</Link></li>

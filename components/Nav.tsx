@@ -33,7 +33,7 @@ export default async function Nav() {
           <Link href={u ? "/account" : "/signin"} className="hidden items-center whitespace-nowrap border-l border-rule px-4 lg:px-5 font-mono text-[12px] uppercase tracking-[0.08em] text-ink/70 hover:text-ink sm:flex xl:flex">
             {u ? (u.display_name || u.email.split("@")[0]) : "Sign in"}
           </Link>
-          <Link href="/donate" className="flex items-center gap-2.5 bg-ink px-4 lg:px-5 md:px-7 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-vermilion">
+          <Link href="/donate" className="flex items-center gap-2.5 bg-ink px-4 lg:px-5 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:bg-vermilion">
             <span className="blink h-2 w-2 bg-vermilion" />Donate
           </Link>
         </div>

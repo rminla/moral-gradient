@@ -10,6 +10,7 @@ const N = QUIZ_V4_NEW.length;
 export default function QuizV4ClientNew() {
   const [step, setStep] = useState<"intro" | number | "result">("intro");
   const [answers, setAnswers] = useState<Record<string, 0 | 1>>({});
+  const [selectedModelId, setSelectedModelId] = useState<string>("");
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
@@ -167,6 +168,13 @@ export default function QuizV4ClientNew() {
     const twin = bestMatch ? MODELS.find(m => m.id === bestMatch.modelId) : null;
 
     if (!twin) return null;
+    
+    // Initialize selected model to best match
+    if (!selectedModelId && twin) {
+      setSelectedModelId(twin.id);
+    }
+    
+    const selectedModel = MODELS.find(m => m.id === selectedModelId) || twin;
 
     return (
       <>
@@ -213,15 +221,44 @@ export default function QuizV4ClientNew() {
 
         <section className="border-b border-rule">
           <div className="mx-auto max-w-[1200px] px-6 py-10 md:px-12 md:py-12">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="kicker text-ink">Question by question</span>
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50">{twin.displayName} · 20 samples per question</span>
+          <div className="space-y-8">
+            <div>
+              <div className="kicker text-ink">How agreement is calculated</div>
+              <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/70">
+                Your agreement score with each model is calculated by comparing your answer to that model's pattern on each question. For each question, we find what percentage of the model's <b>usable answers</b> (20 samples minus refusals/non-answers) match your choice, then average across all questions. Refusals and non-answers are not counted as opposing choices.
+              </p>
+              <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-ink/60">
+                Example: If you chose option A, and a model chose A in 15 of 18 usable answers (2 refused), your agreement on that question is 15÷18 = 83%.
+              </p>
+            </div>
+            
+            <div>
+              <div className="kicker text-ink">Question by question</div>
+              <p className="mt-2 text-[14px] text-ink/60">Select a model to see detailed counts for each question (20 samples per question)</p>
+            </div>
           </div>
-          <div className="mt-4 space-y-2">
+          
+          <div className="mt-6 flex flex-wrap gap-2">
+            {modelScores.map(m => (
+              <button
+                key={m.modelId}
+                onClick={() => setSelectedModelId(m.modelId)}
+                className={`rounded border px-4 py-2 text-[14px] font-medium transition-colors ${
+                  selectedModelId === m.modelId 
+                    ? 'border-vermilion bg-vermilion text-white' 
+                    : 'border-rule bg-paper text-ink/70 hover:border-ink hover:text-ink'
+                }`}
+              >
+                {m.displayName} ({m.score.toFixed(0)}%)
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-6 space-y-2">
             {QUIZ_V4_NEW.map(item => {
               const userChoice = answers[item.id];
               const userOptionId = userChoice === 0 ? item.leftOptionId : item.rightOptionId;
-              const result = getModelResults(twin.id, item.id);
+              const result = getModelResults(selectedModelId, item.id);
               
               if (!result) return null;
 
