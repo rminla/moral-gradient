@@ -17,8 +17,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add local lib to path (self-contained archive)
+sys.path.insert(0, str(Path(__file__).parent))
 
 from lib.budget import BudgetTracker
 from lib.models import Provider
@@ -252,6 +252,39 @@ def test_64_episode_cap_enforcement():
         return False
 
 
+def test_inflight_tracking():
+    """Test 6: In-flight tracking doesn't leak (R4 fix)."""
+    print("\n6. Testing in-flight tracking (R4 stage accounting fix)...")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ledger_path = Path(tmpdir) / "test_ledger.db"
+        
+        budget = BudgetTracker(ledger_path, global_cap_usd=70.0)
+        stage = StageBudgetEnforcer(
+            budget_tracker=budget,
+            stage_cap_usd=5.0,
+            baseline_locked_usd=0.0
+        )
+        
+        # Reserve $0.50
+        stage.reserve("call_1", "anthropic/claude-haiku-5-5", Provider.ANTHROPIC, 0.50)
+        status1 = stage.get_status()
+        print(f"   After reserve $0.50: stage_reserved=${status1['stage_reserved_usd']:.4f}")
+        
+        # Reconcile with actual $0.15 (less than reserved)
+        stage.reconcile("call_1", "claude-haiku-5-5-test", 100, 50, 0.15, 500, "test")
+        status2 = stage.get_status()
+        print(f"   After reconcile $0.15: stage_reserved=${status2['stage_reserved_usd']:.4f}, stage_spent=${status2['stage_spent_usd']:.4f}")
+        
+        # Check: stage_reserved should be $0 (not leaked), stage_spent should be $0.15
+        if status2['stage_reserved_usd'] == 0.0 and status2['stage_spent_usd'] == 0.15:
+            print(f"   ✅ PASS: In-flight tracking correct (no leak)")
+            return True
+        else:
+            print(f"   ❌ FAIL: In-flight leak detected")
+            return False
+
+
 def main():
     print("=" * 70)
     print("COMPREHENSIVE INTEGRATION TESTS - METHOD & CONTEXT VALIDATION")
@@ -263,6 +296,7 @@ def main():
         ("Tool extraction and effects", test_tool_extraction_and_effects),
         ("Semantic outcome classification", test_semantic_outcome_classification),
         ("64-episode hard cap", test_64_episode_cap_enforcement),
+        ("In-flight tracking (R4 fix)", test_inflight_tracking),
     ]
     
     results = []

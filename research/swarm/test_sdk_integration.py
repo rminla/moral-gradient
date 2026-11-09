@@ -21,8 +21,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add local lib to path (self-contained archive)
+sys.path.insert(0, str(Path(__file__).parent))
 
 from lib.budget import BudgetTracker
 from lib.models import Provider
@@ -321,6 +321,43 @@ def test_stage_oversubscription():
             return False
 
 
+def test_per_call_ceiling():
+    """Test 6: Per-call ceiling enforcement (canary mode)."""
+    print("\n6. Testing per-call ceiling (canary mode)...")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ledger_path = Path(tmpdir) / "test_ledger.db"
+        
+        budget = BudgetTracker(ledger_path, global_cap_usd=70.0)
+        stage = StageBudgetEnforcer(
+            budget_tracker=budget,
+            stage_cap_usd=5.0,
+            baseline_locked_usd=0.0,
+            per_call_ceiling_usd=0.50  # Canary mode ceiling
+        )
+        
+        from lib.budget import BudgetExceededError
+        
+        try:
+            # Try to reserve $0.60 (exceeds $0.50 per-call ceiling)
+            try:
+                stage.reserve("call_1", "anthropic/claude-haiku-5-5", Provider.ANTHROPIC, 0.60)
+                print(f"   ❌ FAIL: Per-call ceiling not enforced")
+                return False
+            except BudgetExceededError as e:
+                if "Per-call ceiling" in str(e):
+                    print(f"   ✅ PASS: Per-call ceiling enforced")
+                    print(f"      Reason: {str(e)[:80]}...")
+                    return True
+                else:
+                    print(f"   ❌ FAIL: Wrong error: {str(e)[:80]}...")
+                    return False
+                    
+        except Exception as e:
+            print(f"   ❌ FAIL: Unexpected error: {e}")
+            return False
+
+
 def main():
     print("=" * 70)
     print("SDK INTEGRATION TESTS - END-TO-END WITH REAL SDK OBJECTS")
@@ -332,6 +369,7 @@ def main():
         ("Real OpenAI SDK with synthetic response", test_sdk_openai_with_mock_transport),
         ("ProviderClient with StageBudgetEnforcer", test_provider_client_with_stage_budget),
         ("Stage oversubscription prevention", test_stage_oversubscription),
+        ("Per-call ceiling (canary mode)", test_per_call_ceiling),
     ]
     
     results = []

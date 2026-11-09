@@ -24,8 +24,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add local lib to path (self-contained archive)
+sys.path.insert(0, str(Path(__file__).parent))
 
 from lib.budget import BudgetTracker, BudgetExceededError
 from lib.providers import Message, ProviderClient
@@ -643,25 +643,52 @@ def save_protocol_hashes(config: Dict, cases: Dict, prompts: Dict, output_dir: P
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Swarm v_NEW experiment (FIXED)")
-    parser.add_argument("--pilot", action="store_true", required=True,
-                       help="REQUIRED: Run 64-episode pilot (4×4×4×1). Full run blocked.")
+    parser = argparse.ArgumentParser(
+        description="Swarm v_NEW experiment (SAFE BOUNDED)",
+        add_help=True
+    )
+    
+    # Mutually exclusive mode group: --pilot OR --canary (REQUIRED)
+    mode_group = parser.add_mutually_exclusive_group(required=True)
+    mode_group.add_argument("--pilot", action="store_true",
+                           help="Run 64-episode pilot (4 cases × 4 models × 2 arms × 1 rep = 64 episodes, 192 calls). Stage cap $5 above baseline.")
+    mode_group.add_argument("--canary", action="store_true",
+                           help="Run 4-episode canary (1 case × 4 models × 1 arm × 1 rep = 4 episodes, 12 calls). Per-call ceiling $0.50 under pilot cap.")
+    
+    # Canary options (only used with --canary)
+    parser.add_argument("--canary-case", type=str, default="late_fee",
+                       help="Canary case_id (default: late_fee). Must match cases_v_new.json.")
+    parser.add_argument("--canary-arm", type=str, default="single",
+                       help="Canary arm (default: single). Must be 'single' or 'team'.")
+    
+    # Mock mode (optional, works with both)
     parser.add_argument("--mock", action="store_true",
-                       help="Mock mode: uses SDK mock transport, no network, disposable ledger")
+                       help="Mock mode: SDK mock transport, no network, disposable ledger")
+    
+    # Required ledger
     parser.add_argument("--ledger-path", type=str, required=True,
-                       help="REQUIRED: Path to existing ledger.db (e.g. runs/v4-20261108/ledger.db)")
+                       help="REQUIRED: Path to existing ledger.db (e.g. ../runs/v4-20261108/ledger.db)")
+    
+    # Budget caps
     parser.add_argument("--global-cap", type=float, default=70.0,
                        help="Absolute global cap in USD including all prior holds (default: $70)")
     parser.add_argument("--stage-cap", type=float, default=5.0,
-                       help="Incremental cap for pilot stage (default: $5)")
+                       help="Incremental stage cap above baseline (default: $5 for pilot, canary uses per-call ceiling)")
     parser.add_argument("--baseline-locked", type=float, default=None,
                        help="Override baseline (if omitted, computed from ledger)")
     
-    args = parser.parse_args()
+    # Fail-safe: reject unknown arguments
+    args, unknown = parser.parse_known_args()
+    if unknown:
+        print(f"❌ ERROR: Unknown arguments: {unknown}")
+        print(f"   Run with --help to see valid options")
+        print(f"   FAIL-SAFE: Rejecting run with unrecognized args")
+        return 1
     
-    # Enforce pilot requirement
-    if not args.pilot:
-        print("❌ ERROR: --pilot flag is REQUIRED. Full 1920-episode run is blocked.")
+    # Enforce mutually exclusive mode
+    if not (args.pilot or args.canary):
+        print("❌ ERROR: Must specify either --pilot or --canary")
+        print("   Full 1920-episode run is BLOCKED")
         return 1
     
     # Load config files
@@ -682,25 +709,65 @@ def main():
             print(f"⚠️  Model unavailable: {model_id}")
     print("✓ All models configured")
     
-    # Generate schedule: HARD 64 for pilot
-    n_episodes = 1  # HARD-CODED: 1 episode per case/arm/model combo = 64 total
-    schedule = generate_schedule(config, cases, n_episodes)
-    
-    total_calls = len(schedule) * 3
-    
-    # HARD ENFORCE 64 episodes / 192 calls
-    if len(schedule) != 64 or total_calls != 192:
-        print(f"❌ INTERNAL ERROR: Pilot must be exactly 64 episodes / 192 calls")
-        print(f"   Got: {len(schedule)} episodes / {total_calls} calls")
-        return 1
-    
-    print(f"\n🔒 PILOT RUN (HARD BOUNDED):")
-    print(f"  Episodes: {len(schedule)} (EXACTLY 64)")
-    print(f"  Total calls: {total_calls} (EXACTLY 192)")
-    print(f"  Max calls per episode: 3")
-    print(f"  Cases: {len(cases['cases'])}")
-    print(f"  Arms: {len(config['arms'])}")
-    print(f"  Models: {len(config['models'])}")
+    # Generate schedule based on mode
+    if args.canary:
+        # CANARY: 1 case × 4 models × 1 arm = 4 episodes (12 calls)
+        # Verify canary case exists
+        case_ids = [c["id"] for c in cases["cases"]]
+        if args.canary_case not in case_ids:
+            print(f"❌ ERROR: Canary case '{args.canary_case}' not found in cases")
+            print(f"   Available: {case_ids}")
+            return 1
+        
+        # Verify canary arm
+        arm_ids = [a["id"] for a in config["arms"]]
+        if args.canary_arm not in arm_ids:
+            print(f"❌ ERROR: Canary arm '{args.canary_arm}' not valid")
+            print(f"   Available: {arm_ids}")
+            return 1
+        
+        # Generate full schedule then filter
+        full_schedule = generate_schedule(config, cases, n_episodes=1)
+        schedule = [
+            ep for ep in full_schedule
+            if ep["case_id"] == args.canary_case and ep["arm_id"] == args.canary_arm
+        ]
+        
+        # HARD ENFORCE 4 episodes / 12 calls
+        if len(schedule) != 4:
+            print(f"❌ INTERNAL ERROR: Canary must be exactly 4 episodes")
+            print(f"   Got: {len(schedule)} episodes for case={args.canary_case}, arm={args.canary_arm}")
+            return 1
+        
+        total_calls = len(schedule) * 3
+        print(f"\n🕯️  CANARY RUN (SAFE BOUNDED):")
+        print(f"  Episodes: {len(schedule)} (EXACTLY 4)")
+        print(f"  Total calls: {total_calls} (EXACTLY 12)")
+        print(f"  Case: {args.canary_case}")
+        print(f"  Arm: {args.canary_arm}")
+        print(f"  Models: {config['models']}")
+        print(f"  Per-call ceiling: $0.50")
+        
+    else:  # --pilot
+        # PILOT: 4 cases × 2 arms × 4 models × 1 rep = 64 episodes (192 calls)
+        schedule = generate_schedule(config, cases, n_episodes=1)
+        
+        # HARD ENFORCE 64 episodes / 192 calls
+        expected_episodes = len(cases["cases"]) * len(config["arms"]) * len(config["models"])
+        if len(schedule) != expected_episodes:
+            print(f"❌ INTERNAL ERROR: Pilot schedule mismatch")
+            print(f"   Expected: {expected_episodes} episodes ({len(cases['cases'])} cases × {len(config['arms'])} arms × {len(config['models'])} models)")
+            print(f"   Got: {len(schedule)} episodes")
+            return 1
+        
+        total_calls = len(schedule) * 3
+        print(f"\n🔒 PILOT RUN (HARD BOUNDED):")
+        print(f"  Episodes: {len(schedule)} (EXACTLY {expected_episodes})")
+        print(f"  Total calls: {total_calls} (EXACTLY {expected_episodes * 3})")
+        print(f"  Cases: {len(cases['cases'])}")
+        print(f"  Arms: {len(config['arms'])}")
+        print(f"  Models: {len(config['models'])}")
+        print(f"  Stage cap: ${args.stage_cap:.2f}")
     
     # Initialize output
     run_id = f"swarm_v_new_pilot_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -747,11 +814,17 @@ def main():
         budget = BudgetTracker(ledger_path, global_cap_usd=args.global_cap)
         
         # Wrap with stage budget enforcer (computes baseline from ledger if not provided)
+        # Canary mode: add per-call ceiling of $0.50
+        per_call_ceiling = 0.50 if args.canary else None
         stage_budget = StageBudgetEnforcer(
             budget_tracker=budget,
             stage_cap_usd=args.stage_cap,
-            baseline_locked_usd=args.baseline_locked  # None = compute from ledger
+            baseline_locked_usd=args.baseline_locked,  # None = compute from ledger
+            per_call_ceiling_usd=per_call_ceiling
         )
+        
+        if args.canary:
+            print(f"   Per-call ceiling: ${per_call_ceiling:.2f} (canary mode)")
         
         # Preflight check
         status = stage_budget.get_status()
