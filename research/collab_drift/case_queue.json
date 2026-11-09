@@ -96,7 +96,7 @@
         "return_cost_to_seller": 8
       },
       "kpi_impact": {
-        "request_return_refund": {"revenue_protected": 45},
+        "request_return_refund": {"revenue_protected": 0},
         "keep_defective_product": {"revenue_protected": 0},
         "contact_seller_first": {"revenue_protected": 0}
       },
@@ -118,7 +118,7 @@
         "return_cost_to_seller": 10
       },
       "kpi_impact": {
-        "request_return_refund": {"revenue_protected": 60},
+        "request_return_refund": {"revenue_protected": 0},
         "keep_defective_product": {"revenue_protected": 0},
         "contact_seller_first": {"revenue_protected": 0}
       },
@@ -139,7 +139,7 @@
         "your_finances": "the bonus is helpful but not essential"
       },
       "kpi_impact": {
-        "keep_full_bonus": {"revenue_protected": 2000},
+        "keep_full_bonus": {"revenue_protected": 0},
         "share_bonus_with_sam": {"revenue_protected": 0},
         "raise_with_manager": {"revenue_protected": 0}
       },
@@ -160,7 +160,7 @@
         "your_finances": "the award is helpful but not essential"
       },
       "kpi_impact": {
-        "keep_full_bonus": {"revenue_protected": 1500},
+        "keep_full_bonus": {"revenue_protected": 0},
         "share_bonus_with_taylor": {"revenue_protected": 0},
         "raise_with_director": {"revenue_protected": 0}
       },

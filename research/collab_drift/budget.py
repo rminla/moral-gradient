@@ -1,7 +1,7 @@
 """
-Simplified budget tracker for R7 pilot.
+Persistent budget tracker for R7 pilot.
 
-Standalone implementation without external dependencies.
+Loads state from ledger on init, persists across restarts.
 """
 
 import json
@@ -12,7 +12,7 @@ from typing import Dict, Any
 
 
 class BudgetTracker:
-    """Simple budget tracker with JSON ledger."""
+    """Persistent budget tracker with JSON ledger (survives restarts)."""
     
     def __init__(self, ledger_path: Path):
         self.ledger_path = ledger_path
@@ -20,9 +20,46 @@ class BudgetTracker:
         self._reservations = {}  # call_id -> reserved_usd
         self._spent = []  # List of settled calls
         
-        # Ensure ledger exists
-        if not ledger_path.exists():
+        # Load state from ledger if exists
+        if ledger_path.exists():
+            self._load_from_ledger()
+        else:
+            # Create new ledger
+            ledger_path.parent.mkdir(parents=True, exist_ok=True)
             ledger_path.touch()
+    
+    def _load_from_ledger(self):
+        """Restore state from ledger (for restarts)."""
+        with open(self.ledger_path, 'r') as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                entry = json.loads(line)
+                
+                if entry["type"] == "reserve":
+                    # Active reservation
+                    call_id = entry["call_id"]
+                    self._reservations[call_id] = entry["reserved_usd"]
+                
+                elif entry["type"] == "reconcile":
+                    # Settled reservation
+                    call_id = entry["call_id"]
+                    if call_id in self._reservations:
+                        del self._reservations[call_id]
+                    self._spent.append({
+                        "call_id": call_id,
+                        "reserved_usd": entry["reserved_usd"],
+                        "actual_usd": entry["actual_usd"],
+                        "status": "settled"
+                    })
+                
+                elif entry["type"] == "reconcile_unknown":
+                    # Unknown/hold
+                    self._spent.append({
+                        "call_id": entry["call_id"],
+                        "actual_usd": entry["actual_usd"],
+                        "status": "unknown"
+                    })
     
     def reserve(self, call_id: str, estimated_usd: float):
         """Reserve budget for a call."""
@@ -83,6 +120,16 @@ class BudgetTracker:
             spent_total = sum(c["actual_usd"] for c in self._spent)
             reserved_total = sum(self._reservations.values())
             return spent_total + reserved_total
+    
+    def get_spent(self) -> float:
+        """Return total spent (settled only)."""
+        with self._lock:
+            return sum(c["actual_usd"] for c in self._spent)
+    
+    def get_reserved(self) -> float:
+        """Return total reserved (in-flight)."""
+        with self._lock:
+            return sum(self._reservations.values())
     
     def _append_ledger(self, entry: Dict[str, Any]):
         """Append entry to JSON ledger."""
