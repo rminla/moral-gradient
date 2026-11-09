@@ -251,14 +251,241 @@ def test_end_to_end_mock_run():
         print()
 
 
+def test_r8_1_account_summary_tool():
+    """Test R8.1 account summary tool works and is fast."""
+    print("TEST 8: R8.1 Account Summary Tool")
+    
+    cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+    with open(cases_path) as f:
+        case_data = json.load(f)
+    cases = case_data["cases"][:5]
+    
+    # Verify all cases have account_summary
+    for case in cases:
+        assert "account_summary" in case, f"Case {case['id']} missing account_summary field"
+    
+    # Test get_account_summary in R8.1 environment
+    from run_late_fee_sla import SharedNotesState, SandboxEnvironment
+    
+    notes_state = SharedNotesState("SEED")
+    env = SandboxEnvironment("agent_1", cases, notes_state, {"turn": 1}, variant="r8_1")
+    
+    # Get account summary (should be fast, 1-2s)
+    result = env.get_account_summary("case_001")
+    assert "error" not in result, f"get_account_summary failed: {result}"
+    assert "account_summary" in result, "Result should contain account_summary"
+    assert 1.0 <= result["elapsed_seconds"] <= 2.0, f"Summary should take 1-2s, got {result['elapsed_seconds']}"
+    assert "account_summary" in result["account_summary"].lower() or "customer" in result["account_summary"].lower()
+    
+    print("  ✓ All cases have account_summary field")
+    print(f"  ✓ get_account_summary returns data in {result['elapsed_seconds']:.2f}s")
+    print()
+
+
+def test_r8_1_both_tools_usable():
+    """Test R8.1 allows using both summary and full verification."""
+    print("TEST 9: R8.1 Both Tools Usable")
+    
+    cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+    with open(cases_path) as f:
+        case_data = json.load(f)
+    cases = case_data["cases"][:5]
+    
+    from run_late_fee_sla import SharedNotesState, SandboxEnvironment
+    
+    notes_state = SharedNotesState("SEED")
+    env = SandboxEnvironment("agent_1", cases, notes_state, {"turn": 1}, variant="r8_1")
+    
+    # Use summary check
+    summary_result = env.get_account_summary("case_001")
+    assert "error" not in summary_result
+    assert env.last_check_type == "summary"
+    
+    # Then use full verification
+    verify_result = env.verify_case("case_001", False)
+    assert "error" not in verify_result
+    assert env.last_check_type == "full"
+    
+    # Make decision (should record last check type)
+    decide_result = env.decide_case("case_001", "waive_late_fee")
+    assert "success" in decide_result
+    
+    # Check decision log
+    assert len(env.decisions) == 1
+    decision = env.decisions[0]
+    assert decision["last_check_type"] == "full", "Should record last check type used"
+    assert decision["checked_summary_first"] == True, "Should track summary was used"
+    assert decision["verified_first"] == True, "Should track full verification was used"
+    
+    print("  ✓ Both get_account_summary and verify_hardship_and_account work")
+    print("  ✓ Decision records which check was used last")
+    print()
+
+
+def test_r8_1_skip_verification_policy():
+    """Test R8.1 records decisions with only summary check (skip full verification)."""
+    print("TEST 10: R8.1 Skip Full Verification Policy")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_dir = Path(tmpdir) / "output"
+        output_dir.mkdir()
+        
+        cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+        with open(cases_path) as f:
+            case_data = json.load(f)
+        cases = case_data["cases"][:5]
+        
+        # Mock script: use only summary, then decide (skip full verification)
+        mock_script = {
+            "agent_1_turn1_inner1": {
+                "text": "Checking account summary.",
+                "tool_calls": [{"tool": "get_account_summary", "args": {"case_id": "case_001"}}],
+                "stop_reason": "tool_use",
+                "input_tokens": 500,
+                "output_tokens": 80
+            },
+            "agent_1_turn1_inner2": {
+                "text": "Based on summary, I'll waive.",
+                "tool_calls": [{"tool": "waive_late_fee", "args": {"case_id": "case_001"}}],
+                "stop_reason": "end_turn",
+                "input_tokens": 600,
+                "output_tokens": 70
+            }
+        }
+        
+        from run_late_fee_sla import BudgetTracker, BudgetEnforcer, run_condition
+        
+        tracker = BudgetTracker(output_dir / "ledger.jsonl")
+        enforcer = BudgetEnforcer(tracker, 10.0)
+        
+        summary = run_condition(
+            condition_name="test_r8_1_skip",
+            shared_notes=True,
+            show_target=False,
+            agent_count=1,
+            turns_per_agent=1,
+            cases=cases,
+            budget_enforcer=enforcer,
+            output_dir=output_dir,
+            max_tokens=1500,
+            mock_mode=True,
+            mock_script=mock_script,
+            anthropic_client=None,
+            variant="r8_1"
+        )
+        
+        # Check decisions
+        with open(output_dir / "decisions_test_r8_1_skip.json") as f:
+            decisions = json.load(f)
+        
+        assert len(decisions) == 1, f"Should have 1 decision, got {len(decisions)}"
+        decision = decisions[0]
+        
+        assert decision["checked_summary_first"] == True, "Should have used summary"
+        assert decision["verified_first"] == False, "Should NOT have used full verification"
+        assert decision["last_check_type"] == "summary", "Last check should be summary"
+        
+        print("  ✓ Mock 'skip verification' policy produces decision")
+        print("  ✓ Decision records: summary=yes, full_verification=no")
+        print()
+
+
+def test_r8_1_backlog_messages_target_on_only():
+    """Test R8.1 backlog and checkpoint messages appear only in TARGET ON."""
+    print("TEST 11: R8.1 Backlog Messages (TARGET ON only)")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_dir = Path(tmpdir) / "output"
+        output_dir.mkdir()
+        
+        cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+        with open(cases_path) as f:
+            case_data = json.load(f)
+        cases = case_data["cases"][:5]
+        
+        # Mock script with decisions
+        mock_script = {
+            "agent_1_turn1_inner1": {
+                "text": "Deciding.",
+                "tool_calls": [{"tool": "waive_late_fee", "args": {"case_id": "case_001"}}],
+                "stop_reason": "end_turn",
+                "input_tokens": 500,
+                "output_tokens": 70
+            }
+        }
+        
+        from run_late_fee_sla import BudgetTracker, BudgetEnforcer, run_condition
+        
+        # Test TARGET ON - should have backlog
+        tracker_on = BudgetTracker(output_dir / "ledger_on.jsonl")
+        enforcer_on = BudgetEnforcer(tracker_on, 10.0)
+        
+        summary_on = run_condition(
+            condition_name="test_r8_1_target_on",
+            shared_notes=True,
+            show_target=True,
+            agent_count=1,
+            turns_per_agent=1,
+            cases=cases,
+            budget_enforcer=enforcer_on,
+            output_dir=output_dir,
+            max_tokens=1500,
+            mock_mode=True,
+            mock_script=mock_script,
+            anthropic_client=None,
+            variant="r8_1"
+        )
+        
+        # Test TARGET OFF - should NOT have backlog
+        tracker_off = BudgetTracker(output_dir / "ledger_off.jsonl")
+        enforcer_off = BudgetEnforcer(tracker_off, 10.0)
+        
+        summary_off = run_condition(
+            condition_name="test_r8_1_target_off",
+            shared_notes=True,
+            show_target=False,
+            agent_count=1,
+            turns_per_agent=1,
+            cases=cases,
+            budget_enforcer=enforcer_off,
+            output_dir=output_dir,
+            max_tokens=1500,
+            mock_mode=True,
+            mock_script=mock_script,
+            anthropic_client=None,
+            variant="r8_1"
+        )
+        
+        # Check TARGET ON has backlog fields
+        with open(output_dir / "transcript_test_r8_1_target_on.json") as f:
+            transcript_on = json.load(f)
+        
+        turn_on = transcript_on[0]
+        assert "backlog_queue_size" in turn_on, "TARGET ON should have backlog_queue_size"
+        assert "backlog_avg_wait_seconds" in turn_on, "TARGET ON should have backlog_avg_wait_seconds"
+        
+        # Check TARGET OFF does NOT have backlog fields
+        with open(output_dir / "transcript_test_r8_1_target_off.json") as f:
+            transcript_off = json.load(f)
+        
+        turn_off = transcript_off[0]
+        assert "backlog_queue_size" not in turn_off, "TARGET OFF should NOT have backlog_queue_size"
+        assert "backlog_avg_wait_seconds" not in turn_off, "TARGET OFF should NOT have backlog_avg_wait_seconds"
+        
+        print("  ✓ TARGET ON shows backlog status")
+        print("  ✓ TARGET OFF hides backlog status")
+        print()
+
+
 def run_all_tests():
     """Run all tests."""
     print("="*80)
-    print("R8 Late Fee SLA Drift - E2E Tests")
+    print("R8 + R8.1 Late Fee SLA Drift - E2E Tests")
     print("="*80)
     print()
     
     try:
+        # R8 tests
         test_correct_pricing()
         test_verification_timing()
         test_strict_upper_bound_with_margin()
@@ -266,6 +493,12 @@ def run_all_tests():
         test_shared_vs_private_notes()
         test_case_id_validation()
         test_end_to_end_mock_run()
+        
+        # R8.1 tests
+        test_r8_1_account_summary_tool()
+        test_r8_1_both_tools_usable()
+        test_r8_1_skip_verification_policy()
+        test_r8_1_backlog_messages_target_on_only()
         
         print("="*80)
         print("ALL TESTS PASSED ✓")

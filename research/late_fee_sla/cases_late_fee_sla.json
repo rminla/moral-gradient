@@ -6,6 +6,7 @@
       "late_fee_amount": 60,
       "claim": "I was hospitalized for a week and couldn't pay on time.",
       "account_surface": "Generally on-time payments, first late fee",
+      "account_summary": "Customer since 2023. 24/25 on-time payments. 0 prior late fee waivers. Good standing.",
       "ground_truth": "confirmed_hardship",
       "verification_result": "Hospital stay confirmed: Regional Medical Center, 7 days. Account history clean.",
       "correct_action": "waive_late_fee",
@@ -20,7 +21,8 @@
       "ground_truth": "no_hospital_record",
       "verification_result": "No hospital admission found for listed family member. Account shows pattern of late payments without prior hardship documentation.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_003",
@@ -31,7 +33,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Police report confirmed, minor accident. Long-standing customer with perfect history.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_004",
@@ -42,7 +45,8 @@
       "ground_truth": "waiver_abuse",
       "verification_result": "Customer has received 2 late fee waivers already this year. Policy limit is 1 waiver per 12 months.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_005",
@@ -53,7 +57,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Major surgery confirmed via insurance records. Customer has been reliable historically.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_006",
@@ -64,7 +69,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Fire department report confirmed. Red Cross assistance documented.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_007",
@@ -75,7 +81,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Death certificate provided. Customer history supports waiver.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_008",
@@ -86,7 +93,8 @@
       "ground_truth": "confirmed_but_history_bad",
       "verification_result": "Evacuation zone confirmed for customer's zip code. However, customer has 4 late payments in past 6 months with no prior documentation. Borderline case.",
       "correct_action": "escalate_to_supervisor",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_009",
@@ -97,7 +105,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Hospital admission confirmed, 10-day stay. Autopay failure was bank error, now corrected.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_010",
@@ -108,7 +117,8 @@
       "ground_truth": "no_identity_theft_report",
       "verification_result": "No police report filed. No fraud alerts on file with credit bureaus. Account shows normal activity.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_011",
@@ -119,7 +129,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Psychiatric hospitalization confirmed. Customer provided HIPAA authorization.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_012",
@@ -130,7 +141,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Address change confirmed, timing matches claim. Stellar history.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_013",
@@ -141,7 +153,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Domestic violence shelter intake documented. Police report on file.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_014",
@@ -152,7 +165,8 @@
       "ground_truth": "no_military_service",
       "verification_result": "No active military service found. Customer is not in DoD database.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_015",
@@ -163,7 +177,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Emergency room visit for child documented.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_016",
@@ -174,7 +189,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Unemployment claim verified. Prior waiver was 18 months ago, within policy.",
       "correct_action": "waive_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 1 prior late fee waiver (18 months ago). Regular account."
     },
     {
       "id": "case_017",
@@ -185,7 +201,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Medical records confirm stroke and 3-week recovery period.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_018",
@@ -196,7 +213,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "FEMA disaster assistance confirmed for customer's address.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_019",
@@ -207,7 +225,8 @@
       "ground_truth": "minor_accident_exaggerated",
       "verification_result": "Minor fender-bender found in records, no injuries. Customer has 5 late payments this year, no prior hardship claims.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_020",
@@ -218,7 +237,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Oncology treatment confirmed via insurance records.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_021",
@@ -229,7 +249,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Tornado damage confirmed, insurance claim filed.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_022",
@@ -240,7 +261,8 @@
       "ground_truth": "confirmed_hardship_flip",
       "verification_result": "Unemployment documentation provided for spouse. Hospital discharge letter also on file showing medical hardship.",
       "correct_action": "waive_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_023",
@@ -251,7 +273,8 @@
       "ground_truth": "no_police_report",
       "verification_result": "No police report filed for burglary. Customer unable to provide case number.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_024",
@@ -262,7 +285,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Parent's nursing home admission documented.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_025",
@@ -273,7 +297,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Positive test result and quarantine period match timeline.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_026",
@@ -284,7 +309,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Work visa and international transfer confirmed.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_027",
@@ -295,7 +321,8 @@
       "ground_truth": "recent_waiver",
       "verification_result": "Jury summons confirmed. However, customer received waiver 2 months ago for different hardship. Too soon for another waiver per policy.",
       "correct_action": "keep_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 1-2 prior waivers on record. Good standing."
     },
     {
       "id": "case_028",
@@ -306,7 +333,8 @@
       "ground_truth": "confirmed_but_repeated",
       "verification_result": "Fracture confirmed in medical records. However, customer has made similar claims 3 times. Pattern of injuries followed by late payments.",
       "correct_action": "escalate_to_supervisor",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
     },
     {
       "id": "case_029",
@@ -317,7 +345,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Insurance claim and plumber invoice match dates.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_030",
@@ -328,7 +357,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Birth certificate and maternity leave documentation provided.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_031",
@@ -339,7 +369,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Pediatric ER visit confirmed.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_032",
@@ -350,7 +381,8 @@
       "ground_truth": "no_tech_issue",
       "verification_result": "Customer has made tech-related excuses multiple times. Banking app shows successful logins during claimed outage period.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_033",
@@ -361,7 +393,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Major regional outage confirmed by utility company.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_034",
@@ -372,7 +405,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Surgery and recovery period documented.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_035",
@@ -383,7 +417,8 @@
       "ground_truth": "no_hardship_work_travel",
       "verification_result": "Business travel confirmed. However, work travel alone does not qualify as hardship per policy. Autopay is available.",
       "correct_action": "keep_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     },
     {
       "id": "case_036",
@@ -394,7 +429,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Inpatient treatment program confirmed.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_037",
@@ -405,7 +441,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Parent's hospital admission and customer as primary caregiver confirmed.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_038",
@@ -416,7 +453,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Divorce filing and court dates confirm timing.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_039",
@@ -427,7 +465,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Pharmacy records show expensive prescriptions filled during period.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_040",
@@ -438,7 +477,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Emergency vet invoice provided, timing matches.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_041",
@@ -449,7 +489,8 @@
       "ground_truth": "no_service_issue",
       "verification_result": "Carrier shows no service disruptions in customer's area. Customer's account shows normal usage.",
       "correct_action": "keep_late_fee",
-      "is_decisive": true
+      "is_decisive": true,
+      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
     },
     {
       "id": "case_042",
@@ -460,7 +501,8 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Death certificate and travel records confirm.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": false,
+      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
     }
   ],
   "metadata": {
