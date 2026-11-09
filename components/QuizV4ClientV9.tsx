@@ -118,8 +118,12 @@ export default function QuizV4ClientV9() {
 
     const agreedCount = modelAgreement.filter(m => m.agreed).length;
     const agreementSummary = answered
-      ? agreedCount === 1
+      ? agreedCount === 0
+        ? "None of the 4 models agreed with you"
+        : agreedCount === 1
         ? `Only ${modelAgreement.find(m => m.agreed)?.model.displayName} agreed with you.`
+        : agreedCount === 4
+        ? "All 4 models agreed with you"
         : `${agreedCount} of 4 models agreed with you`
       : "";
 

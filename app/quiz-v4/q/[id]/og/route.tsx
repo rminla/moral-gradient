@@ -65,21 +65,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         <div style={{
           display: "flex",
           flexDirection: "column",
-          padding: "48px 52px",
+          padding: "40px 52px 32px",
           flex: 1,
         }}>
           {/* Question title + setup */}
           <div style={{
             display: "flex",
             flexDirection: "column",
-            gap: 16,
+            gap: 14,
             borderBottom: `1px solid ${OG.rule}`,
-            paddingBottom: 24,
+            paddingBottom: 20,
           }}>
             <div style={{
               display: "flex",
               fontFamily: "JetBrains Mono",
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: 500,
               textTransform: "uppercase",
               letterSpacing: 1.2,
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             <div style={{
               display: "flex",
               fontFamily: "Archivo",
-              fontSize: 24,
+              fontSize: 22,
               lineHeight: 1.3,
               color: OG.ink,
             }}>
@@ -102,13 +102,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           <div style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
-            marginTop: 28,
+            gap: 6,
+            marginTop: 24,
           }}>
             <div style={{
               display: "flex",
               fontFamily: "JetBrains Mono",
-              fontSize: 14,
+              fontSize: 13,
               textTransform: "uppercase",
               letterSpacing: 1.2,
               color: OG.grey,
@@ -118,7 +118,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             <div style={{
               display: "flex",
               fontFamily: "Archivo Expanded",
-              fontSize: 38,
+              fontSize: 36,
               fontWeight: 800,
               lineHeight: 1.05,
               letterSpacing: -1.5,
@@ -132,8 +132,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           <div style={{
             display: "flex",
             gap: 10,
-            marginTop: 26,
-            paddingTop: 26,
+            marginTop: 22,
+            paddingTop: 22,
             borderTop: `1px solid ${OG.rule}`,
             flexWrap: "wrap",
           }}>
@@ -184,12 +184,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           {/* "What would you do?" */}
           <div style={{
             display: "flex",
-            marginTop: 28,
+            marginTop: 24,
           }}>
             <div style={{
               display: "flex",
               fontFamily: "Archivo Expanded",
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: 800,
               color: OG.ink,
             }}>
@@ -203,14 +203,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "18px 20px",
+          padding: "16px 20px",
           borderTop: `1px solid ${OG.rule}`,
           background: OG.paper,
         }}>
           <div style={{
             display: "flex",
             fontFamily: "JetBrains Mono",
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: 500,
             color: OG.ink,
           }}>

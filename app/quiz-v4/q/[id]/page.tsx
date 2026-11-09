@@ -40,15 +40,20 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   }).filter(Boolean) as Array<{ model: typeof MODELS[0]; agreed: boolean }>;
 
   const agreedCount = modelAgreement.filter(m => m.agreed).length;
-  const agreementText = agreedCount === 1
+  const agreementText = agreedCount === 0
+    ? "None of the 4 models agreed"
+    : agreedCount === 1
     ? `Only ${modelAgreement.find(m => m.agreed)?.model.displayName} agreed`
+    : agreedCount === 4
+    ? "All 4 models agreed"
     : `${agreedCount} of 4 models agreed`;
 
   // Use production URL for OG images
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || SITE_URL || "https://moral-gradient.vercel.app";
 
   const title = `${item.title}: ${answerLabel}`;
-  const description = `${agreementText}. ${item.category === "classic" ? "A classic ethical dilemma" : "An everyday moral scenario"} on ${SITE_NAME}.`;
+  const categoryLabel = item.category === "classic" ? "A classic ethical dilemma" : "An everyday moral scenario";
+  const description = `${agreementText}. ${categoryLabel} on ${SITE_NAME}.`;
   const imageUrl = `${baseUrl}/quiz-v4/q/${id}/og?a=${a}`;
   const image = { url: imageUrl, width: 1200, height: 630, alt: title };
 
