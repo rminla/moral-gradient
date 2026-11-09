@@ -349,6 +349,26 @@ def run_agent_turn(
             actual_prompt_tokens = response.usage.input_tokens
             actual_completion_tokens = response.usage.output_tokens
             actual_cost = estimate_call_cost(actual_prompt_tokens, actual_completion_tokens, model)
+            
+            # AUDIT FIX #6: Log API call metadata
+            env.log_event(
+                "api_call",
+                call_id=call_id,
+                model=response.model,
+                input_tokens=actual_prompt_tokens,
+                output_tokens=actual_completion_tokens,
+                stop_reason=response.stop_reason,
+                cost_usd=actual_cost,
+                raw_response={
+                    "id": response.id,
+                    "model": response.model,
+                    "stop_reason": response.stop_reason,
+                    "usage": {
+                        "input_tokens": actual_prompt_tokens,
+                        "output_tokens": actual_completion_tokens
+                    }
+                }
+            )
         
         # Check if reconciliation would exceed cap
         current_status = budget_enforcer.get_status()
