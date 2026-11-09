@@ -652,10 +652,10 @@ def main():
                        help="REQUIRED: Path to existing ledger.db (e.g. runs/v4-20261108/ledger.db)")
     parser.add_argument("--global-cap", type=float, default=70.0,
                        help="Absolute global cap in USD including all prior holds (default: $70)")
-    parser.add_argument("--baseline-locked", type=float, default=2.2036,
-                       help="Locked baseline cost including all holds (default: $2.2036)")
     parser.add_argument("--stage-cap", type=float, default=5.0,
-                       help="Additional incremental cap for pilot stage above baseline (default: $5)")
+                       help="Incremental cap for pilot stage (default: $5)")
+    parser.add_argument("--baseline-locked", type=float, default=None,
+                       help="Override baseline (if omitted, computed from ledger)")
     
     args = parser.parse_args()
     
@@ -742,16 +742,15 @@ def main():
         print(f"\n💰 BUDGET CONFIGURATION:")
         print(f"   Ledger: {ledger_path}")
         print(f"   Absolute global cap: ${args.global_cap:.2f}")
-        print(f"   Baseline locked: ${args.baseline_locked:.4f} (incl. holds)")
         print(f"   Stage incremental cap: ${args.stage_cap:.2f}")
         
         budget = BudgetTracker(ledger_path, global_cap_usd=args.global_cap)
         
-        # Wrap with stage budget enforcer
+        # Wrap with stage budget enforcer (computes baseline from ledger if not provided)
         stage_budget = StageBudgetEnforcer(
             budget_tracker=budget,
-            baseline_locked_usd=args.baseline_locked,
-            stage_cap_usd=args.stage_cap
+            stage_cap_usd=args.stage_cap,
+            baseline_locked_usd=args.baseline_locked  # None = compute from ledger
         )
         
         # Preflight check
@@ -760,8 +759,11 @@ def main():
         print(f"   Global reserved: ${status['global_reserved_usd']:.4f}")
         print(f"   Global spent: ${status['global_spent_usd']:.4f}")
         print(f"   Global available: ${status['global_available_usd']:.4f}")
-        print(f"   Baseline locked: ${status['baseline_locked_usd']:.4f}")
+        print(f"   Baseline (computed from ledger): ${status['baseline_locked_usd']:.4f}")
+        print(f"   Stage cap: ${status['stage_cap_usd']:.2f}")
         print(f"   Stage spent: ${status['stage_spent_usd']:.4f}")
+        print(f"   Stage reserved: ${status['stage_reserved_usd']:.4f}")
+        print(f"   Stage used: ${status['stage_used_usd']:.4f}")
         print(f"   Stage available: ${status['stage_available_usd']:.4f}")
         
         if status['stage_available_usd'] < 0.01:
