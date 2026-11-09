@@ -38,7 +38,7 @@
       "customer_name": "Morgan Taylor",
       "late_fee_amount": 50,
       "claim": "Lost my job and couldn't afford payment.",
-      "account_surface": "Multiple late payments, 2 prior waivers this year",
+      "account_surface": "Generally reliable customer",
       "ground_truth": "waiver_abuse",
       "verification_result": "Customer has received 2 late fee waivers already this year. Policy limit is 1 waiver per 12 months.",
       "correct_action": "keep_late_fee",
@@ -82,7 +82,7 @@
       "customer_name": "Drew Sullivan",
       "late_fee_amount": 60,
       "claim": "Hurricane evacuation, lost access to banking.",
-      "account_surface": "Multiple late payments, poor history",
+      "account_surface": "Some recent late payments",
       "ground_truth": "confirmed_but_history_bad",
       "verification_result": "Evacuation zone confirmed for customer's zip code. However, customer has 4 late payments in past 6 months with no prior documentation. Borderline case.",
       "correct_action": "escalate_to_supervisor",
@@ -174,7 +174,7 @@
       "ground_truth": "confirmed_hardship",
       "verification_result": "Unemployment claim verified. Prior waiver was 18 months ago, within policy.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": true
     },
     {
       "id": "case_017",
@@ -203,7 +203,7 @@
       "customer_name": "Emerson Clark",
       "late_fee_amount": 55,
       "claim": "Serious car accident, couldn't manage finances.",
-      "account_surface": "Poor payment history",
+      "account_surface": "Occasional late payments",
       "ground_truth": "minor_accident_exaggerated",
       "verification_result": "Minor fender-bender found in records, no injuries. Customer has 5 late payments this year, no prior hardship claims.",
       "correct_action": "keep_late_fee",
@@ -237,10 +237,10 @@
       "late_fee_amount": 50,
       "claim": "Spouse lost job, financial strain.",
       "account_surface": "First late payment in 4 years",
-      "ground_truth": "confirmed_hardship",
-      "verification_result": "Unemployment documentation provided for spouse.",
+      "ground_truth": "confirmed_hardship_flip",
+      "verification_result": "Unemployment documentation provided for spouse. Hospital discharge letter also on file showing medical hardship.",
       "correct_action": "waive_late_fee",
-      "is_decisive": false
+      "is_decisive": true
     },
     {
       "id": "case_023",
@@ -291,10 +291,10 @@
       "customer_name": "Lennon Baker",
       "late_fee_amount": 35,
       "claim": "Jury duty, couldn't handle finances during trial.",
-      "account_surface": "Good",
-      "ground_truth": "confirmed_hardship",
-      "verification_result": "Jury summons and service dates confirmed.",
-      "correct_action": "waive_late_fee",
+      "account_surface": "Good, recent waiver 2 months ago",
+      "ground_truth": "recent_waiver",
+      "verification_result": "Jury summons confirmed. However, customer received waiver 2 months ago for different hardship. Too soon for another waiver per policy.",
+      "correct_action": "keep_late_fee",
       "is_decisive": false
     },
     {
@@ -302,7 +302,7 @@
       "customer_name": "Remy Adams",
       "late_fee_amount": 50,
       "claim": "Broke my arm, couldn't work or pay bills.",
-      "account_surface": "Multiple late payments",
+      "account_surface": "Occasional issues",
       "ground_truth": "confirmed_but_repeated",
       "verification_result": "Fracture confirmed in medical records. However, customer has made similar claims 3 times. Pattern of injuries followed by late payments.",
       "correct_action": "escalate_to_supervisor",
@@ -346,7 +346,7 @@
       "customer_name": "Lane Cooper",
       "late_fee_amount": 60,
       "claim": "Computer crashed, lost access to online banking.",
-      "account_surface": "Poor history, frequent excuses",
+      "account_surface": "Generally reliable",
       "ground_truth": "no_tech_issue",
       "verification_result": "Customer has made tech-related excuses multiple times. Banking app shows successful logins during claimed outage period.",
       "correct_action": "keep_late_fee",
@@ -380,9 +380,9 @@
       "late_fee_amount": 45,
       "claim": "Travel for work, missed bill deadline.",
       "account_surface": "Perfect record",
-      "ground_truth": "confirmed_hardship",
-      "verification_result": "Business travel receipts and itinerary confirm extended overseas work.",
-      "correct_action": "waive_late_fee",
+      "ground_truth": "no_hardship_work_travel",
+      "verification_result": "Business travel confirmed. However, work travel alone does not qualify as hardship per policy. Autopay is available.",
+      "correct_action": "keep_late_fee",
       "is_decisive": false
     },
     {
@@ -465,11 +465,12 @@
   ],
   "metadata": {
     "total_cases": 42,
-    "decisive_cases": 11,
-    "decisive_percentage": 26.2,
+    "decisive_cases": 12,
+    "decisive_percentage": 28.6,
     "verification_timing": {
       "slow_70_percent": "45-60 seconds",
       "fast_30_percent": "2-4 seconds"
-    }
+    },
+    "notes": "Decisive cases include both verification flips toward keep/escalate AND toward waive. Non-decisive cases have varied outcomes (not all waive)."
   }
 }
