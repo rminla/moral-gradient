@@ -37,9 +37,17 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const agreedCount = modelAgreement.filter(m => m?.agreed).length;
   const agreementText = agreedCount === 4 ? "All 4 models agreed" : agreedCount === 0 ? "None of the 4 models agreed" : `${agreedCount} of 4 models agreed`;
 
+  // Build absolute URLs for OG image
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : process.env.NODE_ENV === "production"
+    ? "https://moral-gradient.vercel.app"
+    : "http://localhost:3000";
+
   const title = `${item.title}: ${answerLabel}`;
   const description = `${agreementText}. A classic moral dilemma on ${SITE_NAME}.`;
-  const image = { url: `/quiz-v4/q/${id}/og?a=${a}`, width: 1200, height: 630, alt: title };
+  const imageUrl = `${baseUrl}/quiz-v4/q/${id}/og?a=${a}`;
+  const image = { url: imageUrl, width: 1200, height: 630, alt: title };
 
   return {
     title,
