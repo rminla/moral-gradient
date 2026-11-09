@@ -1,0 +1,48 @@
+{"type": "reserve", "call_id": "r7_agent_1_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:25.550607"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550647"}
+{"type": "reserve", "call_id": "r7_agent_2_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:25.550714"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550733"}
+{"type": "reserve", "call_id": "r7_agent_3_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:25.550779"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550794"}
+{"type": "reserve", "call_id": "r7_agent_4_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:25.550834"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550847"}
+{"type": "reserve", "call_id": "r7_agent_1_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:25.550881"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550893"}
+{"type": "reserve", "call_id": "r7_agent_2_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:25.550947"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.550980"}
+{"type": "reserve", "call_id": "r7_agent_3_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:25.551037"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551052"}
+{"type": "reserve", "call_id": "r7_agent_4_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:25.551156"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551182"}
+{"type": "reserve", "call_id": "r7_agent_1_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:25.551273"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551288"}
+{"type": "reserve", "call_id": "r7_agent_2_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:25.551334"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551347"}
+{"type": "reserve", "call_id": "r7_agent_3_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:25.551388"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551402"}
+{"type": "reserve", "call_id": "r7_agent_4_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:25.551444"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:25.551459"}
+{"type": "reserve", "call_id": "r7_agent_1_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:35.448503"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448539"}
+{"type": "reserve", "call_id": "r7_agent_2_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:35.448603"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448621"}
+{"type": "reserve", "call_id": "r7_agent_3_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:35.448666"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448680"}
+{"type": "reserve", "call_id": "r7_agent_4_turn1", "reserved_usd": 0.004156, "timestamp": "2026-11-09T04:22:35.448722"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn1", "reserved_usd": 0.004156, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448738"}
+{"type": "reserve", "call_id": "r7_agent_1_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:35.448773"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448785"}
+{"type": "reserve", "call_id": "r7_agent_2_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:35.448842"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448856"}
+{"type": "reserve", "call_id": "r7_agent_3_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:35.448906"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448919"}
+{"type": "reserve", "call_id": "r7_agent_4_turn2", "reserved_usd": 0.0041728, "timestamp": "2026-11-09T04:22:35.448966"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn2", "reserved_usd": 0.0041728, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.448980"}
+{"type": "reserve", "call_id": "r7_agent_1_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:35.449067"}
+{"type": "reconcile", "call_id": "r7_agent_1_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.449083"}
+{"type": "reserve", "call_id": "r7_agent_2_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:35.449118"}
+{"type": "reconcile", "call_id": "r7_agent_2_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.449132"}
+{"type": "reserve", "call_id": "r7_agent_3_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:35.449172"}
+{"type": "reconcile", "call_id": "r7_agent_3_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.449184"}
+{"type": "reserve", "call_id": "r7_agent_4_turn3", "reserved_usd": 0.0041784000000000005, "timestamp": "2026-11-09T04:22:35.449219"}
+{"type": "reconcile", "call_id": "r7_agent_4_turn3", "reserved_usd": 0.0041784000000000005, "actual_usd": 0.0, "timestamp": "2026-11-09T04:22:35.449233"}
