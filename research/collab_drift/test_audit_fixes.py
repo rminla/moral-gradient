@@ -121,8 +121,8 @@ def test_3_budget_persistent_and_sound():
         
         status1 = enforcer1.get_status()
         print(f"  After first run: spent={status1['stage_spent']}, available={status1['stage_available']}")
-        assert status1['stage_spent'] == 4.90
-        assert status1['stage_available'] == 0.10
+        assert abs(status1['stage_spent'] - 4.90) < 0.01
+        assert abs(status1['stage_available'] - 0.10) < 0.01
         
         # Restart: enforcer should load from ledger
         tracker2 = BudgetTracker(ledger_path)
@@ -130,8 +130,8 @@ def test_3_budget_persistent_and_sound():
         
         status2 = enforcer2.get_status()
         print(f"  After restart: spent={status2['stage_spent']}, available={status2['stage_available']}")
-        assert status2['stage_spent'] == 4.90, "Should load spent from ledger"
-        assert status2['stage_available'] == 0.10, "Should have $0.10 available"
+        assert abs(status2['stage_spent'] - 4.90) < 0.01, "Should load spent from ledger"
+        assert abs(status2['stage_available'] - 0.10) < 0.01, "Should have $0.10 available"
         
         # Try to reserve $1 - should fail
         try:

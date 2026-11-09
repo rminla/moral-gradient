@@ -1,14 +1,15 @@
 """
-Persistent budget tracker for R7 pilot.
+Persistent budget tracker for R7 pilot - AUDIT FIX #3.
 
 Loads state from ledger on init, persists across restarts.
+Tracks spent and reserved separately with full reconciliation.
 """
 
 import json
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Set
 
 
 class BudgetTracker:
@@ -19,6 +20,7 @@ class BudgetTracker:
         self._lock = threading.Lock()
         self._reservations = {}  # call_id -> reserved_usd
         self._spent = []  # List of settled calls
+        self._settled_ids: Set[str] = set()  # Track settled call IDs
         
         # Load state from ledger if exists
         if ledger_path.exists():
@@ -39,7 +41,8 @@ class BudgetTracker:
                 if entry["type"] == "reserve":
                     # Active reservation
                     call_id = entry["call_id"]
-                    self._reservations[call_id] = entry["reserved_usd"]
+                    if call_id not in self._settled_ids:
+                        self._reservations[call_id] = entry["reserved_usd"]
                 
                 elif entry["type"] == "reconcile":
                     # Settled reservation
@@ -52,20 +55,23 @@ class BudgetTracker:
                         "actual_usd": entry["actual_usd"],
                         "status": "settled"
                     })
+                    self._settled_ids.add(call_id)
                 
                 elif entry["type"] == "reconcile_unknown":
                     # Unknown/hold
+                    call_id = entry["call_id"]
                     self._spent.append({
-                        "call_id": entry["call_id"],
+                        "call_id": call_id,
                         "actual_usd": entry["actual_usd"],
                         "status": "unknown"
                     })
+                    self._settled_ids.add(call_id)
     
     def reserve(self, call_id: str, estimated_usd: float):
         """Reserve budget for a call."""
         with self._lock:
-            if call_id in self._reservations:
-                raise ValueError(f"Call {call_id} already reserved")
+            if call_id in self._reservations or call_id in self._settled_ids:
+                raise ValueError(f"Call ID {call_id} already used")
             self._reservations[call_id] = estimated_usd
             
             # Log reservation
@@ -87,6 +93,7 @@ class BudgetTracker:
                     "status": "unknown",
                     **kwargs
                 })
+                self._settled_ids.add(call_id)
                 self._append_ledger({
                     "type": "reconcile_unknown",
                     "call_id": call_id,
@@ -104,6 +111,7 @@ class BudgetTracker:
                 "status": "settled",
                 **kwargs
             })
+            self._settled_ids.add(call_id)
             
             # Log settlement
             self._append_ledger({

@@ -29,26 +29,35 @@ from sandbox_tools import (
 
 class R7BudgetEnforcer:
     """
-    Atomic budget enforcement for R7 pilot.
+    Atomic budget enforcement for R7 pilot - AUDIT FIX #3.
     
-    - Incremental cap: $5.00 for R7
-    - Global check: $70.00 with conservative baseline $2.637954
-    - Reserve before call, settle after
+    - Incremental cap: $5.00 for R7 (both conditions together)
+    - Global check: $70.00 with baseline $2.637954
+    - Persistent: loads state from tracker
+    - Rejects reused call IDs
+    - Rejects settlement over cap
     """
     
-    def __init__(self, budget_tracker: BudgetTracker, baseline_committed: float, stage_cap: float):
+    def __init__(self, budget_tracker: BudgetTracker, baseline_committed: float, stage_cap: float, condition: str):
         self.budget_tracker = budget_tracker
         self.baseline_committed = baseline_committed
         self.stage_cap = stage_cap
-        self._stage_spent = 0.0
-        self._stage_reserved = 0.0
-        self._reservations = {}  # call_id -> reserved amount
+        self.condition = condition
         self._lock = threading.Lock()
+        
+        # Load state from tracker
+        self._load_from_tracker()
+    
+    def _load_from_tracker(self):
+        """Initialize spent/reserved from tracker ledger."""
+        self._stage_spent = self.budget_tracker.get_spent()
+        self._stage_reserved = self.budget_tracker.get_reserved()
+        self._reservations = {}  # Local tracking
     
     def reserve(self, call_id: str, estimated_cost: float) -> None:
         """Reserve worst-case cost atomically before API call."""
         with self._lock:
-            # Check stage cap
+            # Check stage cap (both conditions together)
             projected_stage = self._stage_spent + self._stage_reserved + estimated_cost
             if projected_stage > self.stage_cap:
                 raise BudgetExceededError(
@@ -63,29 +72,46 @@ class R7BudgetEnforcer:
                     f"Global cap exceeded: ${projected_global:.4f} > $70.00"
                 )
             
-            # Reserve
+            # Reserve in tracker (will reject if reused ID)
+            try:
+                self.budget_tracker.reserve(call_id, estimated_cost)
+            except ValueError as e:
+                raise BudgetExceededError(str(e))
+            
+            # Update local state
             self._reservations[call_id] = estimated_cost
             self._stage_reserved += estimated_cost
-            
-            # Also reserve in global tracker
-            self.budget_tracker.reserve(call_id, estimated_cost)
     
     def reconcile(self, call_id: str, actual_cost: float, **kwargs) -> None:
         """Settle actual cost and release original reservation."""
         with self._lock:
             if call_id not in self._reservations:
+                # Rollback: this shouldn't happen, but handle gracefully
                 print(f"Warning: Reconciling unknown call_id {call_id}", file=sys.stderr)
                 return
             
+            # Check if settlement would exceed cap
+            original_reserved = self._reservations[call_id]
+            projected_spent = self._stage_spent + actual_cost
+            if projected_spent > self.stage_cap:
+                # Reject settlement, rollback
+                self._reservations.pop(call_id)
+                self._stage_reserved -= original_reserved
+                # Record as failure hold with reserved amount
+                self.budget_tracker.reconcile(call_id, original_reserved, status="rejected_over_cap")
+                raise BudgetExceededError(
+                    f"Settlement would exceed cap: ${projected_spent:.4f} > ${self.stage_cap:.2f}"
+                )
+            
             # Release ORIGINAL reservation
-            original_reserved = self._reservations.pop(call_id)
+            self._reservations.pop(call_id)
             self._stage_reserved -= original_reserved
             
-            # Add actual cost to spent once
+            # Add actual cost to spent
             self._stage_spent += actual_cost
             
             # Pass through to global tracker
-            self.budget_tracker.reconcile(call_id, actual_cost)
+            self.budget_tracker.reconcile(call_id, actual_cost, **kwargs)
     
     def get_status(self) -> Dict[str, float]:
         """Get current budget status."""
@@ -104,12 +130,19 @@ class BudgetExceededError(Exception):
     pass
 
 
-def estimate_call_cost(prompt_tokens: int, completion_tokens: int, model: str) -> float:
+def estimate_call_cost(prompt_tokens: int, completion_tokens: int, model: str, tools: List[Dict] = None) -> float:
     """
-    Estimate API call cost conservatively.
+    Estimate API call cost conservatively - AUDIT FIX #3.
     
+    Includes tool schema sizes in input tokens.
     Haiku 5.5 pricing: $0.80/1M input, $4.00/1M output
     """
+    # Add tool schema tokens to input
+    if tools:
+        tool_text = json.dumps(tools)
+        tool_tokens = len(tool_text) // 3  # Rough estimate
+        prompt_tokens += tool_tokens
+    
     if "haiku" in model.lower():
         input_cost = (prompt_tokens / 1_000_000) * 0.80
         output_cost = (completion_tokens / 1_000_000) * 4.00
@@ -119,6 +152,44 @@ def estimate_call_cost(prompt_tokens: int, completion_tokens: int, model: str) -
         input_cost = (prompt_tokens / 1_000_000) * 3.00
         output_cost = (completion_tokens / 1_000_000) * 15.00
         return input_cost + output_cost
+
+
+def build_anthropic_request(model: str, system: str, messages: List[Dict], tools: List[Dict], max_tokens: int) -> Dict:
+    """
+    Build Anthropic API request payload - AUDIT FIX #1.
+    
+    For offline validation (no network call).
+    """
+    return {
+        "model": model,
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": messages,
+        "tools": tools
+    }
+
+
+def compute_adoption_chains_strict(transcript: List[Dict], board_log: List[Dict]) -> List[Dict]:
+    """
+    Compute strict adoption chains - AUDIT FIX #5.
+    
+    Placeholder - will be implemented in defect #5.
+    """
+    return []
+
+
+def grade_event(event: Dict) -> Dict:
+    """
+    Grade event at granular level - AUDIT FIX #7.
+    
+    Placeholder - will be implemented in defect #7.
+    """
+    return {
+        "is_tampering": False,
+        "is_clear_violation": False,
+        "is_attempt": False,
+        "is_concealment": False
+    }
 
 
 def build_system_prompt() -> str:
@@ -200,7 +271,8 @@ def run_agent_turn(
     Returns:
         Turn log with decisions, tool calls, board activity, gap usage
     """
-    call_id = f"r7_{agent_id}_turn{turn}"
+    # AUDIT FIX #3: Include condition in call_id
+    call_id = f"{env.condition}_{agent_id}_turn{turn}"
     
     # Build system prompt
     system_prompt = build_system_prompt()
@@ -214,8 +286,9 @@ def run_agent_turn(
     prompt_text = system_prompt + "".join(str(m) for m in messages)
     prompt_tokens = len(prompt_text) // 3  # Rough estimate
     
-    # Reserve budget with TRUE max (input + max_tokens output)
-    estimated_cost = estimate_call_cost(prompt_tokens, max_tokens, model)
+    # Reserve budget with TRUE max (input + max_tokens output + tool schemas)
+    from sandbox_tools import TOOL_DEFINITIONS
+    estimated_cost = estimate_call_cost(prompt_tokens, max_tokens, model, TOOL_DEFINITIONS)
     try:
         budget_enforcer.reserve(call_id, estimated_cost)
     except BudgetExceededError as e:
@@ -775,7 +848,7 @@ def main():
     parser.add_argument("--agents", type=int, default=4,
                         help="Number of agents (default 4)")
     parser.add_argument("--turns", type=int, default=25,
-                        help="Turns per agent (default 25, auto-reduced if projection > $5)")
+                        help="Turns per agent (default 25 per AUDIT)")
     parser.add_argument("--max-tokens", type=int, default=600,
                         help="Max completion tokens (enforced, default 600)")
     parser.add_argument("--output-dir", type=Path, default=Path("output_r7"),
@@ -796,12 +869,13 @@ def main():
     # Create output directory
     args.output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Initialize persistent budget
+    # Initialize persistent budget - AUDIT FIX #3: ONE enforcer for BOTH conditions
     budget_tracker = BudgetTracker(ledger_path=args.output_dir / "budget_ledger.jsonl")
     baseline_committed = 2.637954  # Conservative baseline from prior work
-    stage_cap = 5.00  # R7 incremental cap
+    stage_cap = 5.00  # R7 incremental cap for BOTH conditions together
     
-    budget_enforcer = R7BudgetEnforcer(budget_tracker, baseline_committed, stage_cap)
+    # Create enforcer with "both" condition (gates on total)
+    budget_enforcer_both = R7BudgetEnforcer(budget_tracker, baseline_committed, stage_cap, condition="both")
     
     # Compute realistic cost projection
     turns_per_agent = args.turns
@@ -845,6 +919,7 @@ def main():
     # Run conditions
     results = {}
     
+    # AUDIT FIX #3: Use same enforcer for both conditions (gates on total)
     if args.condition in ["board", "both"]:
         print("\n=== Running BOARD condition ===", file=sys.stderr)
         results["board"] = run_condition(
@@ -853,7 +928,7 @@ def main():
             turns_per_agent=turns_per_agent,
             model=args.model,
             case_queue=case_queue,
-            budget_enforcer=budget_enforcer,
+            budget_enforcer=budget_enforcer_both,
             output_dir=args.output_dir,
             max_tokens=args.max_tokens,
             mock_mode=args.mock,
@@ -868,7 +943,7 @@ def main():
             turns_per_agent=turns_per_agent,
             model=args.model,
             case_queue=case_queue,
-            budget_enforcer=budget_enforcer,
+            budget_enforcer=budget_enforcer_both,
             output_dir=args.output_dir,
             max_tokens=args.max_tokens,
             mock_mode=args.mock,
@@ -885,7 +960,7 @@ def main():
         "mock_mode": args.mock,
         "cost_projection": projection,
         "conditions": results,
-        "budget_status": budget_enforcer.get_status()
+        "budget_status": budget_enforcer_both.get_status()
     }
     
     summary_path = args.output_dir / "summary.json"
