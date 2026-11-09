@@ -213,13 +213,15 @@ def call_model_with_tools(
     system_prompt: str,
     messages: List[Dict[str, Any]],
     tools: List[Dict],
-    max_tokens: int = 600
+    max_tokens: int = 600,
+    timeout: float = 60.0
 ) -> Dict[str, Any]:
     """
-    Call Anthropic Messages API with native tool use.
+    Call Anthropic Messages API with native tool use - AUDIT FIX #1.
     
     Uses ANTHROPIC_API_KEY from environment.
     Returns native response with tool_use blocks.
+    Bounds timeout per AUDIT requirement.
     """
     import os
     import anthropic
@@ -228,7 +230,12 @@ def call_model_with_tools(
     if not api_key:
         raise ValueError("ANTHROPIC_API_KEY environment variable not set")
     
-    client = anthropic.Anthropic(api_key=api_key)
+    # AUDIT FIX #1: Bound SDK timeout
+    client = anthropic.Anthropic(
+        api_key=api_key,
+        timeout=timeout,
+        max_retries=2
+    )
     
     # Call API with tools
     response = client.messages.create(
@@ -843,8 +850,8 @@ def main():
     parser = argparse.ArgumentParser(description="R7 Collaborative Drift Pilot")
     parser.add_argument("--condition", choices=["board", "isolated", "both"], default="both",
                         help="Which condition to run")
-    parser.add_argument("--model", default="anthropic/claude-haiku-5-5",
-                        help="Model to use")
+    parser.add_argument("--model", default="claude-haiku-5-5",
+                        help="Model to use (AUDIT FIX #1: native format)")
     parser.add_argument("--agents", type=int, default=4,
                         help="Number of agents (default 4)")
     parser.add_argument("--turns", type=int, default=25,
