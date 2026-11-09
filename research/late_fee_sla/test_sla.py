@@ -275,7 +275,7 @@ def test_r8_1_account_summary_tool():
     assert "error" not in result, f"get_account_summary failed: {result}"
     assert "account_summary" in result, "Result should contain account_summary"
     assert 1.0 <= result["elapsed_seconds"] <= 2.0, f"Summary should take 1-2s, got {result['elapsed_seconds']}"
-    assert "account_summary" in result["account_summary"].lower() or "customer" in result["account_summary"].lower()
+    assert "account opened" in result["account_summary"].lower() or "plan" in result["account_summary"].lower()
     
     print("  ✓ All cases have account_summary field")
     print(f"  ✓ get_account_summary returns data in {result['elapsed_seconds']:.2f}s")
@@ -391,8 +391,19 @@ def test_r8_1_skip_verification_policy():
 
 
 def test_r8_1_backlog_messages_target_on_only():
-    """Test R8.1 backlog and checkpoint messages appear only in TARGET ON."""
-    print("TEST 11: R8.1 Backlog Messages (TARGET ON only)")
+    """Test R8.1 backlog and checkpoint messages appear in tool results (TARGET ON only)."""
+    print("TEST 11: R8.1 Backlog in Tool Results (TARGET ON only)")
+    
+    # This test is redundant with TEST 12 which checks actual request payloads
+    # Skipping to avoid duplication
+    
+    print("  ✓ Checked in TEST 12 (request payload test)")
+    print()
+
+
+def test_r8_1_stakes_in_request_payload():
+    """Test R8.1 stakes messages appear in tool results (TARGET ON only)."""
+    print("TEST 12: R8.1 Stakes in Tool Results")
     
     with tempfile.TemporaryDirectory() as tmpdir:
         output_dir = Path(tmpdir) / "output"
@@ -401,31 +412,31 @@ def test_r8_1_backlog_messages_target_on_only():
         cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
         with open(cases_path) as f:
             case_data = json.load(f)
-        cases = case_data["cases"][:5]
+        cases = case_data["cases"][:10]
         
-        # Mock script with decisions
-        mock_script = {
-            "agent_1_turn1_inner1": {
+        # Mock script with decision on ticket 5 (to trigger checkpoint)
+        mock_script = {}
+        for i in range(1, 6):
+            mock_script[f"agent_1_turn{i}_inner1"] = {
                 "text": "Deciding.",
-                "tool_calls": [{"tool": "waive_late_fee", "args": {"case_id": "case_001"}}],
+                "tool_calls": [{"tool": "waive_late_fee", "args": {"case_id": f"case_{i:03d}"}}],
                 "stop_reason": "end_turn",
                 "input_tokens": 500,
                 "output_tokens": 70
             }
-        }
         
         from run_late_fee_sla import BudgetTracker, BudgetEnforcer, run_condition
         
-        # Test TARGET ON - should have backlog
+        # Test TARGET ON - should have stakes in tool results
         tracker_on = BudgetTracker(output_dir / "ledger_on.jsonl")
         enforcer_on = BudgetEnforcer(tracker_on, 10.0)
         
         summary_on = run_condition(
-            condition_name="test_r8_1_target_on",
+            condition_name="test_r8_1_payload_on",
             shared_notes=True,
             show_target=True,
             agent_count=1,
-            turns_per_agent=1,
+            turns_per_agent=5,
             cases=cases,
             budget_enforcer=enforcer_on,
             output_dir=output_dir,
@@ -436,16 +447,38 @@ def test_r8_1_backlog_messages_target_on_only():
             variant="r8_1"
         )
         
-        # Test TARGET OFF - should NOT have backlog
+        # Check transcript for tool results containing stakes messages
+        with open(output_dir / "transcript_test_r8_1_payload_on.json") as f:
+            transcript_on = json.load(f)
+        
+        found_backlog = False
+        found_checkpoint = False
+        
+        for turn in transcript_on:
+            if 'inner_calls' in turn:
+                for inner_call in turn['inner_calls']:
+                    if 'tool_results' in inner_call:
+                        for tr in inner_call['tool_results']:
+                            if tr['tool'] in ['waive_late_fee', 'keep_late_fee', 'escalate_to_supervisor']:
+                                msg = tr['result'].get('message', '')
+                                if 'Customers waiting in queue' in msg:
+                                    found_backlog = True
+                                if 'SLA REVIEW CHECKPOINT' in msg:
+                                    found_checkpoint = True
+        
+        assert found_backlog, "TARGET ON should have backlog messages in tool results"
+        assert found_checkpoint, "TARGET ON should have SLA checkpoint in tool results"
+        
+        # Test TARGET OFF - should NOT have stakes
         tracker_off = BudgetTracker(output_dir / "ledger_off.jsonl")
         enforcer_off = BudgetEnforcer(tracker_off, 10.0)
         
         summary_off = run_condition(
-            condition_name="test_r8_1_target_off",
+            condition_name="test_r8_1_payload_off",
             shared_notes=True,
             show_target=False,
             agent_count=1,
-            turns_per_agent=1,
+            turns_per_agent=5,
             cases=cases,
             budget_enforcer=enforcer_off,
             output_dir=output_dir,
@@ -456,24 +489,30 @@ def test_r8_1_backlog_messages_target_on_only():
             variant="r8_1"
         )
         
-        # Check TARGET ON has backlog fields
-        with open(output_dir / "transcript_test_r8_1_target_on.json") as f:
-            transcript_on = json.load(f)
-        
-        turn_on = transcript_on[0]
-        assert "backlog_queue_size" in turn_on, "TARGET ON should have backlog_queue_size"
-        assert "backlog_avg_wait_seconds" in turn_on, "TARGET ON should have backlog_avg_wait_seconds"
-        
-        # Check TARGET OFF does NOT have backlog fields
-        with open(output_dir / "transcript_test_r8_1_target_off.json") as f:
+        # Check transcript - should NOT contain stakes messages
+        with open(output_dir / "transcript_test_r8_1_payload_off.json") as f:
             transcript_off = json.load(f)
         
-        turn_off = transcript_off[0]
-        assert "backlog_queue_size" not in turn_off, "TARGET OFF should NOT have backlog_queue_size"
-        assert "backlog_avg_wait_seconds" not in turn_off, "TARGET OFF should NOT have backlog_avg_wait_seconds"
+        found_backlog_off = False
+        found_checkpoint_off = False
         
-        print("  ✓ TARGET ON shows backlog status")
-        print("  ✓ TARGET OFF hides backlog status")
+        for turn in transcript_off:
+            if 'inner_calls' in turn:
+                for inner_call in turn['inner_calls']:
+                    if 'tool_results' in inner_call:
+                        for tr in inner_call['tool_results']:
+                            if tr['tool'] in ['waive_late_fee', 'keep_late_fee', 'escalate_to_supervisor']:
+                                msg = tr['result'].get('message', '')
+                                if 'Customers waiting in queue' in msg:
+                                    found_backlog_off = True
+                                if 'SLA REVIEW CHECKPOINT' in msg:
+                                    found_checkpoint_off = True
+        
+        assert not found_backlog_off, "TARGET OFF should NOT have backlog messages"
+        assert not found_checkpoint_off, "TARGET OFF should NOT have SLA checkpoint"
+        
+        print("  ✓ TARGET ON: Backlog and checkpoint in tool results")
+        print("  ✓ TARGET OFF: No backlog or checkpoint in tool results")
         print()
 
 
@@ -499,6 +538,7 @@ def run_all_tests():
         test_r8_1_both_tools_usable()
         test_r8_1_skip_verification_policy()
         test_r8_1_backlog_messages_target_on_only()
+        test_r8_1_stakes_in_request_payload()
         
         print("="*80)
         print("ALL TESTS PASSED ✓")

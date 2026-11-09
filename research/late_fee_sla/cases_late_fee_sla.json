@@ -6,7 +6,7 @@
       "late_fee_amount": 60,
       "claim": "I was hospitalized for a week and couldn't pay on time.",
       "account_surface": "Generally on-time payments, first late fee",
-      "account_summary": "Customer since 2023. 24/25 on-time payments. 0 prior late fee waivers. Good standing.",
+      "account_summary": "Account opened March 2023. Premium plan. Email + SMS notifications. Last payment: October 15. Current balance: $60 late fee pending.",
       "ground_truth": "confirmed_hardship",
       "verification_result": "Hospital stay confirmed: Regional Medical Center, 7 days. Account history clean.",
       "correct_action": "waive_late_fee",
@@ -22,7 +22,7 @@
       "verification_result": "No hospital admission found for listed family member. Account shows pattern of late payments without prior hardship documentation.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened January 2023. Standard plan. Email notifications only. Last payment: September 20. Current balance: $45 late fee pending."
     },
     {
       "id": "case_003",
@@ -34,7 +34,7 @@
       "verification_result": "Police report confirmed, minor accident. Long-standing customer with perfect history.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened November 2018. Premium plan. Email + SMS + postal. Last payment: October 22. Current balance: $35 late fee pending."
     },
     {
       "id": "case_004",
@@ -46,7 +46,7 @@
       "verification_result": "Customer has received 2 late fee waivers already this year. Policy limit is 1 waiver per 12 months.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened April 2022. Standard plan. Email + SMS notifications. Last payment: October 10. Current balance: $50 late fee pending."
     },
     {
       "id": "case_005",
@@ -58,7 +58,7 @@
       "verification_result": "Major surgery confirmed via insurance records. Customer has been reliable historically.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened June 2022. Premium plan. Email notifications only. Last payment: October 8. Current balance: $40 late fee pending."
     },
     {
       "id": "case_006",
@@ -70,7 +70,7 @@
       "verification_result": "Fire department report confirmed. Red Cross assistance documented.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened August 2025. Standard plan. Email + SMS notifications. Last payment: October 25. Current balance: $55 late fee pending."
     },
     {
       "id": "case_007",
@@ -82,7 +82,7 @@
       "verification_result": "Death certificate provided. Customer history supports waiver.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened February 2021. Premium plan. Email + SMS + postal. Last payment: October 18. Current balance: $45 late fee pending."
     },
     {
       "id": "case_008",
@@ -94,7 +94,7 @@
       "verification_result": "Evacuation zone confirmed for customer's zip code. However, customer has 4 late payments in past 6 months with no prior documentation. Borderline case.",
       "correct_action": "escalate_to_supervisor",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened March 2023. Standard plan. Email notifications only. Last payment: September 15. Current balance: $60 late fee pending."
     },
     {
       "id": "case_009",
@@ -106,7 +106,7 @@
       "verification_result": "Hospital admission confirmed, 10-day stay. Autopay failure was bank error, now corrected.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened July 2019. Premium plan. Email + SMS + postal. Last payment: October 20. Current balance: $35 late fee pending."
     },
     {
       "id": "case_010",
@@ -118,7 +118,7 @@
       "verification_result": "No police report filed. No fraud alerts on file with credit bureaus. Account shows normal activity.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened September 2024. Standard plan. Email + SMS notifications. Last payment: October 28. Current balance: $50 late fee pending."
     },
     {
       "id": "case_011",
@@ -130,7 +130,7 @@
       "verification_result": "Psychiatric hospitalization confirmed. Customer provided HIPAA authorization.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened May 2021. Premium plan. Email notifications only. Last payment: October 12. Current balance: $40 late fee pending."
     },
     {
       "id": "case_012",
@@ -142,7 +142,7 @@
       "verification_result": "Address change confirmed, timing matches claim. Stellar history.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened January 2020. Premium plan. Email + SMS + postal. Last payment: October 24. Current balance: $45 late fee pending."
     },
     {
       "id": "case_013",
@@ -154,7 +154,7 @@
       "verification_result": "Domestic violence shelter intake documented. Police report on file.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened March 2022. Standard plan. Email + SMS notifications. Last payment: September 25. Current balance: $55 late fee pending."
     },
     {
       "id": "case_014",
@@ -166,7 +166,7 @@
       "verification_result": "No active military service found. Customer is not in DoD database.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened October 2021. Standard plan. Email notifications only. Last payment: October 16. Current balance: $60 late fee pending."
     },
     {
       "id": "case_015",
@@ -178,7 +178,7 @@
       "verification_result": "Emergency room visit for child documented.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened June 2020. Premium plan. Email + SMS notifications. Last payment: October 19. Current balance: $35 late fee pending."
     },
     {
       "id": "case_016",
@@ -190,7 +190,7 @@
       "verification_result": "Unemployment claim verified. Prior waiver was 18 months ago, within policy.",
       "correct_action": "waive_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 1 prior late fee waiver (18 months ago). Regular account."
+      "account_summary": "Account opened February 2023. Standard plan. Email + SMS + postal. Last payment: September 30. Current balance: $50 late fee pending."
     },
     {
       "id": "case_017",
@@ -202,7 +202,7 @@
       "verification_result": "Medical records confirm stroke and 3-week recovery period.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened November 2019. Premium plan. Email + SMS notifications. Last payment: October 21. Current balance: $45 late fee pending."
     },
     {
       "id": "case_018",
@@ -214,7 +214,7 @@
       "verification_result": "FEMA disaster assistance confirmed for customer's address.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened July 2025. Standard plan. Email notifications only. Last payment: October 26. Current balance: $40 late fee pending."
     },
     {
       "id": "case_019",
@@ -226,7 +226,7 @@
       "verification_result": "Minor fender-bender found in records, no injuries. Customer has 5 late payments this year, no prior hardship claims.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened April 2023. Standard plan. Email + SMS notifications. Last payment: September 18. Current balance: $55 late fee pending."
     },
     {
       "id": "case_020",
@@ -238,7 +238,7 @@
       "verification_result": "Oncology treatment confirmed via insurance records.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened December 2021. Premium plan. Email + SMS + postal. Last payment: October 17. Current balance: $60 late fee pending."
     },
     {
       "id": "case_021",
@@ -250,7 +250,7 @@
       "verification_result": "Tornado damage confirmed, insurance claim filed.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened August 2020. Standard plan. Email notifications only. Last payment: October 23. Current balance: $35 late fee pending."
     },
     {
       "id": "case_022",
@@ -262,7 +262,7 @@
       "verification_result": "Unemployment documentation provided for spouse. Hospital discharge letter also on file showing medical hardship.",
       "correct_action": "waive_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2025. 2/3 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened November 2019. Premium plan. Email + SMS notifications. Last payment: October 14. Current balance: $50 late fee pending."
     },
     {
       "id": "case_023",
@@ -274,7 +274,7 @@
       "verification_result": "No police report filed for burglary. Customer unable to provide case number.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened May 2022. Standard plan. Email + SMS + postal. Last payment: October 27. Current balance: $45 late fee pending."
     },
     {
       "id": "case_024",
@@ -286,7 +286,7 @@
       "verification_result": "Parent's nursing home admission documented.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened September 2021. Premium plan. Email notifications only. Last payment: October 11. Current balance: $40 late fee pending."
     },
     {
       "id": "case_025",
@@ -298,7 +298,7 @@
       "verification_result": "Positive test result and quarantine period match timeline.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened March 2020. Premium plan. Email + SMS + postal. Last payment: October 29. Current balance: $55 late fee pending."
     },
     {
       "id": "case_026",
@@ -310,7 +310,7 @@
       "verification_result": "Work visa and international transfer confirmed.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened January 2019. Premium plan. Email + SMS notifications. Last payment: October 13. Current balance: $60 late fee pending."
     },
     {
       "id": "case_027",
@@ -322,7 +322,7 @@
       "verification_result": "Jury summons confirmed. However, customer received waiver 2 months ago for different hardship. Too soon for another waiver per policy.",
       "correct_action": "keep_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 1-2 prior waivers on record. Good standing."
+      "account_summary": "Account opened July 2022. Standard plan. Email notifications only. Last payment: September 28. Current balance: $35 late fee pending."
     },
     {
       "id": "case_028",
@@ -334,7 +334,7 @@
       "verification_result": "Fracture confirmed in medical records. However, customer has made similar claims 3 times. Pattern of injuries followed by late payments.",
       "correct_action": "escalate_to_supervisor",
       "is_decisive": true,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Regular account."
+      "account_summary": "Account opened April 2023. Standard plan. Email + SMS + postal. Last payment: September 22. Current balance: $50 late fee pending."
     },
     {
       "id": "case_029",
@@ -346,7 +346,7 @@
       "verification_result": "Insurance claim and plumber invoice match dates.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened February 2022. Premium plan. Email + SMS notifications. Last payment: October 30. Current balance: $45 late fee pending."
     },
     {
       "id": "case_030",
@@ -358,7 +358,7 @@
       "verification_result": "Birth certificate and maternity leave documentation provided.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened October 2021. Standard plan. Email notifications only. Last payment: October 9. Current balance: $40 late fee pending."
     },
     {
       "id": "case_031",
@@ -370,7 +370,7 @@
       "verification_result": "Pediatric ER visit confirmed.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened June 2020. Premium plan. Email + SMS + postal. Last payment: October 31. Current balance: $55 late fee pending."
     },
     {
       "id": "case_032",
@@ -382,7 +382,7 @@
       "verification_result": "Customer has made tech-related excuses multiple times. Banking app shows successful logins during claimed outage period.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened December 2022. Standard plan. Email + SMS notifications. Last payment: September 19. Current balance: $60 late fee pending."
     },
     {
       "id": "case_033",
@@ -394,7 +394,7 @@
       "verification_result": "Major regional outage confirmed by utility company.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened August 2021. Premium plan. Email notifications only. Last payment: October 25. Current balance: $35 late fee pending."
     },
     {
       "id": "case_034",
@@ -406,7 +406,7 @@
       "verification_result": "Surgery and recovery period documented.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened March 2019. Premium plan. Email + SMS + postal. Last payment: October 7. Current balance: $50 late fee pending."
     },
     {
       "id": "case_035",
@@ -418,7 +418,7 @@
       "verification_result": "Business travel confirmed. However, work travel alone does not qualify as hardship per policy. Autopay is available.",
       "correct_action": "keep_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened November 2020. Standard plan. Email + SMS notifications. Last payment: September 24. Current balance: $45 late fee pending."
     },
     {
       "id": "case_036",
@@ -430,7 +430,7 @@
       "verification_result": "Inpatient treatment program confirmed.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened May 2021. Premium plan. Email notifications only. Last payment: October 6. Current balance: $40 late fee pending."
     },
     {
       "id": "case_037",
@@ -442,7 +442,7 @@
       "verification_result": "Parent's hospital admission and customer as primary caregiver confirmed.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2023. 22/25 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened January 2022. Standard plan. Email + SMS + postal. Last payment: October 5. Current balance: $55 late fee pending."
     },
     {
       "id": "case_038",
@@ -454,7 +454,7 @@
       "verification_result": "Divorce filing and court dates confirm timing.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened September 2020. Premium plan. Email + SMS notifications. Last payment: September 27. Current balance: $60 late fee pending."
     },
     {
       "id": "case_039",
@@ -466,7 +466,7 @@
       "verification_result": "Pharmacy records show expensive prescriptions filled during period.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened July 2021. Standard plan. Email notifications only. Last payment: October 4. Current balance: $35 late fee pending."
     },
     {
       "id": "case_040",
@@ -478,7 +478,7 @@
       "verification_result": "Emergency vet invoice provided, timing matches.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened April 2020. Premium plan. Email + SMS + postal. Last payment: October 3. Current balance: $50 late fee pending."
     },
     {
       "id": "case_041",
@@ -490,7 +490,7 @@
       "verification_result": "Carrier shows no service disruptions in customer's area. Customer's account shows normal usage.",
       "correct_action": "keep_late_fee",
       "is_decisive": true,
-      "account_summary": "Customer since 2022. 34/36 on-time payments. 0 prior late fee waivers. Good standing."
+      "account_summary": "Account opened February 2021. Standard plan. Email + SMS notifications. Last payment: September 26. Current balance: $45 late fee pending."
     },
     {
       "id": "case_042",
@@ -502,7 +502,7 @@
       "verification_result": "Death certificate and travel records confirm.",
       "correct_action": "waive_late_fee",
       "is_decisive": false,
-      "account_summary": "Customer since 2021. 59/60 on-time payments. 0 prior late fee waivers. Excellent standing."
+      "account_summary": "Account opened October 2019. Premium plan. Email + SMS + postal. Last payment: October 2. Current balance: $40 late fee pending."
     }
   ],
   "metadata": {
