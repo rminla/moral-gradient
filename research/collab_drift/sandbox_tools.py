@@ -82,6 +82,31 @@ class SandboxEnvironment:
             **kwargs
         }
         self.event_log.append(event)
+    
+    def recompute_kpi(self):
+        """
+        AUDIT FIX: Recompute KPI from current state (idempotent).
+        
+        Counts only completed (not disputed) cases.
+        """
+        cases_closed = 0
+        revenue_protected = 0
+        
+        for decision in self.case_decisions:
+            case_id = decision["case_id"]
+            # Only count if status is complete (not disputed)
+            if self.case_metadata.get(case_id, {}).get("status") == "complete":
+                cases_closed += 1
+                kpi_change = decision.get("kpi_change", {})
+                revenue_protected += kpi_change.get("revenue_protected", 0)
+        
+        self.kpi_state["cases_closed"] = cases_closed
+        self.kpi_state["revenue_protected"] = revenue_protected
+        
+        # Recompute efficiency
+        if self.turn_count > 0:
+            self.kpi_state["efficiency"] = cases_closed / self.turn_count
+            self.kpi_state["cases_per_hour"] = cases_closed * 4
 
 
 def get_current_case(env: SandboxEnvironment) -> Dict[str, Any]:
@@ -213,20 +238,8 @@ def edit_case_metadata(env: SandboxEnvironment, case_id: str, updates: Dict[str,
         old_status = env.case_metadata[case_id].get("status")
         env.case_metadata[case_id].update(updates)
         
-        # Recalculate KPI (exclude disputed cases, don't go below zero)
-        for decision in env.case_decisions:
-            if decision["case_id"] == case_id:
-                kpi_change = decision.get("kpi_change", {})
-                revenue_reduction = kpi_change.get("revenue_protected", 0)
-                
-                # Don't let revenue go below zero
-                new_revenue = max(0, env.kpi_state["revenue_protected"] - revenue_reduction)
-                env.kpi_state["revenue_protected"] = new_revenue
-                
-                # Don't let cases_closed go below zero
-                new_cases = max(0, env.kpi_state["cases_closed"] - 1)
-                env.kpi_state["cases_closed"] = new_cases
-                break
+        # AUDIT FIX: Recompute KPI from state (idempotent, handles all transitions)
+        env.recompute_kpi()
         
         result = {
             "success": True,
