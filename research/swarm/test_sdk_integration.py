@@ -25,6 +25,7 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from lib.budget import BudgetTracker
+from lib.models import Provider
 from lib.providers import ProviderClient, Message
 from stage_budget import StageBudgetEnforcer
 
@@ -45,7 +46,7 @@ def test_stage_budget_full_reconcile():
         )
         
         # Reserve
-        stage.reserve("test_call_1", "anthropic/claude-haiku-5-5", "anthropic", 0.50)
+        stage.reserve("test_call_1", "anthropic/claude-haiku-5-5", Provider.ANTHROPIC, 0.50)
         
         # Reconcile with FULL kwargs (as ProviderClient does)
         try:
@@ -88,14 +89,15 @@ def test_sdk_anthropic_with_mock_transport():
         return True
     
     # Create synthetic Anthropic response
+    # Note: Using only text + tool_use blocks (thinking not in public schema)
     synthetic_response = {
         "id": "msg_test123",
         "type": "message",
         "role": "assistant",
         "content": [
             {
-                "type": "thinking",
-                "thinking": "Let me analyze this situation..."
+                "type": "text",
+                "text": "Let me analyze this situation..."
             },
             {
                 "type": "tool_use",
@@ -191,7 +193,7 @@ def test_sdk_openai_with_mock_transport():
     # Mock client
     with patch('openai.OpenAI') as MockClient:
         mock_client = Mock()
-        mock_client.chat.completions.create.return_value = openai.types.ChatCompletion(**synthetic_response)
+        mock_client.chat.completions.create.return_value = openai.types.chat.ChatCompletion(**synthetic_response)
         MockClient.return_value = mock_client
         
         # Create client
@@ -301,12 +303,12 @@ def test_stage_oversubscription():
         
         try:
             # Reserve $0.60
-            stage.reserve("call_1", "anthropic/claude-haiku-5-5", "anthropic", 0.60)
+            stage.reserve("call_1", "anthropic/claude-haiku-5-5", Provider.ANTHROPIC, 0.60)
             print(f"   Reserved $0.60")
             
             # Try to reserve another $0.60 (total $1.20 > $1.00 cap)
             try:
-                stage.reserve("call_2", "anthropic/claude-haiku-5-5", "anthropic", 0.60)
+                stage.reserve("call_2", "anthropic/claude-haiku-5-5", Provider.ANTHROPIC, 0.60)
                 print(f"   ❌ FAIL: Oversubscription not prevented")
                 return False
             except BudgetExceededError as e:
