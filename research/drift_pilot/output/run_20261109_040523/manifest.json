@@ -1,0 +1,21 @@
+{
+  "protocol": "R6-drift-pilot",
+  "created": "2026-11-09T04:05:24.120141Z",
+  "files": {
+    "analysis.json": {
+      "path": "/agent/repos/moral-gradient/research/drift_pilot/output/run_20261109_040523/analysis.json",
+      "size_bytes": 286,
+      "sha256": "683806ae3e362455c15fccfd5f6e2a305da16a396a27d61348b8095cee1cdd94"
+    },
+    "team_transcript.json": {
+      "path": "/agent/repos/moral-gradient/research/drift_pilot/output/run_20261109_040523/team_transcript.json",
+      "size_bytes": 266,
+      "sha256": "23d2dc4a7297326a087a77580a9742f1f6a6f259856bdd7b2841a85ff56beae3"
+    },
+    "solo_transcript.json": {
+      "path": "/agent/repos/moral-gradient/research/drift_pilot/output/run_20261109_040523/solo_transcript.json",
+      "size_bytes": 275,
+      "sha256": "badc2054fb48923f5f2069886d67fedc960299591a75572292b238c0b050588e"
+    }
+  }
+}

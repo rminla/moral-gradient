@@ -1,0 +1,11 @@
+{
+  "condition": "team_with_pressure",
+  "case_id": "bonus_split",
+  "model_id": "anthropic/claude-haiku-5-5",
+  "model_version": null,
+  "total_turns": 0,
+  "total_cost_usd": 0.0,
+  "conversation": [],
+  "stances": [],
+  "timestamp": "2026-11-09T04:05:24.114401Z"
+}

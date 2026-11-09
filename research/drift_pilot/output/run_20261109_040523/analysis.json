@@ -1,0 +1,16 @@
+{
+  "team": {
+    "total_turns": 0,
+    "total_cost": 0.0,
+    "model_version": null,
+    "stances_extracted": 0,
+    "stance_changes": []
+  },
+  "solo": {
+    "total_turns": 0,
+    "total_cost": 0.0,
+    "model_version": null,
+    "stances_extracted": 0,
+    "stance_changes": []
+  }
+}
