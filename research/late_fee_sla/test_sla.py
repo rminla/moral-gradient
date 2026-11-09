@@ -14,28 +14,36 @@ from run_late_fee_sla import (
     estimate_cost_strict_upper_bound,
     estimate_cost_from_usage,
     simulate_tool_timing,
-    HAIKU_INPUT_PRICE,
-    HAIKU_OUTPUT_PRICE,
+    MODEL_CONFIGS,
     BudgetTracker,
     BudgetEnforcer,
     SharedNotesState,
     SandboxEnvironment,
-    run_condition
+    run_condition,
+    anthropic_tools_to_openai_tools,
+    build_tools
 )
 
 def test_correct_pricing():
-    """Test that correct Haiku pricing is used (not R7's inflated prices)."""
-    print("TEST 1: Correct Haiku Pricing")
+    """Test that correct pricing is configured for all models."""
+    print("TEST 1: Model Pricing Configuration")
     
-    assert HAIKU_INPUT_PRICE == 0.10, f"Input price should be $0.10/M, got ${HAIKU_INPUT_PRICE}"
-    assert HAIKU_OUTPUT_PRICE == 0.50, f"Output price should be $0.50/M, got ${HAIKU_OUTPUT_PRICE}"
+    # Test Haiku pricing (from R8 requirements)
+    haiku_config = MODEL_CONFIGS["claude-haiku-5-5"]
+    assert haiku_config["input_price_per_1m"] == 0.10, f"Haiku input price should be $0.10/M, got ${haiku_config['input_price_per_1m']}"
+    assert haiku_config["output_price_per_1m"] == 0.50, f"Haiku output price should be $0.50/M, got ${haiku_config['output_price_per_1m']}"
     
-    cost = estimate_cost_from_usage(10000, 1000)
+    cost = estimate_cost_from_usage(10000, 1000, "claude-haiku-5-5")
     expected = (10000/1_000_000)*0.10 + (1000/1_000_000)*0.50
     assert abs(cost - expected) < 0.0001, f"Cost calculation wrong: {cost} vs {expected}"
     
-    print(f"  ✓ Input pricing: ${HAIKU_INPUT_PRICE}/M tokens")
-    print(f"  ✓ Output pricing: ${HAIKU_OUTPUT_PRICE}/M tokens")
+    print(f"  ✓ claude-haiku-5-5: ${haiku_config['input_price_per_1m']}/M input, ${haiku_config['output_price_per_1m']}/M output")
+    
+    # Test all other models
+    for model_id, config in MODEL_CONFIGS.items():
+        if model_id != "claude-haiku-5-5":
+            print(f"  ✓ {model_id}: ${config['input_price_per_1m']}/M input, ${config['output_price_per_1m']}/M output")
+    
     print()
 
 
@@ -63,13 +71,16 @@ def test_strict_upper_bound_with_margin():
     tools = [{"name": "test_tool", "input_schema": {"type": "object", "properties": {}}}]
     max_tokens = 1500
     
-    upper_bound = estimate_cost_strict_upper_bound(system, messages, tools, max_tokens)
+    # Test for each model
+    for model_id in MODEL_CONFIGS.keys():
+        upper_bound = estimate_cost_strict_upper_bound(system, messages, tools, max_tokens, model_id)
+        
+        # The function should add 500-token margin
+        assert upper_bound > 0, f"Upper bound should be positive for {model_id}: {upper_bound}"
+        
+        print(f"  ✓ {model_id}: ${upper_bound:.6f}")
     
-    # The function should add 500-token margin
-    assert upper_bound > 0, f"Upper bound should be positive: {upper_bound}"
-    
-    print(f"  ✓ Upper bound cost: ${upper_bound:.6f}")
-    print(f"  ✓ Includes 500-token margin for tool overhead")
+    print(f"  ✓ All models include 500-token margin for tool overhead")
     print()
 
 
@@ -229,7 +240,8 @@ def test_end_to_end_mock_run():
             max_tokens=1500,
             mock_mode=True,
             mock_script=mock_script,
-            anthropic_client=None
+            model_client=None,
+            model_id="claude-haiku-5-5"
         )
         
         # Check outputs exist
@@ -299,26 +311,26 @@ def test_r8_1_both_tools_usable():
     # Use summary check
     summary_result = env.get_account_summary("case_001")
     assert "error" not in summary_result
-    assert env.last_check_type == "summary"
+    assert "summary" in env.checks_done, f"checks_done should include 'summary': {env.checks_done}"
     
     # Then use full verification
     verify_result = env.verify_case("case_001", False)
     assert "error" not in verify_result
-    assert env.last_check_type == "full"
+    assert "full" in env.checks_done, f"checks_done should include 'full': {env.checks_done}"
     
-    # Make decision (should record last check type)
+    # Make decision (should record checks done)
     decide_result = env.decide_case("case_001", "waive_late_fee")
     assert "success" in decide_result
     
     # Check decision log
     assert len(env.decisions) == 1
     decision = env.decisions[0]
-    assert decision["last_check_type"] == "full", "Should record last check type used"
+    assert set(decision["checks_done"]) == {"summary", "full"}, f"Should record both checks: {decision['checks_done']}"
     assert decision["checked_summary_first"] == True, "Should track summary was used"
     assert decision["verified_first"] == True, "Should track full verification was used"
     
     print("  ✓ Both get_account_summary and verify_hardship_and_account work")
-    print("  ✓ Decision records which check was used last")
+    print("  ✓ Decision records checks_done list")
     print()
 
 
@@ -370,7 +382,8 @@ def test_r8_1_skip_verification_policy():
             max_tokens=1500,
             mock_mode=True,
             mock_script=mock_script,
-            anthropic_client=None,
+            model_client=None,
+            model_id="claude-haiku-5-5",
             variant="r8_1"
         )
         
@@ -383,7 +396,8 @@ def test_r8_1_skip_verification_policy():
         
         assert decision["checked_summary_first"] == True, "Should have used summary"
         assert decision["verified_first"] == False, "Should NOT have used full verification"
-        assert decision["last_check_type"] == "summary", "Last check should be summary"
+        assert "summary" in decision["checks_done"], f"checks_done should include 'summary': {decision['checks_done']}"
+        assert "full" not in decision["checks_done"], f"checks_done should NOT include 'full': {decision['checks_done']}"
         
         print("  ✓ Mock 'skip verification' policy produces decision")
         print("  ✓ Decision records: summary=yes, full_verification=no")
@@ -443,7 +457,8 @@ def test_r8_1_stakes_in_request_payload():
             max_tokens=1500,
             mock_mode=True,
             mock_script=mock_script,
-            anthropic_client=None,
+            model_client=None,
+            model_id="claude-haiku-5-5",
             variant="r8_1"
         )
         
@@ -485,7 +500,8 @@ def test_r8_1_stakes_in_request_payload():
             max_tokens=1500,
             mock_mode=True,
             mock_script=mock_script,
-            anthropic_client=None,
+            model_client=None,
+            model_id="claude-haiku-5-5",
             variant="r8_1"
         )
         
@@ -516,6 +532,132 @@ def test_r8_1_stakes_in_request_payload():
         print()
 
 
+def test_anthropic_to_openai_tool_conversion():
+    """Test that Anthropic tool definitions convert correctly to OpenAI format."""
+    print("TEST 13: Anthropic to OpenAI Tool Conversion")
+    
+    anthropic_tools = build_tools("r8")
+    openai_tools = anthropic_tools_to_openai_tools(anthropic_tools)
+    
+    assert len(openai_tools) == len(anthropic_tools), f"Tool count mismatch: {len(openai_tools)} vs {len(anthropic_tools)}"
+    
+    for ant_tool, oai_tool in zip(anthropic_tools, openai_tools):
+        assert oai_tool["type"] == "function", f"OpenAI tool must have type='function'"
+        assert oai_tool["function"]["name"] == ant_tool["name"], f"Name mismatch: {oai_tool['function']['name']} vs {ant_tool['name']}"
+        assert oai_tool["function"]["description"] == ant_tool["description"], f"Description mismatch"
+        assert oai_tool["function"]["parameters"] == ant_tool["input_schema"], f"Parameters mismatch"
+    
+    print(f"  ✓ Converted {len(openai_tools)} tools successfully")
+    print()
+
+
+def test_model_configs_complete():
+    """Test that all model configs have required fields."""
+    print("TEST 14: Model Configuration Completeness")
+    
+    required_fields = ["provider", "api_model_name", "env_var", "input_price_per_1m", "output_price_per_1m"]
+    
+    for model_id, config in MODEL_CONFIGS.items():
+        for field in required_fields:
+            assert field in config, f"{model_id} missing required field: {field}"
+        
+        assert config["input_price_per_1m"] > 0, f"{model_id} has invalid input price"
+        assert config["output_price_per_1m"] > 0, f"{model_id} has invalid output price"
+        assert config["provider"] in ["anthropic", "groq", "openrouter"], f"{model_id} has invalid provider: {config['provider']}"
+        
+        print(f"  ✓ {model_id}: {config['provider']}/{config['api_model_name']}")
+    
+    print()
+
+
+def test_r8_decision_format():
+    """Test that R8 variant returns pure JSON (no 'message' field) for byte-identical reproducibility."""
+    print("TEST 15: R8 Decision Format (byte-identical to 147ba92)")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        
+        cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+        with open(cases_path) as f:
+            case_data = json.load(f)
+        cases = case_data["cases"][:3]
+        
+        tracker = BudgetTracker(tmppath / "test_ledger.jsonl")
+        enforcer = BudgetEnforcer(tracker, 1.0)
+        
+        # Create a mock environment for R8
+        notes_state = SharedNotesState("Test notes")
+        env = SandboxEnvironment("test_agent", cases, notes_state, {"turn": 0}, variant="r8")
+        
+        # Make a decision in R8 mode
+        result = env.decide_case(cases[0]["id"], "waive_late_fee", variant="r8", show_target=False)
+        
+        # R8 should NOT have 'message' field (AUDIT FIX: byte-identical to 147ba92)
+        assert "message" not in result, f"R8 result should not have 'message' field: {list(result.keys())}"
+        assert "success" in result, "R8 result must have 'success' field"
+        assert "action" in result, "R8 result must have 'action' field"
+        assert "elapsed_seconds" in result, "R8 result must have 'elapsed_seconds' field"
+        
+        print(f"  ✓ R8 decision returns pure JSON: {list(result.keys())}")
+        
+        # Now test R8.1
+        env2 = SandboxEnvironment("test_agent2", cases, notes_state, {"turn": 0}, variant="r8_1")
+        result2 = env2.decide_case(cases[0]["id"], "keep_late_fee", variant="r8_1", show_target=False)
+        
+        # R8.1 SHOULD have 'message' field
+        assert "message" in result2, f"R8.1 result should have 'message' field: {list(result2.keys())}"
+        assert isinstance(result2["message"], str), "R8.1 message must be a string"
+        
+        print(f"  ✓ R8.1 decision returns dict with message: {list(result2.keys())}")
+    
+    print()
+
+
+def test_checks_done_tracking():
+    """Test that checks_done list tracks verification types correctly (AUDIT FIX)."""
+    print("TEST 16: checks_done List Tracking")
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        
+        cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+        with open(cases_path) as f:
+            case_data = json.load(f)
+        cases = case_data["cases"][:3]
+        
+        notes_state = SharedNotesState("Test notes")
+        env = SandboxEnvironment("test_agent", cases, notes_state, {"turn": 0}, variant="r8_1")
+        
+        # Initially empty
+        assert env.checks_done == [], f"checks_done should start empty: {env.checks_done}"
+        
+        # Get account summary
+        env.get_account_summary(cases[0]["id"])
+        assert "summary" in env.checks_done, f"checks_done should include 'summary': {env.checks_done}"
+        assert len(env.checks_done) == 1, f"checks_done should have 1 item: {env.checks_done}"
+        
+        # Verify case
+        env.verify_case(cases[0]["id"], False)
+        assert "full" in env.checks_done, f"checks_done should include 'full': {env.checks_done}"
+        assert set(env.checks_done) == {"summary", "full"}, f"checks_done should have both: {env.checks_done}"
+        
+        # Make decision and check it was recorded
+        env.decide_case(cases[0]["id"], "waive_late_fee", variant="r8_1", show_target=False)
+        decision = env.decisions[-1]
+        assert "checks_done" in decision, f"Decision should record checks_done: {list(decision.keys())}"
+        assert set(decision["checks_done"]) == {"summary", "full"}, f"Decision checks_done mismatch: {decision['checks_done']}"
+        
+        # Reset for next ticket
+        env.reset_ticket_clock()
+        assert env.checks_done == [], f"checks_done should reset after ticket: {env.checks_done}"
+        
+        print(f"  ✓ checks_done tracks ['summary', 'full'] correctly")
+        print(f"  ✓ checks_done resets between tickets")
+        print(f"  ✓ Decision records checks_done list")
+    
+    print()
+
+
 def run_all_tests():
     """Run all tests."""
     print("="*80)
@@ -524,11 +666,13 @@ def run_all_tests():
     print()
     
     try:
-        # R8 tests
+        # Core pricing and config tests
         test_correct_pricing()
         test_verification_timing()
         test_strict_upper_bound_with_margin()
         test_case_queue_quality()
+        
+        # R8 tests
         test_shared_vs_private_notes()
         test_case_id_validation()
         test_end_to_end_mock_run()
@@ -539,6 +683,12 @@ def run_all_tests():
         test_r8_1_skip_verification_policy()
         test_r8_1_backlog_messages_target_on_only()
         test_r8_1_stakes_in_request_payload()
+        
+        # Multi-model and audit fix tests
+        test_anthropic_to_openai_tool_conversion()
+        test_model_configs_complete()
+        test_r8_decision_format()
+        test_checks_done_tracking()
         
         print("="*80)
         print("ALL TESTS PASSED ✓")
