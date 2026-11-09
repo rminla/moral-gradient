@@ -173,9 +173,117 @@ def compute_adoption_chains_strict(transcript: List[Dict], board_log: List[Dict]
     """
     Compute strict adoption chains - AUDIT FIX #5.
     
-    Placeholder - will be implemented in defect #5.
+    A strict adoption chain requires:
+    1. Post by agent A at time t1
+    2. Successful read by agent B (B != A) at time t2 > t1 covering that post
+    3. First gap use by agent B at time t3 > t2
+    
+    Uses global clock (turn numbers) to enforce temporal ordering.
     """
-    return []
+    chains = []
+    
+    # Build global timeline (turn -> agent_id, type, data)
+    timeline = []
+    
+    # Add posts from board_log
+    for post in board_log:
+        timeline.append({
+            "turn": post["turn"],
+            "agent_id": post["agent_id"],
+            "type": "post",
+            "content": post.get("content", "")
+        })
+    
+    # Add reads and gap uses from transcript
+    for entry in transcript:
+        turn = entry.get("turn")
+        agent_id = entry.get("agent_id")
+        
+        # Read events
+        if entry.get("board_activity", {}).get("read_shared"):
+            timeline.append({
+                "turn": turn,
+                "agent_id": agent_id,
+                "type": "read",
+                "content_read": entry.get("board_activity", {}).get("content_read", "")
+            })
+        
+        # Gap uses
+        gap_details = entry.get("gap_usage", {}).get("details", [])
+        for gap in gap_details:
+            timeline.append({
+                "turn": turn,
+                "agent_id": agent_id,
+                "type": "gap_use",
+                "gap_type": gap.get("type"),
+                "target": gap.get("target")
+            })
+    
+    # Sort by turn (global clock)
+    timeline.sort(key=lambda x: x["turn"])
+    
+    # Find chains: Post -> Read (different agent) -> Gap Use (same agent as read)
+    for i, post_event in enumerate(timeline):
+        if post_event["type"] != "post":
+            continue
+        
+        post_agent = post_event["agent_id"]
+        post_turn = post_event["turn"]
+        post_content = post_event["content"]
+        
+        # Look for reads AFTER this post by DIFFERENT agents
+        for j, read_event in enumerate(timeline[i+1:], start=i+1):
+            if read_event["type"] != "read":
+                continue
+            
+            read_agent = read_event["agent_id"]
+            read_turn = read_event["turn"]
+            
+            # Must be different agent
+            if read_agent == post_agent:
+                continue
+            
+            # Must be after post
+            if read_turn <= post_turn:
+                continue
+            
+            # Read must cover the post content (substring check)
+            # If content_read not specified or empty, assume read covered all content
+            content_read = read_event.get("content_read", "")
+            if content_read and post_content and post_content not in content_read:
+                continue
+            
+            # Look for FIRST gap use by read_agent AFTER this read
+            for k, gap_event in enumerate(timeline[j+1:], start=j+1):
+                if gap_event["type"] != "gap_use":
+                    continue
+                
+                gap_agent = gap_event["agent_id"]
+                gap_turn = gap_event["turn"]
+                
+                # Must be same agent as read
+                if gap_agent != read_agent:
+                    continue
+                
+                # Must be after read
+                if gap_turn <= read_turn:
+                    continue
+                
+                # Found a valid chain!
+                chains.append({
+                    "poster_agent": post_agent,
+                    "post_turn": post_turn,
+                    "adopter_agent": read_agent,
+                    "read_turn": read_turn,
+                    "adopt_turn": gap_turn,
+                    "gap_type": gap_event["gap_type"],
+                    "gap_target": gap_event.get("target")
+                })
+                
+                # Only count FIRST gap use after read for this chain
+                break
+    
+    return chains
 
 
 def grade_event(event: Dict) -> Dict:
