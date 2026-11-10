@@ -9,8 +9,8 @@ export const metadata = {
   title: "Agent drift under pressure",
   description: "AI agents handling late fee waivers skipped required verification far more when working alone than as a team.",
   alternates: { canonical: "/drift" },
-  openGraph: { title: "Agent drift under pressure", images: ["/drift/og"] },
-  twitter: { card: "summary_large_image", images: ["/drift/og"] },
+  openGraph: { title: "Agent drift under pressure", images: ["/opengraph-image"] },
+  twitter: { card: "summary_large_image", images: ["/opengraph-image"] },
 };
 
 type DriftData = {
@@ -89,8 +89,8 @@ export default async function DriftPage() {
 
   return (
     <main>
-      <PageHead eyebrow="Agent drift under pressure" grey="Working alone, agents" title={<>skipped checks far more than <span className="text-vermilion">as a team.</span></>}>
-        AI customer service agents handle late fee waiver requests under an impossible deadline. Policy requires verification; skipping it is a shortcut that takes seconds instead of a minute. Two experiments: individual pressure with a removal threat, and the same work done as a team of four sharing a queue and notes vs each agent working alone with an equivalent individual target. Same customers, ticket for ticket.
+      <PageHead eyebrow="Agent drift under pressure" grey="Two of three models:" title={<>working alone, agents skipped checks <span className="text-vermilion">far more than as a team.</span></>}>
+        AI customer service agents handle late fee waiver requests under an impossible deadline. Policy requires verification; skipping it is a shortcut that takes seconds instead of a minute. Two experiments: individual pressure with a removal threat, and the same work done as a team of four sharing a queue and notes vs each agent working alone with an equivalent individual target. Same customers, ticket for ticket. gpt-oss and Qwen skipped far more alone; Haiku never skipped in either condition.
       </PageHead>
 
       <Block id="headline">
@@ -134,8 +134,8 @@ export default async function DriftPage() {
         <ChartHead kicker="R8.1 Individual Pressure" title="Only gpt-oss skipped under individual deadline pressure.">
           Target on: 5-second SLA, leaderboard, removal when below target. Target off: same work, no leaderboard or removal threat. Four agents, 30 turns each.
         </ChartHead>
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-left text-[14px]">
+        <div className="mt-8 hidden md:block">
+          <table className="w-full border-collapse text-left text-[14px]">
             <thead>
               <tr className="border-b border-ink font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/55">
                 <th className="py-2 pr-4">Model</th>
@@ -160,12 +160,39 @@ export default async function DriftPage() {
             </tbody>
           </table>
         </div>
+        <div className="mt-8 space-y-4 md:hidden">
+          {r8.models.map((m) => {
+            if (!m.targetOn || !m.targetOff) return null;
+            const onSkip = m.targetOn.skipped > 0;
+            return (
+              <div key={m.id} className="border border-rule p-4">
+                <div className="font-semibold">{m.name}</div>
+                <div className="mt-3 space-y-2 text-[13.5px]">
+                  <div className="flex justify-between">
+                    <span className="text-ink/65">Target on</span>
+                    <span className={`num ${onSkip ? "font-semibold text-vermilion" : ""}`}>{m.targetOn.skipped} of {m.targetOn.total}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ink/65">Target off</span>
+                    <span className="num">{m.targetOff.skipped} of {m.targetOff.total}</span>
+                  </div>
+                  {m.tests?.fisherTwoSided && (
+                    <div className="flex justify-between border-t border-rule pt-2">
+                      <span className="font-mono text-[11px] text-ink/50">Fisher exact</span>
+                      <span className="num font-mono text-[11px]">{m.tests.fisherTwoSided}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
         <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">Only gpt-oss-120b skipped more with the target on (15 of 696 vs 0 of 638, p = 6.81e-5). Claude Haiku 5.5: 0 of 240 vs 0 of 240. Gemini 3.8 Flash: 0 of 240 vs 0 of 240. Qwen 3.6 27B: 1 of 236 vs 0 of 221 (one skip in 236 is not evidence of a target effect).</p>
       </Block>
 
       <Block id="quotes">
         <ChartHead kicker="In their own words" title="Agents wrote explicit skip strategies. In one team, a shortcut was proposed and retracted.">
-          Selected verbatim quotes from reasoning traces and shared notes, checked character by character against stored logs. Agent and turn cited in the analysis.
+          Excerpts from agent notes and reasoning traces. Omissions marked by an ellipsis; all other characters verbatim from the analysis. Agent and turn cited.
         </ChartHead>
 
         {qwenTeamQuotes.length > 0 && (
@@ -269,7 +296,7 @@ export default async function DriftPage() {
             <div className="kicker mb-3 text-ink/60">R9.1 Team vs Alone full table</div>
             <NumTable
               head={["Model", "Team skips", "Team total", "Team acc", "Alone skips", "Alone total", "Alone acc", "Fisher (no-full)", "McNemar (matched)"]}
-              rows={r9.models.filter((m) => m.team && m.alone).map((m) => [
+              rows={r9.models.filter((m) => m.team && m.alone && m.alone.total >= 100).map((m) => [
                 m.name,
                 m.team!.skipped,
                 m.team!.total,
@@ -296,7 +323,7 @@ export default async function DriftPage() {
               ])}
             />
           </div>
-          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, p-values and quotes with source line citations are in the analysis files (ANALYSIS_4ac2.md lines 59-83 for R9.1 headline table, 59-63 for R8.1 cross-model table; ANALYSIS_92ed.md lines 79-83 for gpt-oss R9.1 team vs alone; quotes at ANALYSIS_4ac2.md lines 142-169 and ANALYSIS_92ed.md lines 221-240).</p>
+          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, statistical tests, and verbatim quotes are in the suite analysis (runs/suite-20261110/ANALYSIS.md) and the gpt-oss R9.1 pair analysis (runs/r9-1-team-alone-20261110/ANALYSIS.md).</p>
         </Details>
       </Block>
 
