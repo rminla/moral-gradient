@@ -1,36 +1,42 @@
 {
- "total_usd": 66.58952125,
- "calls": 112716,
+ "total_usd": 85.62695815,
+ "calls": 125358,
  "by_model": [
   {
    "model": "qwen/qwen3.6-27b",
    "provider": "groq",
-   "usd": 24.6967446,
-   "calls": 9704
+   "usd": 32.6190996,
+   "calls": 12288
   },
   {
    "model": "google/gemini-3.8-flash",
    "provider": "openrouter",
-   "usd": 17.3994177,
-   "calls": 7297
+   "usd": 26.18266965,
+   "calls": 10280
   },
   {
    "model": "claude-haiku-5-5",
    "provider": "anthropic",
-   "usd": 9.5578071,
-   "calls": 35277
+   "usd": 10.1465237,
+   "calls": 37271
   },
   {
    "model": "qwen/qwen3.8-27b",
    "provider": "groq",
-   "usd": 8.4485968,
-   "calls": 18751
+   "usd": 9.621849600000001,
+   "calls": 20532
   },
   {
    "model": "openai/gpt-oss-120b",
    "provider": "groq",
-   "usd": 6.48695505,
-   "calls": 41672
+   "usd": 7.0566515999999995,
+   "calls": 44971
+  },
+  {
+   "model": "claude-sonnet-5-5",
+   "provider": "anthropic",
+   "usd": 0.00016399999999999997,
+   "calls": 1
   },
   {
    "model": "jev-1.13",
@@ -42,11 +48,11 @@
  "by_role": [
   {
    "role": "target model",
-   "usd": 54.76727045
+   "usd": 71.91463655
   },
   {
    "role": "grading",
-   "usd": 11.5863632
+   "usd": 13.476434
   },
   {
    "role": "persuader",
@@ -55,28 +61,106 @@
  ],
  "runs": [
   {
+   "run_id": "traces-v3final-qwen3.6-27b-20261102-150138",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T14:01:38.419+00:00",
+   "usd": 0.2816261
+  },
+  {
+   "run_id": "traces-v3final-gpt-oss-120b-20261102-145621",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T13:56:21.242+00:00",
+   "usd": 0.3987939
+  },
+  {
+   "run_id": "traces-v3final-gemini-3.8-flash-20261102-145610",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T13:56:10.422+00:00",
+   "usd": 0.01566665
+  },
+  {
+   "run_id": "traces-v3final-claude-haiku-5.5-20261102-145609",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T13:56:09.455+00:00",
+   "usd": 0
+  },
+  {
+   "run_id": "traces-v3final-gemini-3.8-flash-20261102-143357",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T13:33:57.473+00:00",
+   "usd": 0.3753206
+  },
+  {
+   "run_id": "traces-v3final-claude-haiku-5.5-20261102-142841",
+   "mode": "v3-traces",
+   "started_utc": "2026-11-02T13:28:41.155+00:00",
+   "usd": 0.34277605
+  },
+  {
+   "run_id": "v3final-gemini-3.8-flash-main-20261102-142808",
+   "mode": "v3-main",
+   "started_utc": "2026-11-02T13:28:08.587+00:00",
+   "usd": 0.01978835
+  },
+  {
+   "run_id": "v3final-gemini-3.8-flash-calibrate-20261102-142805",
+   "mode": "v3-calibrate",
+   "started_utc": "2026-11-02T13:28:05.721+00:00",
+   "usd": 0
+  },
+  {
+   "run_id": "job-job_618c8c005286445886db-gpt-oss-120b-main-20261102-114705",
+   "mode": "job-main",
+   "started_utc": "2026-11-02T10:47:05.284+00:00",
+   "usd": 0.15355144999999998
+  },
+  {
+   "run_id": "job-job_618c8c005286445886db-gpt-oss-120b-calibrate-20261102-114702",
+   "mode": "job-calibrate",
+   "started_utc": "2026-11-02T10:47:02.762+00:00",
+   "usd": 0
+  },
+  {
+   "run_id": "job-job_618c8c005286445886db-gpt-oss-120b-main-20261102-114655",
+   "mode": "job-main",
+   "started_utc": "2026-11-02T10:46:55.346+00:00",
+   "usd": 0.00183495
+  },
+  {
+   "run_id": "job-job_618c8c005286445886db-gpt-oss-120b-calibrate-20261102-114536",
+   "mode": "job-calibrate",
+   "started_utc": "2026-11-02T10:45:36.028+00:00",
+   "usd": 0.0552453
+  },
+  {
+   "run_id": "probe-sonnet55-20261102-114248",
+   "mode": "probe",
+   "started_utc": "2026-11-02T10:42:48.964+00:00",
+   "usd": 0.00016399999999999997
+  },
+  {
    "run_id": "v3final-gemini-3.8-flash-main-20261102-111853",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:18:53.408+00:00",
-   "usd": 0.5341825
+   "usd": 9.53328215
   },
   {
    "run_id": "v3final-qwen3.6-27b-main-20261102-111005",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:10:05.060+00:00",
-   "usd": 2.0957825999999997
+   "usd": 10.12698155
   },
   {
    "run_id": "v3final-claude-haiku-5.5-main-20261102-110506",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:05:06.643+00:00",
-   "usd": 1.0396734
+   "usd": 1.3712791
   },
   {
    "run_id": "v3final-gpt-oss-120b-main-20261102-110429",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:04:29.623+00:00",
-   "usd": 0.8059077
+   "usd": 0.83667295
   },
   {
    "run_id": "v3final-claude-haiku-5.5-calibrate-20261102-110213",
@@ -125,85 +209,7 @@
    "mode": "v3-main",
    "started_utc": "2026-11-01T21:10:04.785+00:00",
    "usd": 0.03803055
-  },
-  {
-   "run_id": "v3c-gemini-3.8-flash-calibrate-20261101-221002",
-   "mode": "v3-calibrate",
-   "started_utc": "2026-11-01T21:10:02.538+00:00",
-   "usd": 0
-  },
-  {
-   "run_id": "v3b-gemini-3.8-flash-main-20261101-221001",
-   "mode": "v3-main",
-   "started_utc": "2026-11-01T21:10:01.680+00:00",
-   "usd": 0
-  },
-  {
-   "run_id": "traces-v3d-gemini-3.8-flash-20261101-215725",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T20:57:26.032+00:00",
-   "usd": 0.17097605
-  },
-  {
-   "run_id": "traces-v3c-gemini-3.8-flash-20261101-211949",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T20:19:49.157+00:00",
-   "usd": 0.17940335
-  },
-  {
-   "run_id": "v3d-gemini-3.8-flash-main-20261101-211417",
-   "mode": "v3-main",
-   "started_utc": "2026-11-01T20:14:17.270+00:00",
-   "usd": 2.29736085
-  },
-  {
-   "run_id": "v3d-gemini-3.8-flash-calibrate-20261101-211233",
-   "mode": "v3-calibrate",
-   "started_utc": "2026-11-01T20:12:33.067+00:00",
-   "usd": 0.11180625
-  },
-  {
-   "run_id": "traces-v3c-gemini-3.8-flash-20261101-154325",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T14:43:25.568+00:00",
-   "usd": 0.03605775
-  },
-  {
-   "run_id": "traces-v3b-gemini-3.8-flash-20261101-154320",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T14:43:20.890+00:00",
-   "usd": 0.00768345
-  },
-  {
-   "run_id": "v3c-gemini-3.8-flash-main-20261031-182656",
-   "mode": "v3-main",
-   "started_utc": "2026-11-01T01:26:56.045+00:00",
-   "usd": 2.57231785
-  },
-  {
-   "run_id": "v3c-gemini-3.8-flash-calibrate-20261031-182540",
-   "mode": "v3-calibrate",
-   "started_utc": "2026-11-01T01:25:40.949+00:00",
-   "usd": 0.043605
-  },
-  {
-   "run_id": "traces-v3b-gemini-3.8-flash-20261031-182337",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:23:37.438+00:00",
-   "usd": 0.0664569
-  },
-  {
-   "run_id": "traces-v3d-claude-haiku-5.5-20261031-181624",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:16:24.558+00:00",
-   "usd": 0.21205805
-  },
-  {
-   "run_id": "traces-v3d-gpt-oss-120b-20261031-181413",
-   "mode": "v3-traces",
-   "started_utc": "2026-11-01T01:14:13.313+00:00",
-   "usd": 0.1798085
   }
  ],
- "as_of": "2026-11-02T10:28:44.293+00:00"
+ "as_of": "2026-11-02T14:05:23.020+00:00"
 }

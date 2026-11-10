@@ -65,7 +65,7 @@ export default function QuizV4ClientV9() {
               ["6 classic problems", "Famous ethical thought experiments from philosophy: the trolley problem, Nozick's experience machine, Rawls's veil of ignorance, and more."],
               ["4 everyday dilemmas", "Original scenarios about honesty, loyalty, fairness, and generosity in situations you might actually face."],
               ["Background and context", "Each question shows where it came from and why it matters for AI before you answer."],
-              ["Measured model data", "Results from 800 samples per model across all questions, measured independently and verified."],
+              ["Measured model data", "Results from 800 samples total (200 per model, 20 per question) across all questions, measured independently and verified."],
             ].map(([t, b]) => <div key={t} className="border border-rule bg-paper p-4"><div className="text-[15px] font-semibold">{t}</div><p className="mt-1 text-[13.5px] leading-6 text-ink/60">{b}</p></div>)}
           </div>
         </div>

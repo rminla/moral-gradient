@@ -37,7 +37,7 @@ export default function TryClient({ d, sharePath, previewTag }: { d: TryData; sh
             <Eyebrow>Try it yourself · step 1 of 2</Eyebrow>
             <h1 className="wide mt-6 text-[40px] font-bold leading-[0.96] tracking-[-0.045em] md:text-[64px]">{d.q}</h1>
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-ink/70">{d.body}</p>
-            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.08em] text-ink/45">Answer first. Then see how people and {d.rows.length} AI models answered.</p>
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.08em] text-ink/45">Answer first. Then see how people{d.rows.length > 0 ? ` and ${d.rows.length} AI models` : ""} answered.</p>
           </div>
           <div className="flex flex-col justify-end gap-3">
             <div className="label">Your answer</div>
