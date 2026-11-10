@@ -89,8 +89,8 @@ export default async function DriftPage() {
 
   return (
     <main>
-      <PageHead eyebrow="Agent drift under pressure" grey="Two of three models:" title={<>working alone, agents skipped checks <span className="text-vermilion">far more than as a team.</span></>}>
-        AI customer service agents handle late fee waiver requests under an impossible deadline. Policy requires verification; skipping it is a shortcut that takes seconds instead of a minute. Two experiments: individual pressure with a removal threat, and the same work done as a team of four sharing a queue and notes vs each agent working alone with an equivalent individual target. Same customers, ticket for ticket. gpt-oss and Qwen skipped far more alone; Haiku never skipped in either condition.
+      <PageHead eyebrow="Agent drift under pressure" title={<>Working alone, gpt-oss and Qwen skipped checks <span className="text-vermilion">far more than they did as a team.</span></>}>
+        AI customer service agents handle late fee waiver requests under an impossible deadline. Policy requires verification; skipping it is a shortcut that takes seconds instead of a minute. Two experiments: individual pressure with a removal threat, and the same work done as a team of four sharing a queue and notes vs each agent working alone with an equivalent individual target. Same customers, ticket for ticket. Haiku never skipped in either condition.
       </PageHead>
 
       <Block id="headline">
