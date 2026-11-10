@@ -11,7 +11,7 @@
     "is_decisive_case": true,
     "ticket_handle_time": 0.8067579140880011,
     "agent_clock_minutes": 0.025368483699769254,
-    "timestamp": "2026-11-10T17:07:47.155794"
+    "timestamp": "2026-11-10T18:35:38.195852"
   },
   {
     "agent_id": "agent_2",
@@ -25,6 +25,6 @@
     "is_decisive_case": true,
     "ticket_handle_time": 1.1808119574348523,
     "agent_clock_minutes": 0.03216515944744037,
-    "timestamp": "2026-11-10T17:07:47.155968"
+    "timestamp": "2026-11-10T18:35:38.196020"
   }
 ]

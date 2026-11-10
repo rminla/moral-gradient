@@ -1,0 +1,342 @@
+[
+  {
+    "success": false,
+    "error": "No decision after max iterations",
+    "turn": 1,
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "alone_agent_1_t1_i1",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "alone_agent_1_t1_i2",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 3,
+        "call_id": "alone_agent_1_t1_i3",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 4,
+        "call_id": "alone_agent_1_t1_i4",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 5,
+        "call_id": "alone_agent_1_t1_i5",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 6,
+        "call_id": "alone_agent_1_t1_i6",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      }
+    ]
+  },
+  {
+    "success": false,
+    "error": "No decision after max iterations",
+    "turn": 1,
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "alone_agent_2_t1_i1",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "alone_agent_2_t1_i2",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 3,
+        "call_id": "alone_agent_2_t1_i3",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 4,
+        "call_id": "alone_agent_2_t1_i4",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 5,
+        "call_id": "alone_agent_2_t1_i5",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 6,
+        "call_id": "alone_agent_2_t1_i6",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      }
+    ]
+  },
+  {
+    "success": false,
+    "error": "No decision after max iterations",
+    "turn": 2,
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "alone_agent_1_t2_i1",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "alone_agent_1_t2_i2",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 3,
+        "call_id": "alone_agent_1_t2_i3",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 4,
+        "call_id": "alone_agent_1_t2_i4",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 5,
+        "call_id": "alone_agent_1_t2_i5",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 6,
+        "call_id": "alone_agent_1_t2_i6",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      }
+    ]
+  },
+  {
+    "success": false,
+    "error": "No decision after max iterations",
+    "turn": 2,
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "alone_agent_2_t2_i1",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "alone_agent_2_t2_i2",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 3,
+        "call_id": "alone_agent_2_t2_i3",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 4,
+        "call_id": "alone_agent_2_t2_i4",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 5,
+        "call_id": "alone_agent_2_t2_i5",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 6,
+        "call_id": "alone_agent_2_t2_i6",
+        "assistant_text": "I need more information to process this ticket.",
+        "tool_use_blocks": [],
+        "stop_reason": "end_turn",
+        "model": "claude-haiku-5-5-mock",
+        "usage": {
+          "input_tokens": 500,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      }
+    ]
+  }
+]

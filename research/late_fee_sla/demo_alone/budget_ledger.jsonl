@@ -1,0 +1,48 @@
+{"type": "reserve", "call_id": "alone_agent_1_t1_i1", "reserved_usd": 0.000879075, "timestamp": "2026-11-10T17:08:59.636225"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i1", "reserved_usd": 0.000879075, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636310"}
+{"type": "reserve", "call_id": "alone_agent_1_t1_i2", "reserved_usd": 0.000882725, "timestamp": "2026-11-10T17:08:59.636380"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i2", "reserved_usd": 0.000882725, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636401"}
+{"type": "reserve", "call_id": "alone_agent_1_t1_i3", "reserved_usd": 0.000886375, "timestamp": "2026-11-10T17:08:59.636444"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i3", "reserved_usd": 0.000886375, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636459"}
+{"type": "reserve", "call_id": "alone_agent_1_t1_i4", "reserved_usd": 0.000890025, "timestamp": "2026-11-10T17:08:59.636495"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i4", "reserved_usd": 0.000890025, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636507"}
+{"type": "reserve", "call_id": "alone_agent_1_t1_i5", "reserved_usd": 0.000893675, "timestamp": "2026-11-10T17:08:59.636556"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i5", "reserved_usd": 0.000893675, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636569"}
+{"type": "reserve", "call_id": "alone_agent_1_t1_i6", "reserved_usd": 0.000897325, "timestamp": "2026-11-10T17:08:59.636603"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i6", "reserved_usd": 0.000897325, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636615"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i1", "reserved_usd": 0.000879075, "timestamp": "2026-11-10T17:08:59.636664"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i1", "reserved_usd": 0.000879075, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636677"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i2", "reserved_usd": 0.000882725, "timestamp": "2026-11-10T17:08:59.636709"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i2", "reserved_usd": 0.000882725, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636720"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i3", "reserved_usd": 0.000886375, "timestamp": "2026-11-10T17:08:59.636751"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i3", "reserved_usd": 0.000886375, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636763"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i4", "reserved_usd": 0.000890025, "timestamp": "2026-11-10T17:08:59.636806"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i4", "reserved_usd": 0.000890025, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636902"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i5", "reserved_usd": 0.000893675, "timestamp": "2026-11-10T17:08:59.636942"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i5", "reserved_usd": 0.000893675, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.636962"}
+{"type": "reserve", "call_id": "alone_agent_2_t1_i6", "reserved_usd": 0.000897325, "timestamp": "2026-11-10T17:08:59.637000"}
+{"type": "reconcile", "call_id": "alone_agent_2_t1_i6", "reserved_usd": 0.000897325, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637012"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i1", "reserved_usd": 0.000902225, "timestamp": "2026-11-10T17:08:59.637062"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i1", "reserved_usd": 0.000902225, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637075"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i2", "reserved_usd": 0.000905875, "timestamp": "2026-11-10T17:08:59.637112"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i2", "reserved_usd": 0.000905875, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637124"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i3", "reserved_usd": 0.000909525, "timestamp": "2026-11-10T17:08:59.637160"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i3", "reserved_usd": 0.000909525, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637171"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i4", "reserved_usd": 0.000913175, "timestamp": "2026-11-10T17:08:59.637216"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i4", "reserved_usd": 0.000913175, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637237"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i5", "reserved_usd": 0.000916825, "timestamp": "2026-11-10T17:08:59.637282"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i5", "reserved_usd": 0.000916825, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637294"}
+{"type": "reserve", "call_id": "alone_agent_1_t2_i6", "reserved_usd": 0.000920475, "timestamp": "2026-11-10T17:08:59.637333"}
+{"type": "reconcile", "call_id": "alone_agent_1_t2_i6", "reserved_usd": 0.000920475, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637344"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i1", "reserved_usd": 0.000902225, "timestamp": "2026-11-10T17:08:59.637390"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i1", "reserved_usd": 0.000902225, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637402"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i2", "reserved_usd": 0.000905875, "timestamp": "2026-11-10T17:08:59.637439"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i2", "reserved_usd": 0.000905875, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637450"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i3", "reserved_usd": 0.000909525, "timestamp": "2026-11-10T17:08:59.637487"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i3", "reserved_usd": 0.000909525, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637504"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i4", "reserved_usd": 0.000913175, "timestamp": "2026-11-10T17:08:59.637549"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i4", "reserved_usd": 0.000913175, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637561"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i5", "reserved_usd": 0.000916825, "timestamp": "2026-11-10T17:08:59.637597"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i5", "reserved_usd": 0.000916825, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637608"}
+{"type": "reserve", "call_id": "alone_agent_2_t2_i6", "reserved_usd": 0.000920475, "timestamp": "2026-11-10T17:08:59.637647"}
+{"type": "reconcile", "call_id": "alone_agent_2_t2_i6", "reserved_usd": 0.000920475, "actual_usd": 0.0, "timestamp": "2026-11-10T17:08:59.637658"}

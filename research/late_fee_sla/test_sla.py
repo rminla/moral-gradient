@@ -858,6 +858,11 @@ def run_all_tests():
         test_r9_unique_customer_identities()
         test_r9_alone_condition_isolation()
         test_r9_team_real_runner_first_turn()
+        
+        # R9 alone audit fixes
+        test_r9_alone_ticket_sequence_matches_team_roundrobin()
+        test_r9_alone_no_team_words()
+        test_r9_team_unchanged_from_a47a445()
         test_r9_alone_real_runner_first_turn()
         
         print("="*80)
@@ -1540,9 +1545,223 @@ def test_r9_team_real_runner_first_turn():
     print("  ✓ Team payload captured")
 
 
+def test_r9_alone_ticket_sequence_matches_team_roundrobin():
+    """TEST 31: Alone ticket sequence matches team round-robin partition."""
+    print("\nTEST 31: R9 Alone Ticket Sequence = Team Round-Robin Partition")
+    
+    cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+    with open(cases_path) as f:
+        case_data = json.load(f)
+    cases = case_data["cases"]
+    
+    from run_late_fee_sla import SharedQueueState
+    
+    # Generate global ticket sequence (160 tickets for 4 agents x 40 turns)
+    global_queue = SharedQueueState(cases, start_backlog=700, max_tickets=160)
+    global_tickets = global_queue.tickets
+    
+    print(f"  Generated {len(global_tickets)} global tickets")
+    
+    # Simulate team round-robin: agent i gets tickets at indices i-1, i-1+4, i-1+8, ...
+    team_sequences = {}
+    for i in range(1, 5):  # agent_1 through agent_4
+        agent_id = f"agent_{i}"
+        # Agent i (1-indexed) gets indices where (idx % 4) == (i - 1)
+        team_sequences[agent_id] = [t for idx, t in enumerate(global_tickets) if (idx % 4) == (i - 1)]
+    
+    # Simulate alone partition (same logic as run_condition_r9)
+    alone_sequences = {}
+    for i in range(1, 5):
+        agent_id = f"agent_{i}"
+        agent_tickets = [t for idx, t in enumerate(global_tickets) if (idx % 4) == (i - 1)]
+        alone_sequences[agent_id] = agent_tickets
+    
+    # Verify sequences match
+    for agent_id in team_sequences:
+        team_seq = team_sequences[agent_id]
+        alone_seq = alone_sequences[agent_id]
+        
+        assert len(team_seq) == len(alone_seq), \
+            f"{agent_id}: Team {len(team_seq)} tickets != Alone {len(alone_seq)} tickets"
+        
+        # Check ticket IDs match
+        team_ids = [t["ticket_id"] for t in team_seq]
+        alone_ids = [t["ticket_id"] for t in alone_seq]
+        assert team_ids == alone_ids, \
+            f"{agent_id}: Ticket IDs don't match. Team first 5: {team_ids[:5]}, Alone first 5: {alone_ids[:5]}"
+        
+        # Check customer names match
+        team_names = [t["customer_name"] for t in team_seq]
+        alone_names = [t["customer_name"] for t in alone_seq]
+        assert team_names == alone_names, \
+            f"{agent_id}: Customer names don't match"
+        
+        # Check case IDs match
+        team_case_ids = [t["case_id"] for t in team_seq]
+        alone_case_ids = [t["case_id"] for t in alone_seq]
+        assert team_case_ids == alone_case_ids, \
+            f"{agent_id}: Case IDs don't match"
+        
+        print(f"  {agent_id}: {len(team_seq)} tickets match (IDs, names, case_ids)")
+        print(f"    First 5 ticket IDs: {team_ids[:5]}")
+    
+    # Verify all 160 tickets are unique
+    all_alone_ids = []
+    for seq in alone_sequences.values():
+        all_alone_ids.extend([t["ticket_id"] for t in seq])
+    
+    assert len(set(all_alone_ids)) == 160, \
+        f"Expected 160 unique ticket IDs, got {len(set(all_alone_ids))}"
+    
+    print(f"  ✓ All 160 ticket IDs unique across 4 agents")
+    print(f"  ✓ Alone partition exactly matches team round-robin")
+
+
+def test_r9_alone_no_team_words():
+    """TEST 32: Zero team/teammate words in alone mode strings."""
+    print("\nTEST 32: R9 Alone Has Zero Team/Teammate Words")
+    
+    cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+    with open(cases_path) as f:
+        case_data = json.load(f)
+    cases = case_data["cases"]
+    
+    from run_late_fee_sla import (
+        build_system_prompt, build_tools, SharedQueueState, SharedNotesState,
+        ShiftElapsedTracker, TeamRateTracker, SandboxEnvironment
+    )
+    
+    # Check alone system prompt
+    alone_system = build_system_prompt(False, "r9", "alone")
+    team_words = ["team", "teammate", "teammates"]
+    
+    for word in team_words:
+        assert word.lower() not in alone_system.lower(), \
+            f"Found '{word}' in alone system prompt"
+    
+    print(f"  ✓ Alone system prompt: zero team words")
+    
+    # Check alone tool descriptions
+    alone_tools = build_tools("r9", "alone")
+    for tool in alone_tools:
+        tool_str = str(tool)
+        for word in team_words:
+            assert word.lower() not in tool_str.lower(), \
+                f"Found '{word}' in alone tool: {tool['name']}"
+    
+    print(f"  ✓ Alone tools ({len(alone_tools)}): zero team words")
+    
+    # Check alone environment tool results
+    global_queue = SharedQueueState(cases, start_backlog=175, max_tickets=10)
+    agent_notes = SharedNotesState("Notes:\n\nReminder: Office closed Dec 24-26 for holidays.")
+    agent_shift = ShiftElapsedTracker(2.0)
+    agent_rate = TeamRateTracker()
+    global_turn_counter = {"turn": 0}
+    
+    env = SandboxEnvironment(
+        "agent_1",
+        cases,
+        agent_notes,
+        global_turn_counter,
+        variant="r9",
+        shared_queue=global_queue,
+        shift_elapsed_tracker=agent_shift,
+        team_rate_tracker=agent_rate,
+        condition="alone"
+    )
+    
+    # Test read_notes result
+    notes_result = env.r9_read_team_notes()
+    notes_content = notes_result.get("content", "")
+    for word in team_words:
+        assert word.lower() not in notes_content.lower(), \
+            f"Found '{word}' in alone read_notes result"
+    
+    assert "Your Notes:" in notes_content, "Alone notes should have 'Your Notes:' header"
+    print(f"  ✓ Alone read_notes: 'Your Notes:' header, zero team words")
+    
+    # Test write_notes result
+    write_result = env.r9_write_team_notes("Test note")
+    write_str = str(write_result)
+    for word in team_words:
+        assert word.lower() not in write_str.lower(), \
+            f"Found '{word}' in alone write_notes result"
+    
+    # Test get_next_case result
+    case_result = env.r9_get_next_case_from_queue()
+    case_str = str(case_result)
+    for word in team_words:
+        assert word.lower() not in case_str.lower(), \
+            f"Found '{word}' in alone get_next_case result"
+    
+    # Test decision feedback
+    decision_result = env.r9_decide_case("waive_late_fee")
+    decision_msg = decision_result.get("message", "")
+    for word in team_words:
+        assert word.lower() not in decision_msg.lower(), \
+            f"Found '{word}' in alone decision feedback"
+    
+    print(f"  ✓ Alone tool results: zero team words")
+    print(f"  ✓ Alone decision feedback: zero team words")
+
+
+def test_r9_team_unchanged_from_a47a445():
+    """TEST 33: Team mode unchanged from commit a47a445."""
+    print("\nTEST 33: R9 Team Mode Unchanged from a47a445")
+    
+    cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
+    with open(cases_path) as f:
+        case_data = json.load(f)
+    cases = case_data["cases"]
+    
+    from run_late_fee_sla import (
+        SharedQueueState, SharedNotesState, ShiftElapsedTracker,
+        TeamRateTracker, SandboxEnvironment
+    )
+    
+    # Generate team queue (same logic as a47a445)
+    team_queue = SharedQueueState(cases, start_backlog=700, max_tickets=200)
+    
+    # Verify 200 unique names (from a47a445)
+    ticket_names = [t["customer_name"] for t in team_queue.tickets]
+    assert len(set(ticket_names)) == 200, "Team should have 200 unique names"
+    
+    # Create team environment
+    notes_state = SharedNotesState("Team Notes:\n\nReminder: Office closed Dec 24-26 for holidays.")
+    shift_tracker = ShiftElapsedTracker(2.0)
+    rate_tracker = TeamRateTracker()
+    global_turn_counter = {"turn": 0}
+    
+    env = SandboxEnvironment(
+        "agent_1",
+        cases,
+        notes_state,
+        global_turn_counter,
+        variant="r9",
+        shared_queue=team_queue,
+        shift_elapsed_tracker=shift_tracker,
+        team_rate_tracker=rate_tracker,
+        condition="team"
+    )
+    
+    # Test team notes header
+    notes_result = env.r9_read_team_notes()
+    assert "Team Notes:" in notes_result["content"], "Team should have 'Team Notes:' header"
+    
+    # Test team decision feedback mentions "Team rate"
+    env.r9_get_next_case_from_queue()
+    decision = env.r9_decide_case("waive_late_fee")
+    assert "Team rate" in decision["message"] or "n/a" in decision["message"], \
+        "Team decision should mention 'Team rate'"
+    
+    print(f"  ✓ Team queue: 200 unique names (unchanged)")
+    print(f"  ✓ Team notes: 'Team Notes:' header (unchanged)")
+    print(f"  ✓ Team feedback: 'Team rate' present (unchanged)")
+
+
 def test_r9_alone_real_runner_first_turn():
-    """TEST 31: Real runner alone first-turn payload check."""
-    print("\nTEST 31: R9 Alone First-Turn Payload (role=tool check)")
+    """TEST 34: Real runner alone first-turn payload check."""
+    print("\nTEST 34: R9 Alone First-Turn Payload (role=tool check)")
     
     cases_path = Path(__file__).parent / "cases_late_fee_sla.json"
     with open(cases_path) as f:

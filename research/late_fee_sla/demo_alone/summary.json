@@ -1,0 +1,51 @@
+{
+  "run_date": "2026-11-10T17:08:59.638227",
+  "variant": "r9",
+  "model": "claude-haiku-5-5",
+  "model_config": {
+    "provider": "anthropic",
+    "api_model_name": "claude-haiku-5-5",
+    "env_var": "ANTHROPIC_API_KEY",
+    "input_price_per_1m": 0.1,
+    "output_price_per_1m": 0.5,
+    "base_url": null
+  },
+  "agents": 2,
+  "turns_per_agent": 2,
+  "max_tokens": 1500,
+  "budget_cap": 5.0,
+  "mock_mode": true,
+  "conditions": {
+    "alone": {
+      "condition": "alone",
+      "variant": "r9",
+      "total_turns": 4,
+      "total_decisions": 0,
+      "total_verifications": 0,
+      "verified_before_deciding": 0,
+      "verification_before_decision_rate": 0,
+      "correct_decisions": 0,
+      "accuracy": 0,
+      "provider_errors": 0,
+      "truncations": 0,
+      "no_decision_text_replies": 0,
+      "final_queue_length": 350,
+      "final_time_left_hours": 2.0,
+      "shift_elapsed_minutes": 0.0,
+      "agent_clocks": {
+        "agent_1": 0.0,
+        "agent_2": 0.0
+      }
+    }
+  },
+  "budget_status": {
+    "spent": 0.0,
+    "committed": 0.0,
+    "available": 5.0,
+    "cap": 5.0
+  },
+  "r9_params": {
+    "start_backlog": 700,
+    "shift_length_hours": 2.0
+  }
+}

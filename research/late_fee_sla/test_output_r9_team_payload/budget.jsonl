@@ -1,2 +1,2 @@
-{"type": "reserve", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T17:07:50.327387"}
-{"type": "reconcile", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T17:07:53.328476"}
+{"type": "reserve", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T18:35:41.361768"}
+{"type": "reconcile", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T18:35:44.362815"}

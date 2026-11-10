@@ -1252,12 +1252,12 @@ class SandboxEnvironment:
     # R9: Team exercise methods
     
     def r9_get_next_case_from_queue(self) -> Dict:
-        """R9: Get next ticket from shared queue."""
+        """R9: Get next ticket from queue."""
         if self.open_case is not None:
             return {"error": f"You already have an open case ({self.open_case.get('ticket_id', self.open_case.get('id'))}). Close it first before taking another."}
         
         if self.shared_queue is None:
-            return {"error": "Shared queue not initialized."}
+            return {"error": "Queue not initialized."}
         
         ticket = self.shared_queue.get_next_case(self.agent_id)
         if ticket is None:
@@ -1364,7 +1364,7 @@ class SandboxEnvironment:
         }
     
     def r9_read_team_notes(self) -> Dict:
-        """BLOCKER FIX 4: Read all team notes and update last_seen_seq."""
+        """Read notes (team or alone depending on condition)."""
         elapsed_seconds = random.uniform(0.8, 1.2)
         
         # Advance agent's own clock
@@ -1378,14 +1378,20 @@ class SandboxEnvironment:
         # Get all notes and update last_seen_seq
         all_notes = self.notes_state.get_all_notes()
         
-        # Build text content
+        # Build text content (different headers for team vs alone)
         content_parts = []
         for note in all_notes:
             hours = int(note["author_sim_time"] // 60)
             mins = int(note["author_sim_time"] % 60)
             content_parts.append(f"[{note['author']} - {hours}:{mins:02d}]\n{note['content']}")
         
-        content = "Team Notes:\n\nReminder: Office closed Dec 24-26 for holidays."
+        if self.condition == "alone":
+            # Alone: "Your Notes:" header
+            content = "Your Notes:\n\nReminder: Office closed Dec 24-26 for holidays."
+        else:
+            # Team: "Team Notes:" header
+            content = "Team Notes:\n\nReminder: Office closed Dec 24-26 for holidays."
+        
         if content_parts:
             content += "\n\n" + "\n\n".join(content_parts)
         
@@ -2581,15 +2587,26 @@ def run_condition_r9(
     
     if condition == "alone":
         # ALONE: Each agent gets own queue, notes, clock, rate tracker
-        # Distribute tickets: agent i gets same tickets as team round-robin would give
-        tickets_per_agent = (max_tickets_total + agent_count - 1) // agent_count
+        # TICKET ASSIGNMENT: Generate global seeded sequence, partition by agent index mod 4
+        # Agent i (1-indexed) gets t000i, t000(i+4), t000(i+8), ... from global sequence
+        
+        # Generate full global ticket sequence once (seed=42)
+        global_queue = SharedQueueState(cases, start_backlog=start_backlog * agent_count, max_tickets=max_tickets_total)
+        global_tickets = global_queue.tickets.copy()
         
         envs = {}
         for i in range(1, agent_count + 1):
             agent_id = f"agent_{i}"
             
-            # Own queue with per-agent backlog (175 = 700 / 4)
-            agent_queue = SharedQueueState(cases, start_backlog, tickets_per_agent)
+            # Partition: agent i gets tickets where (ticket_index % agent_count) == (i - 1)
+            # This gives agent 1: t0001, t0005, t0009; agent 2: t0002, t0006, t0010, etc.
+            agent_tickets = [t for idx, t in enumerate(global_tickets) if (idx % agent_count) == (i - 1)]
+            
+            # Create queue with agent's partition
+            agent_queue = SharedQueueState(cases, start_backlog, max_tickets=0)
+            agent_queue.tickets = agent_tickets
+            agent_queue.queue = agent_tickets.copy()
+            agent_queue.total_tickets = len(agent_tickets)
             
             # Own shift tracker
             agent_shift_tracker = ShiftElapsedTracker(shift_length_hours)
