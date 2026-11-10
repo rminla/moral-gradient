@@ -1,6 +1,6 @@
 {
- "total_usd": 66.58952125,
- "calls": 112716,
+ "total_usd": 85.62695815,
+ "calls": 125358,
  "by_model": [
   {
    "model": "qwen/qwen3.6-27b",
@@ -58,25 +58,25 @@
    "run_id": "v3final-gemini-3.8-flash-main-20261102-111853",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:18:53.408+00:00",
-   "usd": 0.5341825
+   "usd": 9.53328215
   },
   {
    "run_id": "v3final-qwen3.6-27b-main-20261102-111005",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:10:05.060+00:00",
-   "usd": 2.0957825999999997
+   "usd": 10.12698155
   },
   {
    "run_id": "v3final-claude-haiku-5.5-main-20261102-110506",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:05:06.643+00:00",
-   "usd": 1.0396734
+   "usd": 1.3712791
   },
   {
    "run_id": "v3final-gpt-oss-120b-main-20261102-110429",
    "mode": "v3-main",
    "started_utc": "2026-11-02T10:04:29.623+00:00",
-   "usd": 0.8059077
+   "usd": 0.83667295
   },
   {
    "run_id": "v3final-claude-haiku-5.5-calibrate-20261102-110213",
@@ -205,5 +205,5 @@
    "usd": 0.1798085
   }
  ],
- "as_of": "2026-11-02T10:28:44.293+00:00"
+ "as_of": "2026-11-02T14:05:23+00:00"
 }

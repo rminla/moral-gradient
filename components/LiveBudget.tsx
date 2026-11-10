@@ -23,7 +23,7 @@ export default function LiveBudget({ initial }: { initial: S }) {
     <div className="ticks flex h-full flex-col border border-rule bg-paper">
       <div className="flex items-center justify-between border-b border-rule px-5 py-3">
         <div className="kicker text-ink">The ledger</div>
-        <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50"><span key={tick} className="blink h-2 w-2 bg-vermilion" />live · every 20 s</span>
+        {s.spend_source === "live-ledger" && <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em] text-ink/50"><span key={tick} className="blink h-2 w-2 bg-vermilion" />live · every 20 s</span>}
       </div>
       <dl className="grid flex-1 divide-y divide-rule sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {items.map((i) => (
