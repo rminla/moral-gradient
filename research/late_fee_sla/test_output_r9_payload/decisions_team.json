@@ -9,9 +9,9 @@
     "checked_summary_first": false,
     "checks_done": [],
     "is_decisive_case": true,
-    "ticket_handle_time": 0.9517821767030591,
-    "agent_clock_minutes": 0.02555805705973372,
-    "timestamp": "2026-11-10T16:15:11.342582"
+    "ticket_handle_time": 0.8067579140880011,
+    "agent_clock_minutes": 0.025368483699769254,
+    "timestamp": "2026-11-10T17:07:47.155794"
   },
   {
     "agent_id": "agent_2",
@@ -23,8 +23,8 @@
     "checked_summary_first": false,
     "checks_done": [],
     "is_decisive_case": true,
-    "ticket_handle_time": 1.055999903941637,
-    "agent_clock_minutes": 0.03417935965433225,
-    "timestamp": "2026-11-10T16:15:11.342747"
+    "ticket_handle_time": 1.1808119574348523,
+    "agent_clock_minutes": 0.03216515944744037,
+    "timestamp": "2026-11-10T17:07:47.155968"
   }
 ]

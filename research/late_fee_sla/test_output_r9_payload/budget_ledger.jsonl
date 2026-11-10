@@ -1,8 +1,8 @@
-{"type": "reserve", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T16:15:11.342301"}
-{"type": "reconcile", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T16:15:11.342400"}
-{"type": "reserve", "call_id": "team_agent_1_t1_i2", "reserved_usd": 0.00111375, "timestamp": "2026-11-10T16:15:11.342512"}
-{"type": "reconcile", "call_id": "team_agent_1_t1_i2", "reserved_usd": 0.00111375, "actual_usd": 0.0, "timestamp": "2026-11-10T16:15:11.342544"}
-{"type": "reserve", "call_id": "team_agent_2_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T16:15:11.342644"}
-{"type": "reconcile", "call_id": "team_agent_2_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T16:15:11.342664"}
-{"type": "reserve", "call_id": "team_agent_2_t1_i2", "reserved_usd": 0.0011139, "timestamp": "2026-11-10T16:15:11.342715"}
-{"type": "reconcile", "call_id": "team_agent_2_t1_i2", "reserved_usd": 0.0011139, "actual_usd": 0.0, "timestamp": "2026-11-10T16:15:11.342730"}
+{"type": "reserve", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T17:07:47.155559"}
+{"type": "reconcile", "call_id": "team_agent_1_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T17:07:47.155654"}
+{"type": "reserve", "call_id": "team_agent_1_t1_i2", "reserved_usd": 0.001113825, "timestamp": "2026-11-10T17:07:47.155742"}
+{"type": "reconcile", "call_id": "team_agent_1_t1_i2", "reserved_usd": 0.001113825, "actual_usd": 0.0, "timestamp": "2026-11-10T17:07:47.155765"}
+{"type": "reserve", "call_id": "team_agent_2_t1_i1", "reserved_usd": 0.001096875, "timestamp": "2026-11-10T17:07:47.155857"}
+{"type": "reconcile", "call_id": "team_agent_2_t1_i1", "reserved_usd": 0.001096875, "actual_usd": 0.0, "timestamp": "2026-11-10T17:07:47.155875"}
+{"type": "reserve", "call_id": "team_agent_2_t1_i2", "reserved_usd": 0.0011139, "timestamp": "2026-11-10T17:07:47.155932"}
+{"type": "reconcile", "call_id": "team_agent_2_t1_i2", "reserved_usd": 0.0011139, "actual_usd": 0.0, "timestamp": "2026-11-10T17:07:47.155948"}

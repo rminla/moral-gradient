@@ -1,5 +1,5 @@
 {
-  "run_date": "2026-11-10T16:15:11.343166",
+  "run_date": "2026-11-10T17:07:47.156380",
   "variant": "r9",
   "model": "gpt-oss-120b",
   "model_config": {
@@ -30,11 +30,11 @@
       "truncations": 0,
       "no_decision_text_replies": 0,
       "final_queue_length": 698,
-      "final_time_left_hours": 1.9994303440057613,
-      "shift_elapsed_minutes": 0.03417935965433225,
+      "final_time_left_hours": 1.9994639140092092,
+      "shift_elapsed_minutes": 0.03216515944744037,
       "agent_clocks": {
-        "agent_1": 0.02555805705973372,
-        "agent_2": 0.03417935965433225
+        "agent_1": 0.025368483699769254,
+        "agent_2": 0.03216515944744037
       }
     }
   },
