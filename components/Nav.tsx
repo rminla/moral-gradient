@@ -39,7 +39,7 @@ export default async function Nav() {
           </Link>
         </div>
         <nav className="grid grid-cols-[0.8fr_1.4fr_0.9fr_1fr] border-t border-rule md:hidden">
-          {LINKS.filter(([h]) => !["/compare", "/models", "/costs", "/about"].includes(h)).map(([h, t], i) => (
+          {LINKS.filter(([h]) => !["/compare", "/models", "/costs", "/about", "/drift"].includes(h)).map(([h, t], i) => (
             <Link key={h} href={h} className={`whitespace-nowrap py-2.5 text-center font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.08em] ${h === "/try" ? "bg-vermilion text-white" : "text-ink/70"} ${i < 3 ? "border-r border-rule" : ""}`}>{t}</Link>
           ))}
         </nav>
