@@ -5,6 +5,7 @@ import { Wordmark } from "./Brand";
 const LINKS = [
   ["/try", "Try it"],
   ["/thinks-vs-does", "Thinks vs does"],
+  ["/drift", "Agent drift"],
   ["/learn", "Learn"],
   ["/results", "Results"],
   ["/compare", "Compare"],
@@ -25,7 +26,7 @@ export default async function Nav() {
           <Link href="/" aria-label="Moral Gradient, home" className="flex shrink-0 items-center border-r border-rule px-4 2xl:px-5"><Wordmark /></Link>
           <nav className="hidden items-stretch md:flex">
             {LINKS.map(([h, t]) => (
-              <Link key={h} href={h} className={`items-center whitespace-nowrap border-r border-rule px-2.5 font-mono text-[11.5px] uppercase tracking-[0.06em] transition-colors hover:bg-panel hover:text-ink xl:text-[12px] xl:tracking-[0.08em] 2xl:px-5 ${["/compare", "/costs"].includes(h) ? "hidden xl:flex" : "flex"} ${h === "/try" ? "gap-2 text-ink" : h === "/thinks-vs-does" ? "gap-2 text-vermilion" : "text-ink/70"}`}>{h === "/try" && <span className="h-2 w-2 bg-vermilion" />}{h === "/thinks-vs-does" && <span className="h-2 w-2 border border-vermilion" />}{t}</Link>
+              <Link key={h} href={h} className={`items-center whitespace-nowrap border-r border-rule px-2.5 font-mono text-[11.5px] uppercase tracking-[0.06em] transition-colors hover:bg-panel hover:text-ink xl:text-[12px] xl:tracking-[0.08em] 2xl:px-5 ${["/compare", "/costs", "/drift"].includes(h) ? "hidden xl:flex" : "flex"} ${h === "/try" ? "gap-2 text-ink" : h === "/thinks-vs-does" ? "gap-2 text-vermilion" : "text-ink/70"}`}>{h === "/try" && <span className="h-2 w-2 bg-vermilion" />}{h === "/thinks-vs-does" && <span className="h-2 w-2 border border-vermilion" />}{t}</Link>
             ))}
           </nav>
           <div className="hatch hidden flex-1 md:block" />

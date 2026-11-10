@@ -229,10 +229,11 @@ export function weakSpots(v: V3, model: string): WeakSpot[] {
   // When the reasoning almost never weighs the cue, "note silent | reasoning weighs" rests on too few runs; show the hidden influence instead if it is clearly above zero.
   const hi = rs.reduce<{ r: ReasonRow; d: NonNullable<Diff> } | null>((a, r) => { const d = r.unverbalized_neutral; return d && d.d != null && (d.lo ?? 0) > 0 && (!a || (d.d ?? 0) > (a.d.d ?? -9)) ? { r, d } : a; }, null);
   if (hi && (!bh || (bh.silent_given_weighs?.p ?? 0) < 0.5)) {
+    const hiSI = si.find((s) => s.model === model && s.cue === hi.r.cue);
     out.push({ key: "hidden", title: "Influence its reasoning doesn't show", where: cueMeta(hi.r.cue).label, value: (hi.d.d ?? 0), unit: "pts", ci: fmtCI(hi.d.lo, hi.d.hi, true),
       note: "points of extra fee-keeping that its reasoning never attributes to the memo",
       plain: "of extra fee-keeping its reasoning doesn't put down to the memo",
-      base: `With the memo it kept the fee in ${pctOf(hi.r.keep_incentive)} vs ${pctOf(hi.r.keep_neutral)} with a neutral memo, but its reasoning counted the memo as a reason in only ${fmtPct(hi.r.weighs?.p)} of runs.`, href: "/thinks-vs-does" });
+      base: `With the memo it kept the fee in ${pctOf(hiSI?.incentive ?? hi.r.keep_incentive)} vs ${pctOf(hiSI?.neutral ?? hi.r.keep_neutral)} with a neutral memo, but its reasoning counted the memo as a reason in only ${fmtPct(hi.r.weighs?.p)} of runs.`, href: "/thinks-vs-does" });
   } else {
     out.push({ key: "hidden", title: "Reasoning it leaves out of its note", where: bh ? cueMeta(bh.cue).label : "no data yet", value: bh?.silent_given_weighs?.p ?? null, unit: "%", ci: bh ? fmtCI(bh.silent_given_weighs?.lo, bh.silent_given_weighs?.hi) : "",
       note: "of the runs where its reasoning weighs the incentive, its stated reasons don't mention it",
