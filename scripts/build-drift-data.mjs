@@ -377,8 +377,103 @@ function generate() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  generate();
+function validateClaims(data) {
+  const claimsPath = join(ROOT, 'content/drift-claims.json');
+  const claims = JSON.parse(readFileSync(claimsPath, 'utf-8'));
+  
+  function getMetric(spec) {
+    const exp = data.experiments.find(e => e.id === spec.experiment);
+    if (!exp) throw new Error(`Experiment ${spec.experiment} not found`);
+    
+    const model = exp.models.find(m => m.id === spec.model);
+    if (!model) throw new Error(`Model ${spec.model} not found in ${spec.experiment}`);
+    
+    switch (spec.metric) {
+      case 'skipRate':
+        const data = model[spec.condition];
+        return data.skipped / data.total;
+      case 'skipCount':
+        return model[spec.condition === 'on' ? 'targetOn' : spec.condition === 'off' ? 'targetOff' : spec.condition]?.skipped;
+      case 'accuracy':
+        const accData = model[spec.condition];
+        return accData.accuracy.correct / accData.accuracy.total;
+      case 'fisherP':
+        const pStr = model.tests?.fisherNoFull || model.tests?.fisherTwoSided;
+        return parseFloat(pStr);
+      default:
+        throw new Error(`Unknown metric: ${spec.metric}`);
+    }
+  }
+  
+  function evaluateCondition(cond) {
+    if (cond.left && cond.right) {
+      const left = getMetric(cond.left);
+      const right = getMetric(cond.right);
+      switch (cond.op) {
+        case '>': return left > right;
+        case '<': return left < right;
+        case '>=': return left >= right;
+        case '<=': return left <= right;
+        case '==': return Math.abs(left - right) < 1e-10;
+        default: throw new Error(`Unknown operator: ${cond.op}`);
+      }
+    } else {
+      const value = getMetric(cond);
+      switch (cond.op) {
+        case '>': return value > cond.value;
+        case '<': return value < cond.value;
+        case '>=': return value >= cond.value;
+        case '<=': return value <= cond.value;
+        case '==': return Math.abs(value - cond.value) < 1e-10;
+        default: throw new Error(`Unknown operator: ${cond.op}`);
+      }
+    }
+  }
+  
+  const failures = [];
+  
+  for (const [claimKey, claim] of Object.entries(claims.claims)) {
+    try {
+      for (const req of claim.requires) {
+        if (!evaluateCondition(req)) {
+          failures.push({
+            claim: claimKey,
+            text: claim.text,
+            condition: req,
+            message: `Condition failed for claim "${claimKey}"`
+          });
+        }
+      }
+    } catch (err) {
+      failures.push({
+        claim: claimKey,
+        error: err.message
+      });
+    }
+  }
+  
+  if (failures.length > 0) {
+    console.error('\n❌ CLAIMS VALIDATION FAILED\n');
+    console.error(`${failures.length} claim(s) do not match the generated data:\n`);
+    for (const f of failures) {
+      console.error(`Claim: ${f.claim}`);
+      if (f.text) console.error(`Text: ${f.text}`);
+      if (f.message) console.error(`Error: ${f.message}`);
+      if (f.error) console.error(`Error: ${f.error}`);
+      if (f.condition) console.error(`Condition: ${JSON.stringify(f.condition, null, 2)}`);
+      console.error('');
+    }
+    console.error('The generated data contradicts approved claims.');
+    console.error('Either the new data needs review, or the claims need updating.');
+    process.exit(1);
+  }
+  
+  console.log('✓ All claims validated against generated data');
 }
 
-export { generate, fisherExactTwoSided, mcNemarExact, formatP };
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const data = generate();
+  validateClaims(data);
+}
+
+export { generate, validateClaims, fisherExactTwoSided, mcNemarExact, formatP };

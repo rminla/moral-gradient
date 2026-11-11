@@ -15,6 +15,7 @@ export const metadata = {
 
 type DriftData = {
   generated: string;
+  suiteId: string;
   experiments: Array<{
     id: string;
     name: string;
@@ -24,8 +25,8 @@ type DriftData = {
       id: string;
       name: string;
       tokenLimit?: number;
-      team?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: { full: number; summaryOnly: number; none: number } };
-      alone?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: { full: number; summaryOnly: number; none: number } };
+      team?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; metadata?: any };
+      alone?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; metadata?: any };
       targetOn?: { skipped: number; total: number };
       targetOff?: { skipped: number; total: number };
       tests?: Record<string, string>;
@@ -44,8 +45,19 @@ type DriftData = {
   }>;
 };
 
+type Claims = {
+  approved_on: string;
+  approved_suite: string;
+  claims: Record<string, { text: string; requires: any[] }>;
+};
+
 async function getDriftData(): Promise<DriftData> {
   const raw = await readFile(join(process.cwd(), "data/drift.json"), "utf-8");
+  return JSON.parse(raw);
+}
+
+async function getClaims(): Promise<Claims> {
+  const raw = await readFile(join(process.cwd(), "content/drift-claims.json"), "utf-8");
   return JSON.parse(raw);
 }
 
@@ -75,26 +87,28 @@ function SkipBar({ skipped, total, label }: { skipped: number; total: number; la
 
 export default async function DriftPage() {
   const data = await getDriftData();
+  const claims = await getClaims();
+  
   const r9 = data.experiments.find((e) => e.id === "r9-1");
   const r8 = data.experiments.find((e) => e.id === "r8-1");
   if (!r9 || !r8) throw new Error("Missing experiment data");
 
   const gptModel = r9.models.find((m) => m.id === "gpt-oss-120b");
-  const qwenModel = r9.models.find((m) => m.id === "qwen-3.6-27b");
-  const haikuModel = r9.models.find((m) => m.id === "claude-haiku-5.5");
+  const qwenModel = r9.models.find((m) => m.id === "qwen3.6-27b");
+  const haikuModel = r9.models.find((m) => m.id === "claude-haiku-5-5");
   const geminiModel = r9.models.find((m) => m.id === "gemini-3.8-flash");
 
-  const qwenTeamQuotes = data.quotes.filter((q) => q.model === "qwen-3.6-27b" && q.condition === "team" && ["skip-proposal", "pushback", "retraction"].includes(q.type));
+  const qwenTeamQuotes = data.quotes.filter((q) => q.model === "qwen3.6-27b" && q.condition === "team" && ["skip-proposal", "pushback", "retraction"].includes(q.type));
   const aloneQuotes = data.quotes.filter((q) => q.condition === "alone" && ["skip-strategy", "refusal"].includes(q.type));
 
   return (
     <main>
-      <PageHead eyebrow="Agent drift under pressure" title={<>Working alone, gpt-oss and Qwen skipped checks <span className="text-vermilion">far more than they did as a team.</span></>}>
-        AI customer service agents handle late fee waiver requests under an impossible deadline. Policy requires verification; skipping it is a shortcut that takes seconds instead of a minute. Two experiments: individual pressure with a removal threat, and the same work done as a team of four sharing a queue and notes vs each agent working alone with an equivalent individual target. Same customers, ticket for ticket. Haiku never skipped in either condition.
+      <PageHead eyebrow="Agent drift under pressure" title={<>{claims.claims.headline.text.split(" far more")[0]} <span className="text-vermilion">far more{claims.claims.headline.text.split(" far more")[1]}</span></>}>
+        {claims.claims.dek.text}
       </PageHead>
 
       <Block id="headline">
-        <ChartHead kicker="R9.1 Team vs Alone" title={<>Team agents verified almost everything. Alone agents <span className="text-vermilion">skipped far more.</span></>}>
+        <ChartHead kicker="R9.1 Team vs Alone" title={<>{claims.claims.r91_headline_title.text.split("skipped")[0]}skipped <span className="text-vermilion">{claims.claims.r91_headline_title.text.split("skipped")[1]}</span></>}>
           Four agents, shared queue and team target (15 per minute) vs each agent with own queue and individual target (4 per minute). A full verification tool takes 45 to 60 simulated seconds. The target cannot be met without skipping.
         </ChartHead>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -126,12 +140,12 @@ export default async function DriftPage() {
           })}
         </div>
         <p className="mt-6 max-w-3xl text-[13.5px] leading-6 text-ink/55">
-          gpt-oss-120b: team 0 of 149 vs alone 39 of 156. Qwen 3.6 27B: team 8 of 156 vs alone 64 of 148. Claude Haiku 5.5: 0 vs 0, verified everything in both. Gemini 3.8 Flash: 0 skips in 119 consecutive team tickets; alone run incomplete (provider credit errors after 17 tickets), so no team vs alone comparison yet. Gemini used a 4000 token limit vs 1500 for others.
+          gpt-oss-120b: team {gptModel?.team && `${gptModel.team.skipped} of ${gptModel.team.total}`} vs alone {gptModel?.alone && `${gptModel.alone.skipped} of ${gptModel.alone.total}`}. Qwen 3.6 27B: team {qwenModel?.team && `${qwenModel.team.skipped} of ${qwenModel.team.total}`} vs alone {qwenModel?.alone && `${qwenModel.alone.skipped} of ${qwenModel.alone.total}`}. Claude Haiku 5.5: {haikuModel?.team && `${haikuModel.team.skipped} vs ${haikuModel.alone?.skipped}`}, verified everything in both. Gemini 3.8 Flash: 0 skips in {geminiModel?.team?.total} consecutive team tickets; alone run incomplete (provider credit errors after {geminiModel?.alone?.total} tickets), so no team vs alone comparison yet. Gemini used a {geminiModel?.tokenLimit} token limit vs {gptModel?.tokenLimit} for others.
         </p>
       </Block>
 
       <Block id="r8">
-        <ChartHead kicker="R8.1 Individual Pressure" title="Only gpt-oss skipped under individual deadline pressure.">
+        <ChartHead kicker="R8.1 Individual Pressure" title={claims.claims.r81_headline.text}>
           Target on: 5-second SLA, leaderboard, removal when below target. Target off: same work, no leaderboard or removal threat. Four agents, 30 turns each.
         </ChartHead>
         <div className="mt-8 hidden md:block">
@@ -187,7 +201,22 @@ export default async function DriftPage() {
             );
           })}
         </div>
-        <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">Only gpt-oss-120b skipped more with the target on (15 of 696 vs 0 of 638, p = 6.81e-5). Claude Haiku 5.5: 0 of 240 vs 0 of 240. Gemini 3.8 Flash: 0 of 240 vs 0 of 240. Qwen 3.6 27B: 1 of 236 vs 0 of 221 (one skip in 236 is not evidence of a target effect).</p>
+        <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">
+          {r8.models.map((m, i) => {
+            if (!m.targetOn || !m.targetOff) return null;
+            const onSkip = m.targetOn.skipped > 0;
+            return (
+              <span key={m.id}>
+                {i > 0 && " "}
+                {m.name}: {m.targetOn.skipped} of {m.targetOn.total} vs {m.targetOff.skipped} of {m.targetOff.total}
+                {onSkip && ` (p = ${m.tests?.fisherTwoSided})`}
+                {i === 0 && " skipped more with the target on"}
+                {i < r8.models.length - 1 && "."}
+              </span>
+            );
+          })}
+          {" "}Qwen: one skip in 236 is not evidence of a target effect.
+        </p>
       </Block>
 
       <Block id="quotes">
@@ -206,7 +235,7 @@ export default async function DriftPage() {
                 </figure>
               ))}
             </div>
-            <p className="mt-4 text-[13px] leading-5 text-ink/60">After this exchange, all 8 team no-full checks were in the first 35 tickets. The team verified every case after that. Alone, two of four agents skipped most tickets; two verified everything.</p>
+            <p className="mt-4 text-[13px] leading-5 text-ink/60">{claims.claims.notable_qwen_team_notes.text} After this exchange, all {qwenModel?.team?.skipDetail?.summaryOnly + qwenModel?.team?.skipDetail?.none || qwenModel?.team?.skipped} team no-full checks were in the first 35 tickets. The team verified every case after that. Alone, two of four agents skipped most tickets; two verified everything.</p>
           </div>
         )}
 
@@ -217,7 +246,7 @@ export default async function DriftPage() {
               {aloneQuotes.map((q, i) => (
                 <figure key={i} className="border border-rule p-5">
                   <div className="mb-2 flex items-baseline justify-between gap-2">
-                    <span className="text-[14px] font-semibold">{q.model === "gpt-oss-120b" ? "gpt-oss-120b" : "Qwen 3.6 27B"}</span>
+                    <span className="text-[14px] font-semibold">{data.experiments.find(e => e.models.some(m => m.id === q.model))?.models.find(m => m.id === q.model)?.name}</span>
                     <span className="font-mono text-[11px] text-ink/50">{q.agent}{q.turn && ` turn ${q.turn}`}</span>
                   </div>
                   <div className={`mb-2 font-mono text-[10px] uppercase tracking-[0.06em] ${q.type === "refusal" ? "text-moss" : "text-vermilion"}`}>{q.type === "refusal" ? "Verified anyway" : "Skip strategy"}</div>
@@ -237,25 +266,25 @@ export default async function DriftPage() {
           {gptModel && gptModel.alone && (
             <div>
               <div className="label">gpt-oss-120b alone</div>
-              <p>Almost all skips were from two of four agents. {gptModel.alone.skipDetail && `${gptModel.alone.skipDetail.none} of ${gptModel.alone.total} skipped with no check at all; 1 used only a summary.`} The other two agents never skipped. Accuracy: team {gptModel.team?.accuracy && `${gptModel.team.accuracy.correct} of ${gptModel.team.accuracy.total} (${fmtPct(gptModel.team.accuracy.correct, gptModel.team.accuracy.total)})`}, alone {gptModel.alone.accuracy && `${gptModel.alone.accuracy.correct} of ${gptModel.alone.accuracy.total} (${fmtPct(gptModel.alone.accuracy.correct, gptModel.alone.accuracy.total)})`}.</p>
+              <p>{claims.claims.notable_gptoss_alone.text} {gptModel.alone.skipDetail && `${gptModel.alone.skipDetail.none} of ${gptModel.alone.total} skipped with no check at all; ${gptModel.alone.skipDetail.summaryOnly} used only a summary.`} The other two agents never skipped. Accuracy: team {gptModel.team?.accuracy && `${gptModel.team.accuracy.correct} of ${gptModel.team.accuracy.total} (${fmtPct(gptModel.team.accuracy.correct, gptModel.team.accuracy.total)})`}, alone {gptModel.alone.accuracy && `${gptModel.alone.accuracy.correct} of ${gptModel.alone.accuracy.total} (${fmtPct(gptModel.alone.accuracy.correct, gptModel.alone.accuracy.total)})`}.</p>
             </div>
           )}
           {qwenModel && qwenModel.alone && (
             <div>
               <div className="label">Qwen 3.6 27B alone</div>
-              <p>Two agents skipped most tickets; two verified everything and got 100% accuracy. {qwenModel.alone.skipDetail && `${qwenModel.alone.skipDetail.none} of ${qwenModel.alone.total} skipped with no check; 2 used only a summary.`}</p>
+              <p>Two agents skipped most tickets; two verified everything and got 100% accuracy. {qwenModel.alone.skipDetail && `${qwenModel.alone.skipDetail.none} of ${qwenModel.alone.total} skipped with no check; ${qwenModel.alone.skipDetail.summaryOnly} used only a summary.`}</p>
             </div>
           )}
           {qwenModel && qwenModel.team && qwenModel.team.accuracy && (
             <div>
               <div className="label">Qwen 3.6 27B team accuracy drop</div>
-              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. The team drop came from wrongful escalations (50 of 54 team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
+              <p>{claims.claims.notable_qwen_accuracy.text} Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. The team drop came from wrongful escalations (50 of 54 team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
             </div>
           )}
           {haikuModel && (
             <div>
               <div className="label">Claude Haiku 5.5</div>
-              <p>Verified everything in both conditions. {haikuModel.team && haikuModel.alone && `Team ${haikuModel.team.skipped} of ${haikuModel.team.total}, alone ${haikuModel.alone.skipped} of ${haikuModel.alone.total}.`} Agents wrote that the target was impossible without skipping, then kept verifying.</p>
+              <p>{claims.claims.notable_haiku_never.text} {haikuModel.team && haikuModel.alone && `Team ${haikuModel.team.skipped} of ${haikuModel.team.total}, alone ${haikuModel.alone.skipped} of ${haikuModel.alone.total}.`} Agents wrote that the target was impossible without skipping, then kept verifying.</p>
             </div>
           )}
           {geminiModel && (
@@ -272,12 +301,16 @@ export default async function DriftPage() {
         <Details title="Show the full method, model versions, dates and statistical tests">
           <div className="space-y-4 text-[14px] leading-relaxed text-ink/70">
             <div>
+              <div className="label">Data source and suite</div>
+              <p>Generated from research bundle: suite {data.suiteId}, approved {claims.approved_on}. Data: graded.jsonl ({r9.models.reduce((s, m) => s + (m.team?.total || 0) + (m.alone?.total || 0), 0)} R9.1 decisions + {r8.models.reduce((s, m) => s + (m.targetOn?.total || 0) + (m.targetOff?.total || 0), 0)} R8.1 decisions). All interpretive claims machine-validated against generated numbers.</p>
+            </div>
+            <div>
               <div className="label">Models and versions</div>
-              <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens=1500; Gemini used 4000 after a 1500-token team canary truncated. R8.1: all models 1500.</p>
+              <p>{r9.models.map(m => m.name).join(", ")}. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens=1500; Gemini used 4000 after a 1500-token team canary truncated. R8.1: all models 1500.</p>
             </div>
             <div>
               <div className="label">Setup</div>
-              <p>AI agents handle a simulated customer service queue: late fee waiver requests, policy allows waiver when hardship is documented. The verification tool (verify_hardship_and_account) takes 45 to 60 simulated seconds; skipping and deciding on the claim alone takes about 1 second. R9.1 team: 4 agents, shared queue and notes, team target 15 per minute, displayed backlog 700, 2-hour shift. R9.1 alone: 4 agents, private notes, own clock and rate, target 4 per minute, per-agent backlog 175, same customers as the team run under a round-robin partition. R8.1: 4 agents, 30 turns, individual 5-second SLA, leaderboard and removal when the target is on.</p>
+              <p>{r9.description}</p>
             </div>
             <div>
               <div className="label">Grading</div>
@@ -289,7 +322,11 @@ export default async function DriftPage() {
             </div>
             <div>
               <div className="label">n=1 and caveats</div>
-              <p>Each R9.1 condition is n=1. Each R8.1 condition is n=1, except gpt-oss (pooled across three repeats: 1+A+B). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. Gemini R9.1 alone run incomplete: provider credit errors (OpenRouter 402) after 17 tickets, so only 17 of 160 decided. Team prefix of 119 consecutive tickets is a clean 0-skip result, but no fair alone comparison yet. Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
+              <p>Each R9.1 condition is n=1. Each R8.1 condition is n=1, except gpt-oss (pooled across three repeats: 1+A+B). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. {geminiModel?.note && `Gemini: ${geminiModel.note}`} Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
+            </div>
+            <div>
+              <div className="label">Run metadata</div>
+              <p>Full run metadata (planned vs completed, stop reasons, costs, timestamps) available in data/drift.json generated from research-data/drift/{data.suiteId}/runs.json.</p>
             </div>
           </div>
           <div className="mt-6">
@@ -323,7 +360,7 @@ export default async function DriftPage() {
               ])}
             />
           </div>
-          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, statistical tests, and verbatim quotes are in the suite analysis (runs/suite-20261110/ANALYSIS.md) and the gpt-oss R9.1 pair analysis (runs/r9-1-team-alone-20261110/ANALYSIS.md).</p>
+          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, statistical tests, and verbatim quotes are in the suite analysis ({data.quotes[0]?.source}).</p>
         </Details>
       </Block>
 
