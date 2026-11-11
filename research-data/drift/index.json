@@ -1,0 +1,6 @@
+{
+  "suites": [
+    "20261110"
+  ],
+  "description": "Drift experiment bundles to include in data/drift.json generation"
+}
