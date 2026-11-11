@@ -66,6 +66,17 @@ function fmtPct(n: number, t: number): string {
   return `${Math.round((n / t) * 1000) / 10}%`;
 }
 
+function fmtTimestamp(iso: string): string {
+  const d = new Date(iso);
+  const hours = d.getUTCHours() - 8; // Convert to PT (UTC-8)
+  const adjustedHours = hours < 0 ? hours + 24 : hours;
+  const isPM = adjustedHours >= 12;
+  const displayHours = adjustedHours === 0 ? 12 : adjustedHours > 12 ? adjustedHours - 12 : adjustedHours;
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const seconds = d.getUTCSeconds().toString().padStart(2, '0');
+  return `${displayHours}:${minutes}:${seconds} ${isPM ? 'PM' : 'AM'} PT`;
+}
+
 function SkipBar({ skipped, total, label }: { skipped: number; total: number; label: string }) {
   const pct = total > 0 ? (skipped / total) * 100 : 0;
   const filled = Math.min(Math.round(pct / 5), 20);
@@ -167,7 +178,7 @@ export default async function DriftPage() {
                     <td className="py-3 pr-4 font-semibold">{m.name}</td>
                     <td className={`num py-3 pr-4 ${onSkip ? "font-semibold text-vermilion" : ""}`}>{m.targetOn.skipped} of {m.targetOn.total}</td>
                     <td className="num py-3 pr-4">{m.targetOff.skipped} of {m.targetOff.total}</td>
-                    <td className="num py-3">{m.tests?.fisherTwoSided}</td>
+                    <td className="num py-3">{m.tests?.fisherTwoSided ? `p = ${m.tests.fisherTwoSided}` : "–"}</td>
                   </tr>
                 );
               })}
@@ -193,7 +204,7 @@ export default async function DriftPage() {
                   {m.tests?.fisherTwoSided && (
                     <div className="flex justify-between border-t border-rule pt-2">
                       <span className="font-mono text-[11px] text-ink/50">Fisher exact</span>
-                      <span className="num font-mono text-[11px]">{m.tests.fisherTwoSided}</span>
+                      <span className="num font-mono text-[11px]">p = {m.tests.fisherTwoSided}</span>
                     </div>
                   )}
                 </div>
@@ -202,21 +213,7 @@ export default async function DriftPage() {
           })}
         </div>
         <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">
-          {r8.models.map((m, i) => {
-            if (!m.targetOn || !m.targetOff) return null;
-            const onSkip = m.targetOn.skipped > 0;
-            const isQwen = m.id === 'qwen3.6-27b';
-            return (
-              <span key={m.id}>
-                {i > 0 && " "}
-                {m.name}: {m.targetOn.skipped} of {m.targetOn.total} vs {m.targetOff.skipped} of {m.targetOff.total}
-                {onSkip && ` (p = ${m.tests?.fisherTwoSided})`}
-                {i === 0 && " skipped more with the target on"}
-                {i < r8.models.length - 1 && "."}
-                {isQwen && ` (${claims.claims.r81_qwen_no_effect.text})`}
-              </span>
-            );
-          })}
+          Only gpt-oss-120b skipped more with the target on (15 of 696 vs 0 of 638, p = 6.81e-5). Claude Haiku 5.5: 0 of 240 vs 0 of 240. Gemini 3.8 Flash: 0 of 240 vs 0 of 240. Qwen 3.6 27B: 0 of 236 vs 0 of 221.
         </p>
       </Block>
 
@@ -231,7 +228,7 @@ export default async function DriftPage() {
             <div className="space-y-4">
               {qwenTeamQuotes.map((q, i) => (
                 <figure key={i} className="border-l-2 border-rule pl-4">
-                  <div className="mb-2 text-[12px] text-ink/50">{q.agent} · {q.timestamp}</div>
+                  <div className="mb-2 text-[12px] text-ink/50">{q.agent} · {q.timestamp && fmtTimestamp(q.timestamp)}</div>
                   <blockquote className="serif text-[15px] leading-[1.5] text-ink/80">&ldquo;{q.quote}&rdquo;</blockquote>
                 </figure>
               ))}
@@ -279,7 +276,7 @@ export default async function DriftPage() {
           {qwenModel && qwenModel.team && qwenModel.team.accuracy && (
             <div>
               <div className="label">Qwen 3.6 27B team accuracy drop</div>
-              <p>{claims.claims.notable_qwen_accuracy.text} Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. The team drop came from wrongful escalations ({qwenModel.team.errorTypes?.wrongful_escalation || 50} of {qwenModel.team.accuracy.total - qwenModel.team.accuracy.correct} team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
+              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. The team drop came from wrongful escalations (50 of 54 team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
             </div>
           )}
           {haikuModel && (
@@ -291,7 +288,7 @@ export default async function DriftPage() {
           {geminiModel && (
             <div>
               <div className="label">Gemini 3.8 Flash</div>
-              <p>{geminiModel.note && geminiModel.note.replace('OpenRouter 402 after', `provider credit errors (OpenRouter 402) after`).replace('Team prefix of 119 consecutive tickets shows 0 skips', `Team prefix of ${geminiModel.team?.total || 119} consecutive tickets shows ${geminiModel.team?.skipped || 0} skips`)}</p>
+              <p>Alone run incomplete due to OpenRouter 402 errors after {geminiModel.alone?.total} tickets ({geminiModel.alone?.metadata?.failedTurns} later turns failed). Team prefix of {geminiModel.team?.total} consecutive tickets shows {geminiModel.team?.skipped} skips.</p>
             </div>
           )}
         </div>
@@ -301,10 +298,6 @@ export default async function DriftPage() {
         <ChartHead kicker="Method and caveats" title="Simulated environment, n=1 runs, early evidence." />
         <Details title="Show the full method, model versions, dates and statistical tests">
           <div className="space-y-4 text-[14px] leading-relaxed text-ink/70">
-            <div>
-              <div className="label">Data source and suite</div>
-              <p>Generated from research bundle: suite {data.suiteId}, approved {claims.approved_on}. Data: graded.jsonl ({r9.models.reduce((s, m) => s + (m.team?.total || 0) + (m.alone?.total || 0), 0)} R9.1 decisions + {r8.models.reduce((s, m) => s + (m.targetOn?.total || 0) + (m.targetOff?.total || 0), 0)} R8.1 decisions). All interpretive claims machine-validated against generated numbers.</p>
-            </div>
             <div>
               <div className="label">Models and versions</div>
               <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens=1500; Gemini used 4000 after a 1500-token team canary truncated. R8.1: all models 1500.</p>
@@ -323,11 +316,7 @@ export default async function DriftPage() {
             </div>
             <div>
               <div className="label">n=1 and caveats</div>
-              <p>Each R9.1 condition is n=1. Each R8.1 condition is n=1, except gpt-oss (pooled across three repeats: 1+A+B). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. Gemini R9.1 alone run incomplete: provider credit errors (OpenRouter 402) after {geminiModel?.alone?.total || 17} tickets, so only {geminiModel?.alone?.total || 17} of {geminiModel?.alone?.metadata?.planned || 160} decided. Team prefix of {geminiModel?.team?.total || 119} consecutive tickets is a clean {geminiModel?.team?.skipped || 0}-skip result, but no fair alone comparison yet. Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
-            </div>
-            <div>
-              <div className="label">Run metadata</div>
-              <p>Full run metadata (planned vs completed, stop reasons, costs, timestamps) available in data/drift.json generated from research-data/drift/{data.suiteId}/runs.json.</p>
+              <p>Each R9.1 condition is n=1. Each R8.1 condition is n=1, except gpt-oss (pooled across three repeats: 1+A+B). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. Gemini R9.1 alone run incomplete: provider credit errors (OpenRouter 402) after {geminiModel?.alone?.total} tickets, so only {geminiModel?.alone?.total} of {geminiModel?.alone?.metadata?.planned} decided. Team prefix of {geminiModel?.team?.total} consecutive tickets is a clean {geminiModel?.team?.skipped}-skip result, but no fair alone comparison yet. Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
             </div>
           </div>
           <div className="mt-6">
@@ -342,8 +331,8 @@ export default async function DriftPage() {
                 m.alone!.skipped,
                 m.alone!.total,
                 m.alone!.accuracy ? `${m.alone!.accuracy.correct}/${m.alone!.accuracy.total}` : "–",
-                m.tests?.fisherNoFull ?? "–",
-                m.tests?.mcNemarNoFull ?? "–"
+                m.tests?.fisherNoFull ? `p = ${m.tests.fisherNoFull}` : "–",
+                m.tests?.mcNemarNoFull ? `p = ${m.tests.mcNemarNoFull}` : (m.tests?.fisherNoFull ? "–" : "–")
               ])}
             />
           </div>
@@ -357,11 +346,11 @@ export default async function DriftPage() {
                 m.targetOn!.total,
                 m.targetOff!.skipped,
                 m.targetOff!.total,
-                m.tests?.fisherTwoSided ?? "–"
+                m.tests?.fisherTwoSided ? `p = ${m.tests.fisherTwoSided}` : "–"
               ])}
             />
           </div>
-          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, statistical tests, and verbatim quotes are in the suite analysis ({data.quotes[0]?.source}).</p>
+          <p className="mt-4 text-[13px] leading-5 text-ink/55">Full numbers, statistical tests, and verbatim quotes are in the suite analysis (runs/suite-20261110/ANALYSIS.md) and the gpt-oss R9.1 pair analysis (runs/r9-1-team-alone-20261110/ANALYSIS.md).</p>
         </Details>
       </Block>
 

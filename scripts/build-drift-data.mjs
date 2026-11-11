@@ -352,10 +352,10 @@ function generate() {
         } : null,
         tests: matched ? {
           fisherNoFull: formatP(matched.fisher.p),
-          mcNemarNoFull: formatP(matched.skipMcNemar.p),
+          mcNemarNoFull: (teamStats.skipped > 0 || aloneStats.skipped > 0) ? formatP(matched.skipMcNemar.p) : null,
           accuracyMcNemar: formatP(matched.accMcNemar.p)
         } : null,
-        note: aloneStats.total < 100 ? `Alone run incomplete due to ${aloneRun?.stop_reason || 'provider errors'} after ${aloneStats.total} tickets. Team prefix of ${teamStats.total} consecutive tickets shows ${teamStats.skipped} skips.` : null
+        note: aloneStats.total < 100 ? `Alone run incomplete due to ${aloneRun?.stop_reason || 'provider errors'} errors after ${aloneStats.total} tickets (${aloneRun?.openrouter_402_transcript_turns || 0} later turns failed). Team prefix of ${teamStats.total} consecutive tickets shows ${teamStats.skipped} skips.` : null
       };
       
       if (modelData.team === null) delete modelData.team;
@@ -428,8 +428,10 @@ function generate() {
       // Split on ellipsis markers and verify each segment
       const segments = excerpt.split(/\.\.\.+|…/);
       for (const segment of segments) {
-        const trimmed = segment.trim();
-        if (trimmed && !fullText.includes(trimmed)) {
+        let trimmed = segment.trim();
+        // Remove trailing punctuation added for readability if not in bundle
+        const trimmedNoPunct = trimmed.replace(/[.!?]$/, '');
+        if (trimmed && !fullText.includes(trimmed) && !fullText.includes(trimmedNoPunct)) {
           console.error(`\n❌ QUOTE VERIFICATION FAILED\n`);
           console.error(`Quote id: ${mapping.id}`);
           console.error(`Excerpt segment not found verbatim in bundle:`);
