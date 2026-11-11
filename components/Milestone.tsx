@@ -48,13 +48,18 @@ export function NextMilestoneCard({ f, showQueue = 3, cta = true }: { f: Funding
       ) : (
         <p className="mt-6 text-[17px] text-white/75">Every queued model is funded. Donations now build the general pool ({usd(f.pool_cents)}).</p>
       )}
-      {showQueue > 0 && f.queue.length > 1 && (
-        <ol className="mt-6 divide-y divide-white/10 border-y border-white/10 text-[14px]">
-          {f.queue.slice(1, 1 + showQueue).map((m, i) => (
-            <li key={m.key} className="flex items-baseline gap-3 py-2"><span className="num text-[11px] text-white/35">{String(i + 2).padStart(2, "0")}</span><span className="flex-1 truncate text-white/75">{m.title}</span><span className="num text-white/50">{queueUsd(m.cost_cents)}</span></li>
-          ))}
-        </ol>
-      )}
+      {showQueue > 0 && f.queue.length > 1 && (() => {
+        const nextIndex = next ? f.queue.findIndex(m => m.key === next.key) : -1;
+        const startIndex = nextIndex >= 0 ? nextIndex + 1 : 1;
+        const items = f.queue.slice(startIndex, startIndex + showQueue);
+        return items.length > 0 ? (
+          <ol className="mt-6 divide-y divide-white/10 border-y border-white/10 text-[14px]">
+            {items.map((m, i) => (
+              <li key={m.key} className="flex items-baseline gap-3 py-2"><span className="num text-[11px] text-white/35">{String(startIndex + i + 1).padStart(2, "0")}</span><span className="flex-1 truncate text-white/75">{m.title}</span><span className="num text-white/50">{queueUsd(m.cost_cents)}</span></li>
+            ))}
+          </ol>
+        ) : null;
+      })()}
       {cta && (
         <div className="mt-auto flex flex-wrap gap-3 pt-7">
           <Link href="/donate" className="btn-money"><span className="h-2 w-2 bg-white" />Donate</Link>
