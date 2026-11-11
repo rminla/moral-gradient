@@ -1,0 +1,10 @@
+{
+  "source": "Nov 2, 2026 locked full-v1 (v3 suite: calibrate + main + trace grading) run, /workspace/moral-compass/pilot-locked/data/ledger.sqlite, target-model tokens only",
+  "grader_cost_usd_range": [0.42, 0.64],
+  "complete_runs": {
+    "claude-haiku": {"input_tokens": 3360000, "output_tokens": 1670000},
+    "gemini-3.8-flash": {"input_tokens": 2410000, "output_tokens": 2190000},
+    "qwen-3.6-27b": {"input_tokens": 2950000, "output_tokens": 3010000}
+  },
+  "notes": "gpt-oss-120b excluded as a basis: hundreds of failed target calls. Token counts are rounded to 0.01M as reported by the audit."
+}
