@@ -59,11 +59,16 @@ type MethodConfig = {
     alone_backlog: number;
     verification_seconds_min: number;
     verification_seconds_max: number;
+    skip_seconds: number;
     n_value: string;
+    max_tokens: Record<string, number>;
   };
   r8_1: {
+    turns: number;
+    sla_seconds: number;
     gpt_oss_pooling: string;
     n_value: string;
+    max_tokens: Record<string, number>;
   };
 };
 
@@ -89,13 +94,19 @@ function fmtPct(n: number, t: number): string {
 
 function fmtTimestamp(iso: string): string {
   const d = new Date(iso);
-  const hours = d.getUTCHours() - 8; // Convert to PT (UTC-8)
-  const adjustedHours = hours < 0 ? hours + 24 : hours;
-  const isPM = adjustedHours >= 12;
-  const displayHours = adjustedHours === 0 ? 12 : adjustedHours > 12 ? adjustedHours - 12 : adjustedHours;
-  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
-  const seconds = d.getUTCSeconds().toString().padStart(2, '0');
-  return `${displayHours}:${minutes}:${seconds} ${isPM ? 'PM' : 'AM'} PT`;
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+  const parts = formatter.formatToParts(d);
+  const hour = parts.find(p => p.type === 'hour')?.value || '';
+  const minute = parts.find(p => p.type === 'minute')?.value || '';
+  const second = parts.find(p => p.type === 'second')?.value || '';
+  const dayPeriod = parts.find(p => p.type === 'dayPeriod')?.value || '';
+  return `${hour}:${minute}:${second} ${dayPeriod} PT`;
 }
 
 function SkipBar({ skipped, total, label }: { skipped: number; total: number; label: string }) {
@@ -240,7 +251,7 @@ export default async function DriftPage() {
           })}
         </div>
         <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">
-          Only gpt-oss-120b skipped more with the target on ({gptR8Model?.targetOn?.skipped} of {gptR8Model?.targetOn?.total} vs {gptR8Model?.targetOff?.skipped} of {gptR8Model?.targetOff?.total}, p = {gptR8Model?.tests?.fisherTwoSided}). Claude Haiku 5.5: {haikuR8Model?.targetOn?.skipped} of {haikuR8Model?.targetOn?.total} vs {haikuR8Model?.targetOff?.skipped} of {haikuR8Model?.targetOff?.total}. Gemini 3.8 Flash: {geminiR8Model?.targetOn?.skipped} of {geminiR8Model?.targetOn?.total} vs {geminiR8Model?.targetOff?.skipped} of {geminiR8Model?.targetOff?.total}. Qwen 3.6 27B: {qwenR8Model?.targetOn?.skipped} of {qwenR8Model?.targetOn?.total} vs {qwenR8Model?.targetOff?.skipped} of {qwenR8Model?.targetOff?.total}.
+          {claims.claims.r81_only_gptoss.text} ({gptR8Model?.targetOn?.skipped} of {gptR8Model?.targetOn?.total} vs {gptR8Model?.targetOff?.skipped} of {gptR8Model?.targetOff?.total}, p = {gptR8Model?.tests?.fisherTwoSided}). Claude Haiku 5.5: {haikuR8Model?.targetOn?.skipped} of {haikuR8Model?.targetOn?.total} vs {haikuR8Model?.targetOff?.skipped} of {haikuR8Model?.targetOff?.total}. Gemini 3.8 Flash: {geminiR8Model?.targetOn?.skipped} of {geminiR8Model?.targetOn?.total} vs {geminiR8Model?.targetOff?.skipped} of {geminiR8Model?.targetOff?.total}. Qwen 3.6 27B: {qwenR8Model?.targetOn?.skipped} of {qwenR8Model?.targetOn?.total} vs {qwenR8Model?.targetOff?.skipped} of {qwenR8Model?.targetOff?.total}.
         </p>
       </Block>
 
@@ -303,7 +314,7 @@ export default async function DriftPage() {
           {qwenModel && qwenModel.team && qwenModel.team.accuracy && (
             <div>
               <div className="label">Qwen 3.6 27B team accuracy drop</div>
-              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. {claims.claims.notable_qwen_wrongful_escalations.text} ({(qwenModel.team.errorTypes?.escalate_should_waive || 0) + (qwenModel.team.errorTypes?.escalate_should_keep || 0)} of {qwenModel.team.accuracy.total - qwenModel.team.accuracy.correct} team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
+              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. {claims.claims.notable_qwen_wrongful_escalations.text} ({(qwenModel.team.errorTypes?.escalate_should_waive || 0) + (qwenModel.team.errorTypes?.escalate_should_keep || 0)} of {qwenModel.team.accuracy.total - qwenModel.team.accuracy.correct} team errors), {claims.claims.notable_qwen_late_blocks.text}, not from skips themselves.</p>
             </div>
           )}
           {haikuModel && (
@@ -322,16 +333,16 @@ export default async function DriftPage() {
       </Block>
 
       <Block id="method">
-        <ChartHead kicker="Method and caveats" title="Simulated environment, n=1 runs, early evidence." />
+        <ChartHead kicker="Method and caveats" title={claims.claims.method_caveats_dek.text} />
         <Details title="Show the full method, model versions, dates and statistical tests">
           <div className="space-y-4 text-[14px] leading-relaxed text-ink/70">
             <div>
               <div className="label">Models and versions</div>
-              <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens={gptModel?.tokenLimit}; Gemini used {geminiModel?.tokenLimit} after a {gptModel?.tokenLimit}-token team canary truncated. R8.1: all models {gptModel?.tokenLimit}.</p>
+              <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens={gptModel?.tokenLimit}; Gemini used {geminiModel?.tokenLimit} after a {gptModel?.tokenLimit}-token team canary truncated. R8.1: all models {gptR8Model?.tokenLimit}.</p>
             </div>
             <div>
               <div className="label">Setup</div>
-              <p>AI agents handle a simulated customer service queue: late fee waiver requests, policy allows waiver when hardship is documented. The verification tool (verify_hardship_and_account) takes {method.r9_1.verification_seconds_min} to {method.r9_1.verification_seconds_max} simulated seconds; skipping and deciding on the claim alone takes about 1 second. R9.1 team: 4 agents, shared queue and notes, team target {method.r9_1.team_target_per_minute} per minute, displayed backlog {method.r9_1.team_backlog}, 2-hour shift. R9.1 alone: 4 agents, private notes, own clock and rate, target {method.r9_1.alone_target_per_minute} per minute, per-agent backlog {method.r9_1.alone_backlog}, same customers as the team run under a round-robin partition. R8.1: 4 agents, 30 turns, individual 5-second SLA, leaderboard and removal when the target is on.</p>
+              <p>AI agents handle a simulated customer service queue: late fee waiver requests, policy allows waiver when hardship is documented. The verification tool (verify_hardship_and_account) takes {method.r9_1.verification_seconds_min} to {method.r9_1.verification_seconds_max} simulated seconds; skipping and deciding on the claim alone takes about {method.r9_1.skip_seconds} second. R9.1 team: 4 agents, shared queue and notes, team target {method.r9_1.team_target_per_minute} per minute, displayed backlog {method.r9_1.team_backlog}, 2-hour shift. R9.1 alone: 4 agents, private notes, own clock and rate, target {method.r9_1.alone_target_per_minute} per minute, per-agent backlog {method.r9_1.alone_backlog}, same customers as the team run under a round-robin partition. R8.1: 4 agents, {method.r8_1.turns} turns, individual {method.r8_1.sla_seconds}-second SLA, leaderboard and removal when the target is on.</p>
             </div>
             <div>
               <div className="label">Grading</div>

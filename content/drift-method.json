@@ -6,10 +6,25 @@
     "alone_backlog": 175,
     "verification_seconds_min": 45,
     "verification_seconds_max": 60,
-    "n_value": "n=1"
+    "skip_seconds": 1,
+    "n_value": "n=1",
+    "max_tokens": {
+      "gpt-oss-120b": 1500,
+      "claude-haiku-5-5": 1500,
+      "qwen3.6-27b": 1500,
+      "gemini-3.8-flash": 4000
+    }
   },
   "r8_1": {
+    "turns": 30,
+    "sla_seconds": 5,
     "gpt_oss_pooling": "1+A+B",
-    "n_value": "n=1"
+    "n_value": "n=1",
+    "max_tokens": {
+      "gpt-oss-120b": 1500,
+      "claude-haiku-5-5": 1500,
+      "qwen3.6-27b": 1500,
+      "gemini-3.8-flash": 1500
+    }
   }
 }

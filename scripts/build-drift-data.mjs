@@ -236,6 +236,10 @@ function generate() {
   const indexPath = join(ROOT, 'research-data/drift/index.json');
   const index = JSON.parse(readFileSync(indexPath, 'utf-8'));
   
+  // Load method config for validation
+  const methodPath = join(ROOT, 'content/drift-method.json');
+  const methodConfig = JSON.parse(readFileSync(methodPath, 'utf-8'));
+  
   // Validate suites
   const seenIds = new Set();
   for (const suiteId of index.suites) {
@@ -302,10 +306,18 @@ function generate() {
       const teamRun = runs.runs.find(r => r.experiment === 'R9.1' && r.model_id === id && r.run_id.includes('team'));
       const aloneRun = runs.runs.find(r => r.experiment === 'R9.1' && r.model_id === id && r.run_id.includes('alone'));
       
+      const actualTokenLimit = teamRun?.max_tokens || aloneRun?.max_tokens;
+      const expectedTokenLimit = methodConfig.r9_1.max_tokens[id];
+      if (actualTokenLimit && expectedTokenLimit && actualTokenLimit !== expectedTokenLimit) {
+        console.error(`\n❌ MAX_TOKENS MISMATCH: R9.1 ${id}\n`);
+        console.error(`runs.json has max_tokens=${actualTokenLimit}, method.json has ${expectedTokenLimit}\n`);
+        process.exit(1);
+      }
+      
       const modelData = {
         id,
         name,
-        tokenLimit: teamRun?.max_tokens || aloneRun?.max_tokens || 1500,
+        tokenLimit: actualTokenLimit || 1500,
         team: teamRows.length > 0 ? {
           skipped: teamStats.skipped,
           total: teamStats.total,
@@ -390,6 +402,16 @@ function generate() {
       
       if (onRows.length === 0 && offRows.length === 0) continue;
       
+      // Validate max_tokens from runs.json
+      const r81Run = runs.runs.find(r => r.experiment === 'R8.1' && r.model_id === id);
+      const actualTokenLimit = r81Run?.max_tokens;
+      const expectedTokenLimit = methodConfig.r8_1.max_tokens[id];
+      if (actualTokenLimit && expectedTokenLimit && actualTokenLimit !== expectedTokenLimit) {
+        console.error(`\n❌ MAX_TOKENS MISMATCH: R8.1 ${id}\n`);
+        console.error(`runs.json has max_tokens=${actualTokenLimit}, method.json has ${expectedTokenLimit}\n`);
+        process.exit(1);
+      }
+      
       const onStats = skipStats(onRows);
       const offStats = skipStats(offRows);
       const fisher = fisherExactTwoSided(
@@ -400,6 +422,7 @@ function generate() {
       r81Data.models.push({
         id,
         name,
+        tokenLimit: actualTokenLimit || 1500,
         targetOn: { skipped: onStats.skipped, total: onStats.total },
         targetOff: { skipped: offStats.skipped, total: offStats.total },
         tests: { fisherTwoSided: formatP(fisher.p) }
@@ -499,6 +522,9 @@ function validateClaims(data) {
   const claimsPath = join(ROOT, 'content/drift-claims.json');
   const claims = JSON.parse(readFileSync(claimsPath, 'utf-8'));
   
+  const methodPath = join(ROOT, 'content/drift-method.json');
+  const method = JSON.parse(readFileSync(methodPath, 'utf-8'));
+  
   function getMetric(spec) {
     const exp = data.experiments.find(e => e.id === spec.experiment);
     if (!exp) throw new Error(`Experiment ${spec.experiment} not found`);
@@ -518,6 +544,17 @@ function validateClaims(data) {
       case 'fisherP':
         const pStr = model.tests?.fisherNoFull || model.tests?.fisherTwoSided;
         return parseFloat(pStr);
+      case 'errorTypeRatio': {
+        const condData = model[spec.condition];
+        const errorTypes = condData.errorTypes || {};
+        const total = condData.accuracy.total - condData.accuracy.correct;
+        if (total === 0) return 0;
+        let numerator = 0;
+        for (const type of spec.errorTypes) {
+          numerator += errorTypes[type] || 0;
+        }
+        return numerator / total;
+      }
       default:
         throw new Error(`Unknown metric: ${spec.metric}`);
     }
@@ -551,6 +588,30 @@ function validateClaims(data) {
   const failures = [];
   
   for (const [claimKey, claim] of Object.entries(claims.claims)) {
+    // Check requires_method
+    if (claim.requires_method) {
+      for (const [expKey, expected] of Object.entries(claim.requires_method)) {
+        const actual = method[expKey];
+        if (!actual) {
+          failures.push({
+            claim: claimKey,
+            text: claim.text,
+            message: `Method section ${expKey} not found`
+          });
+          continue;
+        }
+        for (const [field, expectedValue] of Object.entries(expected)) {
+          if (actual[field] !== expectedValue) {
+            failures.push({
+              claim: claimKey,
+              text: claim.text,
+              message: `Method field ${expKey}.${field} changed: expected ${expectedValue}, got ${actual[field]}`
+            });
+          }
+        }
+      }
+    }
+    
     try {
       for (const req of claim.requires) {
         if (!evaluateCondition(req)) {

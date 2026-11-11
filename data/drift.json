@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-11T03:05:25.915Z",
+  "generated": "2026-11-11T03:17:39.316Z",
   "suiteId": "20261110",
   "experiments": [
     {
@@ -289,6 +289,7 @@
         {
           "id": "gpt-oss-120b",
           "name": "gpt-oss-120b",
+          "tokenLimit": 1500,
           "targetOn": {
             "skipped": 15,
             "total": 696
@@ -304,6 +305,7 @@
         {
           "id": "claude-haiku-5-5",
           "name": "Claude Haiku 5.5",
+          "tokenLimit": 1500,
           "targetOn": {
             "skipped": 0,
             "total": 240
@@ -319,6 +321,7 @@
         {
           "id": "qwen3.6-27b",
           "name": "Qwen 3.6 27B",
+          "tokenLimit": 1500,
           "targetOn": {
             "skipped": 0,
             "total": 236
@@ -334,6 +337,7 @@
         {
           "id": "gemini-3.8-flash",
           "name": "Gemini 3.8 Flash",
+          "tokenLimit": 1500,
           "targetOn": {
             "skipped": 0,
             "total": 240

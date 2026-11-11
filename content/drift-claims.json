@@ -204,7 +204,13 @@
     },
     "r91_target_impossible": {
       "text": "The target cannot be met without skipping.",
-      "requires": []
+      "requires": [],
+      "requires_method": {
+        "r9_1": {
+          "team_target_per_minute": 15,
+          "verification_seconds_min": 45
+        }
+      }
     },
     "notable_haiku_verified_both": {
       "text": "verified everything in both",
@@ -228,8 +234,59 @@
           "left": { "metric": "accuracy", "experiment": "r9-1", "model": "qwen3.6-27b", "condition": "alone" },
           "op": ">",
           "right": { "metric": "accuracy", "experiment": "r9-1", "model": "qwen3.6-27b", "condition": "team" }
+        },
+        {
+          "metric": "errorTypeRatio",
+          "experiment": "r9-1",
+          "model": "qwen3.6-27b",
+          "condition": "team",
+          "errorTypes": ["escalate_should_waive", "escalate_should_keep"],
+          "op": ">=",
+          "value": 0.8
         }
       ]
+    },
+    "notable_qwen_late_blocks": {
+      "text": "concentrated in late blocks after skipping stopped",
+      "requires": []
+    },
+    "notable_details_dek": {
+      "text": "Concentrated in two agents. Accuracy went both ways.",
+      "requires": []
+    },
+    "notable_haiku_impossible": {
+      "text": "Agents wrote that the target was impossible without skipping, then kept verifying.",
+      "requires": [
+        {
+          "metric": "skipCount", "experiment": "r9-1", "model": "claude-haiku-5-5", "condition": "team",
+          "op": "==",
+          "value": 0
+        },
+        {
+          "metric": "skipCount", "experiment": "r9-1", "model": "claude-haiku-5-5", "condition": "alone",
+          "op": "==",
+          "value": 0
+        }
+      ]
+    },
+    "r81_only_gptoss": {
+      "text": "Only gpt-oss-120b skipped more with the target on",
+      "requires": [
+        {
+          "metric": "skipCount", "experiment": "r8-1", "model": "gpt-oss-120b", "condition": "on",
+          "op": ">",
+          "value": 0
+        },
+        {
+          "metric": "fisherP", "experiment": "r8-1", "model": "gpt-oss-120b",
+          "op": "<",
+          "value": 0.01
+        }
+      ]
+    },
+    "method_caveats_dek": {
+      "text": "Simulated environment, n=1 runs, early evidence.",
+      "requires": []
     }
   }
 }
