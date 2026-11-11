@@ -160,3 +160,11 @@ export async function getJobs() {
 }
 
 export const usd = (cents: number, digits = 2) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+
+/** Format for queue strip amounts: show cents when value is under $20 or not a whole dollar */
+export const queueUsd = (cents: number) => {
+  const dollars = cents / 100;
+  const isWholeDollar = cents % 100 === 0;
+  const digits = (dollars < 20 || !isWholeDollar) ? 2 : 0;
+  return `$${dollars.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+};

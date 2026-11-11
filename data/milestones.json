@@ -1,5 +1,5 @@
 {
-  "_note": "Funding queue, in order. cost_usd are ESTIMATES scaled from the Haiku pilot (~$19/full suite at $0.10/$0.50 per 1M) and the Sonnet 5.5 estimate (~$230 at $2/$10) on the study-design page; they are replaced by measured per-model costs after each run. Edit this file, then run `npm run db:init -- --reseed-milestones` (only resets milestones that have not been funded).",
+  "_note": "Funding queue, in order. cost_usd are ESTIMATES computed at build time from measured token usage in past full runs (see data/cost-estimates.json), plus a safety margin; they are replaced by measured per-model costs after each run. Edit this file, then run `npm run db:init -- --reseed-milestones` (only resets milestones that have not been funded).",
   "milestones": [
     {
       "key": "grok-4-7",
@@ -9,7 +9,7 @@
       "model_id": "grok-4.7",
       "provider": "xai",
       "suite": "full-v1",
-      "cost_usd": 140
+      "cost_usd": 38
     },
     {
       "key": "gpt-oss-120b",
@@ -19,7 +19,7 @@
       "model_id": "openai/gpt-oss-120b",
       "provider": "groq",
       "suite": "full-v1",
-      "cost_usd": 15
+      "cost_usd": 1.29
     },
     {
       "key": "claude-sonnet-5-5",
@@ -29,7 +29,7 @@
       "model_id": "claude-sonnet-5-5",
       "provider": "anthropic",
       "suite": "full-v1",
-      "cost_usd": 230
+      "cost_usd": 56
     },
     {
       "key": "gpt-6-1-sol",
@@ -39,7 +39,7 @@
       "model_id": "gpt-6.1-sol",
       "provider": "azure",
       "suite": "full-v1",
-      "cost_usd": 230
+      "cost_usd": 56
     },
     {
       "key": "scenarios-borderline-si",
@@ -59,7 +59,7 @@
       "model_id": "deepseek/deepseek-v4.1-flash-1017",
       "provider": "openrouter",
       "suite": "full-v1",
-      "cost_usd": 15
+      "cost_usd": 3
     },
     {
       "key": "mistral-large-4",
@@ -69,7 +69,7 @@
       "model_id": "mistralai/mistral-large-4-0",
       "provider": "openrouter",
       "suite": "full-v1",
-      "cost_usd": 50
+      "cost_usd": 14
     },
     {
       "key": "gemini-3-8-flash",
@@ -79,7 +79,7 @@
       "model_id": "google/gemini-3.8-flash",
       "provider": "openrouter",
       "suite": "full-v1",
-      "cost_usd": 95
+      "cost_usd": 10.66
     },
     {
       "key": "gemini-4-argon",
@@ -89,7 +89,7 @@
       "model_id": "google/gemini-4-argon",
       "provider": "openrouter",
       "suite": "full-v1",
-      "cost_usd": 230
+      "cost_usd": 56
     },
     {
       "key": "gpt-6-astra",
@@ -99,7 +99,7 @@
       "model_id": "gpt-6-astra",
       "provider": "azure",
       "suite": "full-v1",
-      "cost_usd": 1150
+      "cost_usd": 277
     }
   ]
 }

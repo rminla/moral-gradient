@@ -1,0 +1,86 @@
+{
+  "_note": "Per-model list prices for cost estimates. Prices are $/1M tokens. Source URLs and as-of dates are for audit trail.",
+  "cost_computation": {
+    "safety_margin": 1.5,
+    "max_grader_cost_usd": 0.64,
+    "basis_note": "Cost basis is the most verbose complete run: max input and max output tokens across all complete runs from measured-full-v1-tokens.json"
+  },
+  "prices": [
+    {
+      "model_id": "grok-4.7",
+      "provider": "openrouter",
+      "input_price_per_1m": 2.0,
+      "output_price_per_1m": 6.0,
+      "source": "https://openrouter.ai/x-ai/grok-4.7",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "openai/gpt-oss-120b",
+      "provider": "groq",
+      "input_price_per_1m": 0.15,
+      "output_price_per_1m": 0.6,
+      "source": "https://groq.com/pricing/",
+      "as_of": "2026-11-11",
+      "actual_cost_usd": 1.2910,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)"
+    },
+    {
+      "model_id": "claude-sonnet-5-5",
+      "provider": "anthropic",
+      "input_price_per_1m": 2.0,
+      "output_price_per_1m": 10.0,
+      "source": "https://www.anthropic.com/pricing",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "gpt-6.1-sol",
+      "provider": "azure",
+      "input_price_per_1m": 2.0,
+      "output_price_per_1m": 10.0,
+      "source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "deepseek/deepseek-v4.1-flash-1017",
+      "provider": "openrouter",
+      "input_price_per_1m": 0.006,
+      "output_price_per_1m": 0.5,
+      "source": "https://openrouter.ai/deepseek/deepseek-v4.1-flash-1017",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "mistralai/mistral-large-4-0",
+      "provider": "openrouter",
+      "input_price_per_1m": 0.7,
+      "output_price_per_1m": 2.1,
+      "source": "https://openrouter.ai/mistralai/mistral-large-4-0",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "google/gemini-3.8-flash",
+      "provider": "openrouter",
+      "input_price_per_1m": 0.75,
+      "output_price_per_1m": 3.75,
+      "source": "https://openrouter.ai/google/gemini-3.8-flash",
+      "as_of": "2026-11-11",
+      "actual_cost_usd": 10.6584,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)"
+    },
+    {
+      "model_id": "google/gemini-4-argon",
+      "provider": "openrouter",
+      "input_price_per_1m": 2.0,
+      "output_price_per_1m": 10.0,
+      "source": "https://openrouter.ai/google/gemini-4-argon",
+      "as_of": "2026-11-11"
+    },
+    {
+      "model_id": "gpt-6-astra",
+      "provider": "azure",
+      "input_price_per_1m": 10.0,
+      "output_price_per_1m": 50.0,
+      "source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "as_of": "2026-11-11"
+    }
+  ]
+}

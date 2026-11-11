@@ -11,6 +11,7 @@ import { fmtPct, getV3, modelIds, sayDo } from "@/lib/v3";
 import { scenarioMeta } from "@/lib/v3meta";
 import { getFunding, getLeaderboard } from "@/lib/funding";
 import { getSpend } from "@/lib/ledger";
+import { autoLaunch } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -165,7 +166,7 @@ export default async function Home() {
         <h2 className="wide mt-5 max-w-4xl text-[36px] font-bold leading-[0.98] tracking-[-0.04em] md:text-[58px]">
           Every dollar in. <span className="text-ink/35">Every model call out.</span>
         </h2>
-        <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink/65">Readers fund the runs. Each funded suite launches automatically with a hard spending cap, and every API call is priced on the <Link className="link" href="/costs">costs page</Link> within a minute.</p>
+        <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink/65">Readers fund the runs. Each funded suite {autoLaunch() ? "launches automatically" : "launches after review"} with a hard spending cap, and every API call is priced on the <Link className="link" href="/costs">costs page</Link> within a minute.</p>
         <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           <LiveBudget initial={{ raised_usd: f.raised_cents / 100, pool_usd: f.pool_cents / 100, spent_usd: spend?.total_usd ?? null, spend_source: spend?.source ?? null, spend_as_of: spend?.as_of ?? null, donors: f.donors }} />
           <NextMilestoneCard f={f} showQueue={2} />
