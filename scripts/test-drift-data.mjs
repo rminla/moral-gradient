@@ -3,9 +3,10 @@
  * Test that generated drift data matches expected values from compute_check.py
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -229,8 +230,79 @@ function test() {
   return 0;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  process.exit(test());
+function testMultiSuiteValidation() {
+  console.log('\n' + '='.repeat(60));
+  console.log('TESTING MULTI-SUITE VALIDATION');
+  console.log('='.repeat(60) + '\n');
+  
+  let passed = 0;
+  let failed = 0;
+  
+  // Test 1: Missing suite directory
+  console.log('Test: Missing suite directory should fail build');
+  const indexPath = join(ROOT, 'research-data/drift/index.json');
+  const originalIndex = readFileSync(indexPath, 'utf-8');
+  const testIndex = JSON.parse(originalIndex);
+  testIndex.suites.push('missing-suite-99999');
+  writeFileSync(indexPath, JSON.stringify(testIndex, null, 2) + '\n');
+  
+  try {
+    execSync('node scripts/build-drift-data.mjs', { cwd: ROOT, stdio: 'pipe' });
+    console.log('  ❌ FAILED: Should have exited with error for missing suite');
+    failed++;
+  } catch (err) {
+    const output = (err.stdout ? err.stdout.toString() : '') + (err.stderr ? err.stderr.toString() : '');
+    if (output.includes('MISSING SUITE DIRECTORY')) {
+      console.log('  ✓ Correctly failed with missing suite error');
+      passed++;
+    } else {
+      console.log('  ❌ FAILED: Wrong error message');
+      console.log('Output:', output.substring(0, 500));
+      failed++;
+    }
+  } finally {
+    writeFileSync(indexPath, originalIndex);
+  }
+  
+  // Test 2: Duplicate suite ID
+  console.log('\nTest: Duplicate suite ID should fail build');
+  testIndex.suites = ['20261110', '20261110'];
+  writeFileSync(indexPath, JSON.stringify(testIndex, null, 2) + '\n');
+  
+  try {
+    execSync('node scripts/build-drift-data.mjs', { cwd: ROOT, stdio: 'pipe' });
+    console.log('  ❌ FAILED: Should have exited with error for duplicate suite');
+    failed++;
+  } catch (err) {
+    const output = (err.stdout ? err.stdout.toString() : '') + (err.stderr ? err.stderr.toString() : '');
+    if (output.includes('DUPLICATE SUITE ID')) {
+      console.log('  ✓ Correctly failed with duplicate suite error');
+      passed++;
+    } else {
+      console.log('  ❌ FAILED: Wrong error message');
+      console.log('Output:', output.substring(0, 500));
+      failed++;
+    }
+  } finally {
+    writeFileSync(indexPath, originalIndex);
+  }
+  
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`PASSED: ${passed}`);
+  console.log(`FAILED: ${failed}`);
+  
+  if (failed > 0) {
+    return 1;
+  }
+  
+  console.log('\n✓ All multi-suite tests passed');
+  return 0;
 }
 
-export { test };
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const mainResult = test();
+  const multiSuiteResult = testMultiSuiteValidation();
+  process.exit(mainResult || multiSuiteResult);
+}
+
+export { test, testMultiSuiteValidation };

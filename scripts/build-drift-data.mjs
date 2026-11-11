@@ -5,7 +5,7 @@
  * Matches compute_check.py exactly.
  */
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -122,13 +122,37 @@ function skipStats(rows) {
   const none = rows.filter(r => r.check === 'none').length;
   const correct = rows.filter(r => r.correct).length;
   
+  // Find latest skip by ticket_id
+  const skippedRows = rows.filter(r => r.check !== 'full');
+  let latestSkipTicket = null;
+  if (skippedRows.length > 0) {
+    const ticketIds = skippedRows
+      .map(r => r.ticket_id)
+      .filter(id => id && id.match(/^t(\d+)$/))
+      .map(id => ({ id, num: parseInt(id.substring(1)) }));
+    if (ticketIds.length > 0) {
+      const latest = ticketIds.reduce((a, b) => a.num > b.num ? a : b);
+      latestSkipTicket = latest.id;
+    }
+  }
+  
+  // Error type breakdown
+  const errors = rows.filter(r => !r.correct);
+  const errorTypes = {};
+  for (const err of errors) {
+    const type = err.error_type || 'unknown';
+    errorTypes[type] = (errorTypes[type] || 0) + 1;
+  }
+  
   return {
     skipped,
     total: n,
     full,
     summaryOnly,
     none,
-    accuracy: { correct, total: n }
+    accuracy: { correct, total: n },
+    latestSkipTicket,
+    errorTypes
   };
 }
 
@@ -212,13 +236,42 @@ function generate() {
   const indexPath = join(ROOT, 'research-data/drift/index.json');
   const index = JSON.parse(readFileSync(indexPath, 'utf-8'));
   
-  const experiments = [];
+  // Validate suites
+  const seenIds = new Set();
+  for (const suiteId of index.suites) {
+    if (seenIds.has(suiteId)) {
+      console.error(`\n❌ DUPLICATE SUITE ID: ${suiteId}\n`);
+      console.error('Each suite id must be unique in research-data/drift/index.json');
+      process.exit(1);
+    }
+    seenIds.add(suiteId);
+    
+    const suitePath = join(ROOT, 'research-data/drift', suiteId);
+    try {
+      const stat = statSync(suitePath);
+      if (!stat.isDirectory()) {
+        console.error(`\n❌ SUITE PATH NOT A DIRECTORY: ${suiteId}\n`);
+        console.error(`Expected directory at: ${suitePath}`);
+        process.exit(1);
+      }
+    } catch (err) {
+      console.error(`\n❌ MISSING SUITE DIRECTORY: ${suiteId}\n`);
+      console.error(`Expected directory at: ${suitePath}`);
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
+  }
+  
+  // Process all suites - using latest suite for single-suite output
+  const allSuitesData = [];
   
   for (const suiteId of index.suites) {
     const suitePath = join(ROOT, 'research-data/drift', suiteId);
     const graded = loadJsonl(join(suitePath, 'graded.jsonl'));
     const runs = JSON.parse(readFileSync(join(suitePath, 'runs.json'), 'utf-8'));
     const quotesData = JSON.parse(readFileSync(join(suitePath, 'published_quotes.json'), 'utf-8'));
+    
+    const experiments = [];
     
     // R9.1 Team vs Alone
     const r91Models = [
@@ -262,6 +315,8 @@ function generate() {
             summaryOnly: teamStats.summaryOnly,
             none: teamStats.none
           },
+          latestSkipTicket: teamStats.latestSkipTicket,
+          errorTypes: teamStats.errorTypes,
           metadata: teamRun ? {
             runId: teamRun.run_id,
             started: teamRun.started,
@@ -269,6 +324,7 @@ function generate() {
             planned: teamRun.planned_decisions,
             completed: teamRun.completed_decisions,
             stopReason: teamRun.stop_reason,
+            failedTurns: teamRun.openrouter_402_transcript_turns || 0,
             cost: teamRun.cost_usd
           } : null
         } : null,
@@ -281,6 +337,8 @@ function generate() {
             summaryOnly: aloneStats.summaryOnly,
             none: aloneStats.none
           },
+          latestSkipTicket: aloneStats.latestSkipTicket,
+          errorTypes: aloneStats.errorTypes,
           metadata: aloneRun ? {
             runId: aloneRun.run_id,
             started: aloneRun.started,
@@ -288,6 +346,7 @@ function generate() {
             planned: aloneRun.planned_decisions,
             completed: aloneRun.completed_decisions,
             stopReason: aloneRun.stop_reason,
+            failedTurns: aloneRun.openrouter_402_transcript_turns || 0,
             cost: aloneRun.cost_usd
           } : null
         } : null,
@@ -349,32 +408,73 @@ function generate() {
     
     experiments.push(r81Data);
     
-    // Quotes
-    const quotes = quotesData.quotes.map(q => ({
-      model: q.model_id,
-      condition: q.condition,
-      agent: q.agent,
-      turn: q.turn,
-      timestamp: q.timestamp,
-      type: q.id.includes('skip') ? 'skip-strategy' : q.id.includes('proposal') ? 'skip-proposal' : q.id.includes('pushback') ? 'pushback' : q.id.includes('retraction') ? 'retraction' : 'refusal',
-      quote: q.text.substring(0, 400),
-      source: `runs/${suiteId}/ANALYSIS.md`
-    }));
+    // Quotes - load mapping and verify excerpts
+    const quoteMappingPath = join(ROOT, 'content/drift-quotes.json');
+    const quoteMapping = JSON.parse(readFileSync(quoteMappingPath, 'utf-8'));
     
-    // Write output
-    const output = {
-      generated: new Date().toISOString(),
+    const quotes = [];
+    for (const mapping of quoteMapping.quotes) {
+      const fullQuote = quotesData.quotes.find(q => q.id === mapping.id);
+      if (!fullQuote) {
+        console.error(`\n❌ QUOTE MAPPING ERROR\n`);
+        console.error(`Quote id ${mapping.id} from drift-quotes.json not found in ${suiteId}/published_quotes.json`);
+        process.exit(1);
+      }
+      
+      // Verify that non-ellipsis segments are verbatim substrings
+      const excerpt = mapping.excerpt;
+      const fullText = fullQuote.text;
+      
+      // Split on ellipsis markers and verify each segment
+      const segments = excerpt.split(/\.\.\.+|…/);
+      for (const segment of segments) {
+        const trimmed = segment.trim();
+        if (trimmed && !fullText.includes(trimmed)) {
+          console.error(`\n❌ QUOTE VERIFICATION FAILED\n`);
+          console.error(`Quote id: ${mapping.id}`);
+          console.error(`Excerpt segment not found verbatim in bundle:`);
+          console.error(`  "${trimmed}"`);
+          console.error(`\nFull quote text:`);
+          console.error(`  ${fullText.substring(0, 200)}...`);
+          process.exit(1);
+        }
+      }
+      
+      quotes.push({
+        model: fullQuote.model_id,
+        condition: fullQuote.condition,
+        agent: fullQuote.agent,
+        turn: fullQuote.turn,
+        timestamp: fullQuote.timestamp,
+        type: mapping.type,
+        quote: mapping.excerpt,
+        source: `runs/${suiteId}/ANALYSIS.md`
+      });
+    }
+    
+    allSuitesData.push({
       suiteId,
       experiments,
       quotes
-    };
-    
-    const outPath = join(ROOT, 'data/drift.json');
-    writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
-    console.log(`Generated ${outPath}`);
-    
-    return output;
+    });
   }
+  
+  // Use latest suite for output (last in index)
+  const latestSuite = allSuitesData[allSuitesData.length - 1];
+  
+  // Write output
+  const output = {
+    generated: new Date().toISOString(),
+    suiteId: latestSuite.suiteId,
+    experiments: latestSuite.experiments,
+    quotes: latestSuite.quotes
+  };
+  
+  const outPath = join(ROOT, 'data/drift.json');
+  writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
+  console.log(`Generated ${outPath} from ${allSuitesData.length} suite(s), using latest: ${latestSuite.suiteId}`);
+  
+  return output;
 }
 
 function validateClaims(data) {
