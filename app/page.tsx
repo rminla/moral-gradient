@@ -185,6 +185,7 @@ export default async function Home() {
           {[
             ["/stated-vs-actual", "Says vs does", "The same situation as advice, as a stated intention and as an action with real tools."],
             ["/reasoning", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you it weighed, and what it does."],
+            ["/drift", "Agent drift", "AI agents handling customer service under deadline pressure: team vs alone, skipping required checks."],
             ["/compare", "Compare per scenario", "Every model on one chart for each scenario, with human answers where they exist."],
             ["/models", "Weak spots", "Where each model is most swayed, most self-interested and most test-aware."],
           ].map(([h, t, d]) => (

@@ -11,8 +11,9 @@ export const metadata = { title: "Results", description: "What AI models do when
 const DOORS = [
   ["/stated-vs-actual", "01", "Says vs does", "The same situation as advice, as a stated intention and as a real action with tools."],
   ["/reasoning", "02", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you, and what it does."],
-  ["/compare", "03", "Compare per scenario", "Every model on one chart for each scenario, with human answers where we have them."],
-  ["/models", "04", "Weak spots per model", "Where each model is most swayed, most self-interested, most test-aware."],
+  ["/drift", "03", "Agent drift", "AI agents handling customer service under deadline pressure: team vs alone, skipping required checks."],
+  ["/compare", "04", "Compare per scenario", "Every model on one chart for each scenario, with human answers where we have them."],
+  ["/models", "05", "Weak spots per model", "Where each model is most swayed, most self-interested, most test-aware."],
 ] as const;
 
 export default async function Results() {
@@ -27,9 +28,9 @@ export default async function Results() {
         {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "These are the final numbers from the pre-registered locked run." : "These are preliminary numbers from developing the method; the final run replaces them."}
       </PageHead>
 
-      <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-5">
         {DOORS.map(([h, n, t, d]) => (
-          <Link key={h} href={h} className="group flex flex-col border-b border-r border-rule p-6 hover:bg-panel lg:border-b-0">
+          <Link key={h} href={h} className="group flex flex-col border-b border-r border-rule p-6 hover:bg-panel sm:last:col-span-2 lg:last:col-span-1 lg:border-b-0">
             <span className="num text-[12px] text-ink/40">{n}</span>
             <span className="wide mt-8 text-[22px] font-bold leading-tight tracking-[-0.03em] group-hover:text-vermilion">{t}</span>
             <span className="mt-2 text-[14px] leading-6 text-ink/60">{d}</span>
