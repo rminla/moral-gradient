@@ -230,6 +230,98 @@ function test() {
   return 0;
 }
 
+function testQuoteVerification() {
+  console.log('\n' + '='.repeat(60));
+  console.log('TESTING QUOTE VERIFICATION');
+  console.log('='.repeat(60) + '\n');
+  
+  let passed = 0;
+  let failed = 0;
+  
+  const quotesPath = join(ROOT, 'content/drift-quotes.json');
+  const originalQuotes = readFileSync(quotesPath, 'utf-8');
+  
+  // Test 1: Trailing "!" should fail
+  console.log('Test: Trailing "!" on quote without flag should fail');
+  const testQuotes1 = JSON.parse(originalQuotes);
+  testQuotes1.quotes[0].excerpt = testQuotes1.quotes[0].excerpt.replace(/\.$/, '!');
+  writeFileSync(quotesPath, JSON.stringify(testQuotes1, null, 2) + '\n');
+  
+  try {
+    execSync('node scripts/build-drift-data.mjs', { cwd: ROOT, stdio: 'pipe' });
+    console.log('  ❌ FAILED: Should have rejected trailing "!"');
+    failed++;
+  } catch (err) {
+    const output = (err.stdout ? err.stdout.toString() : '') + (err.stderr ? err.stderr.toString() : '');
+    if (output.includes('QUOTE VERIFICATION FAILED')) {
+      console.log('  ✓ Correctly rejected trailing "!"');
+      passed++;
+    } else {
+      console.log('  ❌ FAILED: Wrong error message');
+      failed++;
+    }
+  } finally {
+    writeFileSync(quotesPath, originalQuotes);
+  }
+  
+  // Test 2: Trailing "?" should fail
+  console.log('\nTest: Trailing "?" on quote without flag should fail');
+  const testQuotes2 = JSON.parse(originalQuotes);
+  testQuotes2.quotes[0].excerpt = testQuotes2.quotes[0].excerpt.replace(/\.$/, '?');
+  writeFileSync(quotesPath, JSON.stringify(testQuotes2, null, 2) + '\n');
+  
+  try {
+    execSync('node scripts/build-drift-data.mjs', { cwd: ROOT, stdio: 'pipe' });
+    console.log('  ❌ FAILED: Should have rejected trailing "?"');
+    failed++;
+  } catch (err) {
+    const output = (err.stdout ? err.stdout.toString() : '') + (err.stderr ? err.stderr.toString() : '');
+    if (output.includes('QUOTE VERIFICATION FAILED')) {
+      console.log('  ✓ Correctly rejected trailing "?"');
+      passed++;
+    } else {
+      console.log('  ❌ FAILED: Wrong error message');
+      failed++;
+    }
+  } finally {
+    writeFileSync(quotesPath, originalQuotes);
+  }
+  
+  // Test 3: Added "." on unflagged quote should fail
+  console.log('\nTest: Added "." on unflagged quote should fail');
+  const testQuotes3 = JSON.parse(originalQuotes);
+  testQuotes3.quotes[1].excerpt = testQuotes3.quotes[1].excerpt + '.';
+  writeFileSync(quotesPath, JSON.stringify(testQuotes3, null, 2) + '\n');
+  
+  try {
+    execSync('node scripts/build-drift-data.mjs', { cwd: ROOT, stdio: 'pipe' });
+    console.log('  ❌ FAILED: Should have rejected added "." on unflagged quote');
+    failed++;
+  } catch (err) {
+    const output = (err.stdout ? err.stdout.toString() : '') + (err.stderr ? err.stderr.toString() : '');
+    if (output.includes('QUOTE VERIFICATION FAILED')) {
+      console.log('  ✓ Correctly rejected added "." on unflagged quote');
+      passed++;
+    } else {
+      console.log('  ❌ FAILED: Wrong error message');
+      failed++;
+    }
+  } finally {
+    writeFileSync(quotesPath, originalQuotes);
+  }
+  
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`PASSED: ${passed}`);
+  console.log(`FAILED: ${failed}`);
+  
+  if (failed > 0) {
+    return 1;
+  }
+  
+  console.log('\n✓ All quote verification tests passed');
+  return 0;
+}
+
 function testMultiSuiteValidation() {
   console.log('\n' + '='.repeat(60));
   console.log('TESTING MULTI-SUITE VALIDATION');
@@ -301,8 +393,9 @@ function testMultiSuiteValidation() {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const mainResult = test();
+  const quoteResult = testQuoteVerification();
   const multiSuiteResult = testMultiSuiteValidation();
-  process.exit(mainResult || multiSuiteResult);
+  process.exit(mainResult || quoteResult || multiSuiteResult);
 }
 
-export { test, testMultiSuiteValidation };
+export { test, testQuoteVerification, testMultiSuiteValidation };

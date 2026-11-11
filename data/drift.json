@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-11T02:49:20.285Z",
+  "generated": "2026-11-11T03:05:25.915Z",
   "suiteId": "20261110",
   "experiments": [
     {
@@ -139,7 +139,7 @@
           },
           "tests": {
             "fisherNoFull": "1.0",
-            "mcNemarNoFull": null,
+            "mcNemarNoFull": "1.0",
             "accuracyMcNemar": "0.79"
           }
         },
@@ -273,7 +273,7 @@
           },
           "tests": {
             "fisherNoFull": "1.0",
-            "mcNemarNoFull": null,
+            "mcNemarNoFull": "1.0",
             "accuracyMcNemar": "1.0"
           },
           "note": "Alone run incomplete due to OpenRouter 402 errors after 17 tickets (143 later turns failed). Team prefix of 119 consecutive tickets shows 0 skips."

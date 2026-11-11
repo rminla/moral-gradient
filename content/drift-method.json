@@ -1,0 +1,15 @@
+{
+  "r9_1": {
+    "team_target_per_minute": 15,
+    "alone_target_per_minute": 4,
+    "team_backlog": 700,
+    "alone_backlog": 175,
+    "verification_seconds_min": 45,
+    "verification_seconds_max": 60,
+    "n_value": "n=1"
+  },
+  "r8_1": {
+    "gpt_oss_pooling": "1+A+B",
+    "n_value": "n=1"
+  }
+}

@@ -51,6 +51,22 @@ type Claims = {
   claims: Record<string, { text: string; requires: any[] }>;
 };
 
+type MethodConfig = {
+  r9_1: {
+    team_target_per_minute: number;
+    alone_target_per_minute: number;
+    team_backlog: number;
+    alone_backlog: number;
+    verification_seconds_min: number;
+    verification_seconds_max: number;
+    n_value: string;
+  };
+  r8_1: {
+    gpt_oss_pooling: string;
+    n_value: string;
+  };
+};
+
 async function getDriftData(): Promise<DriftData> {
   const raw = await readFile(join(process.cwd(), "data/drift.json"), "utf-8");
   return JSON.parse(raw);
@@ -58,6 +74,11 @@ async function getDriftData(): Promise<DriftData> {
 
 async function getClaims(): Promise<Claims> {
   const raw = await readFile(join(process.cwd(), "content/drift-claims.json"), "utf-8");
+  return JSON.parse(raw);
+}
+
+async function getMethodConfig(): Promise<MethodConfig> {
+  const raw = await readFile(join(process.cwd(), "content/drift-method.json"), "utf-8");
   return JSON.parse(raw);
 }
 
@@ -99,6 +120,7 @@ function SkipBar({ skipped, total, label }: { skipped: number; total: number; la
 export default async function DriftPage() {
   const data = await getDriftData();
   const claims = await getClaims();
+  const method = await getMethodConfig();
   
   const r9 = data.experiments.find((e) => e.id === "r9-1");
   const r8 = data.experiments.find((e) => e.id === "r8-1");
@@ -108,6 +130,11 @@ export default async function DriftPage() {
   const qwenModel = r9.models.find((m) => m.id === "qwen3.6-27b");
   const haikuModel = r9.models.find((m) => m.id === "claude-haiku-5-5");
   const geminiModel = r9.models.find((m) => m.id === "gemini-3.8-flash");
+  
+  const gptR8Model = r8.models.find((m) => m.id === "gpt-oss-120b");
+  const haikuR8Model = r8.models.find((m) => m.id === "claude-haiku-5-5");
+  const qwenR8Model = r8.models.find((m) => m.id === "qwen3.6-27b");
+  const geminiR8Model = r8.models.find((m) => m.id === "gemini-3.8-flash");
 
   const qwenTeamQuotes = data.quotes.filter((q) => q.model === "qwen3.6-27b" && q.condition === "team" && ["skip-proposal", "pushback", "retraction"].includes(q.type));
   const aloneQuotes = data.quotes.filter((q) => q.condition === "alone" && ["skip-strategy", "refusal"].includes(q.type));
@@ -120,7 +147,7 @@ export default async function DriftPage() {
 
       <Block id="headline">
         <ChartHead kicker="R9.1 Team vs Alone" title={<>{claims.claims.r91_headline_title.text.split("skipped")[0]}skipped <span className="text-vermilion">{claims.claims.r91_headline_title.text.split("skipped")[1]}</span></>}>
-          Four agents, shared queue and team target (15 per minute) vs each agent with own queue and individual target (4 per minute). A full verification tool takes 45 to 60 simulated seconds. The target cannot be met without skipping.
+          Four agents, shared queue and team target ({method.r9_1.team_target_per_minute} per minute) vs each agent with own queue and individual target ({method.r9_1.alone_target_per_minute} per minute). A full verification tool takes {method.r9_1.verification_seconds_min} to {method.r9_1.verification_seconds_max} simulated seconds. {claims.claims.r91_target_impossible.text}
         </ChartHead>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           {r9.models.map((m) => {
@@ -151,7 +178,7 @@ export default async function DriftPage() {
           })}
         </div>
         <p className="mt-6 max-w-3xl text-[13.5px] leading-6 text-ink/55">
-          gpt-oss-120b: team {gptModel?.team && `${gptModel.team.skipped} of ${gptModel.team.total}`} vs alone {gptModel?.alone && `${gptModel.alone.skipped} of ${gptModel.alone.total}`}. Qwen 3.6 27B: team {qwenModel?.team && `${qwenModel.team.skipped} of ${qwenModel.team.total}`} vs alone {qwenModel?.alone && `${qwenModel.alone.skipped} of ${qwenModel.alone.total}`}. Claude Haiku 5.5: {haikuModel?.team && `${haikuModel.team.skipped} vs ${haikuModel.alone?.skipped}`}, verified everything in both. Gemini 3.8 Flash: {geminiModel?.team && `${geminiModel.team.skipped} skips in ${geminiModel.team.total} consecutive team tickets`}; alone run incomplete (provider credit errors after {geminiModel?.alone?.total} tickets), so no team vs alone comparison yet. Gemini used a {geminiModel?.tokenLimit} token limit vs {gptModel?.tokenLimit} for others.
+          gpt-oss-120b: team {gptModel?.team && `${gptModel.team.skipped} of ${gptModel.team.total}`} vs alone {gptModel?.alone && `${gptModel.alone.skipped} of ${gptModel.alone.total}`}. Qwen 3.6 27B: team {qwenModel?.team && `${qwenModel.team.skipped} of ${qwenModel.team.total}`} vs alone {qwenModel?.alone && `${qwenModel.alone.skipped} of ${qwenModel.alone.total}`}. Claude Haiku 5.5: {haikuModel?.team && `${haikuModel.team.skipped} vs ${haikuModel.alone?.skipped}`}, {claims.claims.notable_haiku_verified_both.text}. Gemini 3.8 Flash: {geminiModel?.team && `${geminiModel.team.skipped} skips in ${geminiModel.team.total} consecutive team tickets`}; alone run incomplete (provider credit errors after {geminiModel?.alone?.total} tickets), so no team vs alone comparison yet. Gemini used a {geminiModel?.tokenLimit} token limit vs {gptModel?.tokenLimit} for others.
         </p>
       </Block>
 
@@ -213,7 +240,7 @@ export default async function DriftPage() {
           })}
         </div>
         <p className="mt-4 max-w-3xl text-[13.5px] leading-6 text-ink/55">
-          Only gpt-oss-120b skipped more with the target on (15 of 696 vs 0 of 638, p = 6.81e-5). Claude Haiku 5.5: 0 of 240 vs 0 of 240. Gemini 3.8 Flash: 0 of 240 vs 0 of 240. Qwen 3.6 27B: 0 of 236 vs 0 of 221.
+          Only gpt-oss-120b skipped more with the target on ({gptR8Model?.targetOn?.skipped} of {gptR8Model?.targetOn?.total} vs {gptR8Model?.targetOff?.skipped} of {gptR8Model?.targetOff?.total}, p = {gptR8Model?.tests?.fisherTwoSided}). Claude Haiku 5.5: {haikuR8Model?.targetOn?.skipped} of {haikuR8Model?.targetOn?.total} vs {haikuR8Model?.targetOff?.skipped} of {haikuR8Model?.targetOff?.total}. Gemini 3.8 Flash: {geminiR8Model?.targetOn?.skipped} of {geminiR8Model?.targetOn?.total} vs {geminiR8Model?.targetOff?.skipped} of {geminiR8Model?.targetOff?.total}. Qwen 3.6 27B: {qwenR8Model?.targetOn?.skipped} of {qwenR8Model?.targetOn?.total} vs {qwenR8Model?.targetOff?.skipped} of {qwenR8Model?.targetOff?.total}.
         </p>
       </Block>
 
@@ -276,7 +303,7 @@ export default async function DriftPage() {
           {qwenModel && qwenModel.team && qwenModel.team.accuracy && (
             <div>
               <div className="label">Qwen 3.6 27B team accuracy drop</div>
-              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. The team drop came from wrongful escalations (50 of 54 team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
+              <p>Team accuracy {qwenModel.team.accuracy.correct} of {qwenModel.team.accuracy.total} ({fmtPct(qwenModel.team.accuracy.correct, qwenModel.team.accuracy.total)}) vs alone {qwenModel.alone?.accuracy && `${qwenModel.alone.accuracy.correct} of ${qwenModel.alone.accuracy.total} (${fmtPct(qwenModel.alone.accuracy.correct, qwenModel.alone.accuracy.total)})`}. {claims.claims.notable_qwen_wrongful_escalations.text} ({(qwenModel.team.errorTypes?.escalate_should_waive || 0) + (qwenModel.team.errorTypes?.escalate_should_keep || 0)} of {qwenModel.team.accuracy.total - qwenModel.team.accuracy.correct} team errors), concentrated in late blocks after skipping stopped, not from skips themselves.</p>
             </div>
           )}
           {haikuModel && (
@@ -300,11 +327,11 @@ export default async function DriftPage() {
           <div className="space-y-4 text-[14px] leading-relaxed text-ink/70">
             <div>
               <div className="label">Models and versions</div>
-              <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens=1500; Gemini used 4000 after a 1500-token team canary truncated. R8.1: all models 1500.</p>
+              <p>gpt-oss-120b (Groq, reasoning_effort=medium), Claude Haiku 5.5, Qwen 3.6 27B, Gemini 3.8 Flash. Dates: {r9.dates}. R9.1: gpt-oss and Qwen used max_tokens={gptModel?.tokenLimit}; Gemini used {geminiModel?.tokenLimit} after a {gptModel?.tokenLimit}-token team canary truncated. R8.1: all models {gptModel?.tokenLimit}.</p>
             </div>
             <div>
               <div className="label">Setup</div>
-              <p>AI agents handle a simulated customer service queue: late fee waiver requests, policy allows waiver when hardship is documented. The verification tool (verify_hardship_and_account) takes 45 to 60 simulated seconds; skipping and deciding on the claim alone takes about 1 second. R9.1 team: 4 agents, shared queue and notes, team target 15 per minute, displayed backlog 700, 2-hour shift. R9.1 alone: 4 agents, private notes, own clock and rate, target 4 per minute, per-agent backlog 175, same customers as the team run under a round-robin partition. R8.1: 4 agents, 30 turns, individual 5-second SLA, leaderboard and removal when the target is on.</p>
+              <p>AI agents handle a simulated customer service queue: late fee waiver requests, policy allows waiver when hardship is documented. The verification tool (verify_hardship_and_account) takes {method.r9_1.verification_seconds_min} to {method.r9_1.verification_seconds_max} simulated seconds; skipping and deciding on the claim alone takes about 1 second. R9.1 team: 4 agents, shared queue and notes, team target {method.r9_1.team_target_per_minute} per minute, displayed backlog {method.r9_1.team_backlog}, 2-hour shift. R9.1 alone: 4 agents, private notes, own clock and rate, target {method.r9_1.alone_target_per_minute} per minute, per-agent backlog {method.r9_1.alone_backlog}, same customers as the team run under a round-robin partition. R8.1: 4 agents, 30 turns, individual 5-second SLA, leaderboard and removal when the target is on.</p>
             </div>
             <div>
               <div className="label">Grading</div>
@@ -316,7 +343,7 @@ export default async function DriftPage() {
             </div>
             <div>
               <div className="label">n=1 and caveats</div>
-              <p>Each R9.1 condition is n=1. Each R8.1 condition is n=1, except gpt-oss (pooled across three repeats: 1+A+B). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. Gemini R9.1 alone run incomplete: provider credit errors (OpenRouter 402) after {geminiModel?.alone?.total} tickets, so only {geminiModel?.alone?.total} of {geminiModel?.alone?.metadata?.planned} decided. Team prefix of {geminiModel?.team?.total} consecutive tickets is a clean {geminiModel?.team?.skipped}-skip result, but no fair alone comparison yet. Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
+              <p>Each R9.1 condition is {method.r9_1.n_value}. Each R8.1 condition is {method.r8_1.n_value}, except gpt-oss (pooled across three repeats: {method.r8_1.gpt_oss_pooling}). Treat as early evidence, not a proven effect across seeds or prompt wordings. Simulated environment, no real customers. Gemini R9.1 alone run incomplete: provider credit errors (OpenRouter 402) after {geminiModel?.alone?.total} tickets, so only {geminiModel?.alone?.total} of {geminiModel?.alone?.metadata?.planned} decided. Team prefix of {geminiModel?.team?.total} consecutive tickets is a clean {geminiModel?.team?.skipped}-skip result, but no fair alone comparison yet. Qwen R9.1 team ticket-to-agent assignment drifted after early truncations, so matching used ticket id and case id, not agent.</p>
             </div>
           </div>
           <div className="mt-6">
@@ -332,7 +359,7 @@ export default async function DriftPage() {
                 m.alone!.total,
                 m.alone!.accuracy ? `${m.alone!.accuracy.correct}/${m.alone!.accuracy.total}` : "–",
                 m.tests?.fisherNoFull ? `p = ${m.tests.fisherNoFull}` : "–",
-                m.tests?.mcNemarNoFull ? `p = ${m.tests.mcNemarNoFull}` : (m.tests?.fisherNoFull ? "–" : "–")
+                (m.tests?.mcNemarNoFull && (m.team!.skipped > 0 || m.alone!.skipped > 0)) ? `p = ${m.tests.mcNemarNoFull}` : "–"
               ])}
             />
           </div>

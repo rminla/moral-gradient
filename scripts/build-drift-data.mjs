@@ -352,7 +352,7 @@ function generate() {
         } : null,
         tests: matched ? {
           fisherNoFull: formatP(matched.fisher.p),
-          mcNemarNoFull: (teamStats.skipped > 0 || aloneStats.skipped > 0) ? formatP(matched.skipMcNemar.p) : null,
+          mcNemarNoFull: formatP(matched.skipMcNemar.p),
           accuracyMcNemar: formatP(matched.accMcNemar.p)
         } : null,
         note: aloneStats.total < 100 ? `Alone run incomplete due to ${aloneRun?.stop_reason || 'provider errors'} errors after ${aloneStats.total} tickets (${aloneRun?.openrouter_402_transcript_turns || 0} later turns failed). Team prefix of ${teamStats.total} consecutive tickets shows ${teamStats.skipped} skips.` : null
@@ -427,19 +427,35 @@ function generate() {
       
       // Split on ellipsis markers and verify each segment
       const segments = excerpt.split(/\.\.\.+|…/);
-      for (const segment of segments) {
-        let trimmed = segment.trim();
-        // Remove trailing punctuation added for readability if not in bundle
-        const trimmedNoPunct = trimmed.replace(/[.!?]$/, '');
-        if (trimmed && !fullText.includes(trimmed) && !fullText.includes(trimmedNoPunct)) {
-          console.error(`\n❌ QUOTE VERIFICATION FAILED\n`);
-          console.error(`Quote id: ${mapping.id}`);
-          console.error(`Excerpt segment not found verbatim in bundle:`);
-          console.error(`  "${trimmed}"`);
-          console.error(`\nFull quote text:`);
-          console.error(`  ${fullText.substring(0, 200)}...`);
-          process.exit(1);
+      for (let i = 0; i < segments.length; i++) {
+        let segment = segments[i].trim();
+        if (!segment) continue;
+        
+        // Check if this is the last segment and has appended terminal period
+        const isLastSegment = i === segments.length - 1;
+        const hasAppendedPeriod = mapping.appended_terminal_period === true;
+        
+        // Try exact match first
+        if (fullText.includes(segment)) {
+          continue;
         }
+        
+        // If last segment with appended period flag, try without the trailing period
+        if (isLastSegment && hasAppendedPeriod && segment.endsWith('.')) {
+          const withoutPeriod = segment.slice(0, -1);
+          if (fullText.includes(withoutPeriod)) {
+            continue;
+          }
+        }
+        
+        // Verification failed
+        console.error(`\n❌ QUOTE VERIFICATION FAILED\n`);
+        console.error(`Quote id: ${mapping.id}`);
+        console.error(`Excerpt segment not found verbatim in bundle:`);
+        console.error(`  "${segment}"`);
+        console.error(`\nFull quote text:`);
+        console.error(`  ${fullText.substring(0, 200)}...`);
+        process.exit(1);
       }
       
       quotes.push({

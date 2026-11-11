@@ -201,6 +201,35 @@
           "value": 0
         }
       ]
+    },
+    "r91_target_impossible": {
+      "text": "The target cannot be met without skipping.",
+      "requires": []
+    },
+    "notable_haiku_verified_both": {
+      "text": "verified everything in both",
+      "requires": [
+        {
+          "metric": "skipCount", "experiment": "r9-1", "model": "claude-haiku-5-5", "condition": "team",
+          "op": "==",
+          "value": 0
+        },
+        {
+          "metric": "skipCount", "experiment": "r9-1", "model": "claude-haiku-5-5", "condition": "alone",
+          "op": "==",
+          "value": 0
+        }
+      ]
+    },
+    "notable_qwen_wrongful_escalations": {
+      "text": "The team drop came from wrongful escalations",
+      "requires": [
+        {
+          "left": { "metric": "accuracy", "experiment": "r9-1", "model": "qwen3.6-27b", "condition": "alone" },
+          "op": ">",
+          "right": { "metric": "accuracy", "experiment": "r9-1", "model": "qwen3.6-27b", "condition": "team" }
+        }
+      ]
     }
   }
 }
