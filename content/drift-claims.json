@@ -133,7 +133,7 @@
       ]
     },
     "r81_qwen_no_effect": {
-      "text": "one skip in 236 is not evidence of a target effect",
+      "text": "0 of 236 is not evidence of a target effect",
       "requires": [
         {
           "metric": "fisherP", "experiment": "r8-1", "model": "qwen3.6-27b",

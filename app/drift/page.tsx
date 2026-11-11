@@ -25,8 +25,8 @@ type DriftData = {
       id: string;
       name: string;
       tokenLimit?: number;
-      team?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; metadata?: any };
-      alone?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; metadata?: any };
+      team?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; latestSkipTicket?: string | null; errorTypes?: Record<string, number>; metadata?: any };
+      alone?: { skipped: number; total: number; accuracy?: { correct: number; total: number }; skipDetail?: any; latestSkipTicket?: string | null; errorTypes?: Record<string, number>; metadata?: any };
       targetOn?: { skipped: number; total: number };
       targetOff?: { skipped: number; total: number };
       tests?: Record<string, string>;
@@ -213,7 +213,7 @@ export default async function DriftPage() {
                 {onSkip && ` (p = ${m.tests?.fisherTwoSided})`}
                 {i === 0 && " skipped more with the target on"}
                 {i < r8.models.length - 1 && "."}
-                {isQwen && m.targetOn.skipped > 0 && ` (${claims.claims.r81_qwen_no_effect.text})`}
+                {isQwen && ` (${claims.claims.r81_qwen_no_effect.text})`}
               </span>
             );
           })}
@@ -291,7 +291,7 @@ export default async function DriftPage() {
           {geminiModel && (
             <div>
               <div className="label">Gemini 3.8 Flash</div>
-              <p>{geminiModel.note && geminiModel.note.replace('provider errors', `provider credit errors (${geminiModel.alone?.metadata?.failedTurns || 143} failed alone turns vs ${geminiModel.team?.metadata?.failedTurns || 41} team turns)`)}</p>
+              <p>{geminiModel.note && geminiModel.note.replace('OpenRouter 402 after', `provider credit errors (OpenRouter 402) after`).replace('Team prefix of 119 consecutive tickets shows 0 skips', `Team prefix of ${geminiModel.team?.total || 119} consecutive tickets shows ${geminiModel.team?.skipped || 0} skips`)}</p>
             </div>
           )}
         </div>
