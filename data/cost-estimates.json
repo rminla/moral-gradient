@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-11T07:50:01.384Z",
+  "generated": "2026-11-11T08:05:25.605Z",
   "source": "research-data/costs/measured-full-v1-tokens.json",
   "basis": {
     "input_tokens": 3360000,
@@ -27,23 +27,6 @@
         "grader_cost": 0.64
       },
       "price_source": "https://openrouter.ai/x-ai/grok-4.7",
-      "price_as_of": "2026-11-11"
-    },
-    {
-      "key": "gpt-oss-120b",
-      "model_id": "openai/gpt-oss-120b",
-      "lab": "OpenAI (open weights)",
-      "title": "gpt-oss-120b",
-      "estimate_usd": 4,
-      "computation": {
-        "basis_input_tokens": 3360000,
-        "basis_output_tokens": 3010000,
-        "input_cost": 0.336,
-        "output_cost": 1.505,
-        "margin_multiplier": 1.5,
-        "grader_cost": 0.64
-      },
-      "price_source": "https://groq.com/pricing/",
       "price_as_of": "2026-11-11"
     },
     {
@@ -85,12 +68,12 @@
       "model_id": "deepseek/deepseek-v4.1-flash-1017",
       "lab": "DeepSeek",
       "title": "DeepSeek V4.1 Flash",
-      "estimate_usd": 2,
+      "estimate_usd": 3,
       "computation": {
         "basis_input_tokens": 3360000,
         "basis_output_tokens": 3010000,
-        "input_cost": 0.168,
-        "output_cost": 0.45149999999999996,
+        "input_cost": 0.02016,
+        "output_cost": 1.505,
         "margin_multiplier": 1.5,
         "grader_cost": 0.64
       },
@@ -102,33 +85,16 @@
       "model_id": "mistralai/mistral-large-4-0",
       "lab": "Mistral",
       "title": "Mistral Large 4",
-      "estimate_usd": 20,
+      "estimate_usd": 14,
       "computation": {
         "basis_input_tokens": 3360000,
         "basis_output_tokens": 3010000,
-        "input_cost": 3.36,
-        "output_cost": 9.03,
+        "input_cost": 2.352,
+        "output_cost": 6.321,
         "margin_multiplier": 1.5,
         "grader_cost": 0.64
       },
       "price_source": "https://openrouter.ai/mistralai/mistral-large-4-0",
-      "price_as_of": "2026-11-11"
-    },
-    {
-      "key": "gemini-3-8-flash",
-      "model_id": "google/gemini-3.8-flash",
-      "lab": "Google",
-      "title": "Gemini 3.8 Flash",
-      "estimate_usd": 5,
-      "computation": {
-        "basis_input_tokens": 3360000,
-        "basis_output_tokens": 3010000,
-        "input_cost": 0.504,
-        "output_cost": 1.8059999999999998,
-        "margin_multiplier": 1.5,
-        "grader_cost": 0.64
-      },
-      "price_source": "https://openrouter.ai/google/gemini-3.8-flash",
       "price_as_of": "2026-11-11"
     },
     {
@@ -153,16 +119,38 @@
       "model_id": "gpt-6-astra",
       "lab": "OpenAI",
       "title": "GPT-6 Astra",
-      "estimate_usd": 232,
+      "estimate_usd": 277,
       "computation": {
         "basis_input_tokens": 3360000,
         "basis_output_tokens": 3010000,
         "input_cost": 33.6,
-        "output_cost": 120.39999999999999,
+        "output_cost": 150.5,
         "margin_multiplier": 1.5,
         "grader_cost": 0.64
       },
       "price_source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "price_as_of": "2026-11-11"
+    }
+  ],
+  "actuals": [
+    {
+      "key": "gpt-oss-120b",
+      "model_id": "openai/gpt-oss-120b",
+      "lab": "OpenAI (open weights)",
+      "title": "gpt-oss-120b",
+      "actual_cost_usd": 1.291,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)",
+      "price_source": "https://groq.com/pricing/",
+      "price_as_of": "2026-11-11"
+    },
+    {
+      "key": "gemini-3-8-flash",
+      "model_id": "google/gemini-3.8-flash",
+      "lab": "Google",
+      "title": "Gemini 3.8 Flash",
+      "actual_cost_usd": 10.6584,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)",
+      "price_source": "https://openrouter.ai/google/gemini-3.8-flash",
       "price_as_of": "2026-11-11"
     }
   ]

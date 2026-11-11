@@ -85,39 +85,56 @@ function test() {
   
   console.log(`✓ Generated estimate matches: $${grokEstimate.estimate_usd}\n`);
   
-  // Test 3: Verify milestones.json has matching costs
-  console.log('Test 3: Verify milestones.json uses generated estimates');
+  // Test 3: Verify milestones.json uses generated estimates or actuals
+  console.log('Test 3: Verify milestones.json uses generated estimates or actuals');
   const milestonesPath = join(ROOT, 'data/milestones.json');
   const milestones = JSON.parse(readFileSync(milestonesPath, 'utf-8'));
   
   let mismatchCount = 0;
+  let actualCount = 0;
+  let estimateCount = 0;
+  
   for (const milestone of milestones.milestones) {
     if (milestone.kind !== 'model') {
       continue;
     }
     
+    // Check if this is an actual or an estimate
+    const actual = estimates.actuals.find(a => a.key === milestone.key);
     const estimate = estimates.estimates.find(e => e.key === milestone.key);
-    if (!estimate) {
-      console.error(`❌ FAIL: No estimate found for ${milestone.key}`);
-      process.exit(1);
-    }
     
-    // Check if this milestone has an actual measured cost (status != queued in real system)
-    // For now we just check if the cost matches the estimate
-    // In production, actual measured costs should be preserved
-    if (milestone.cost_usd !== estimate.estimate_usd) {
-      console.log(`  ⚠ ${milestone.key}: milestones.json has $${milestone.cost_usd}, estimate is $${estimate.estimate_usd}`);
-      mismatchCount++;
+    // milestones.json uses cost_usd, we need to compare in dollars
+    if (actual) {
+      // Model has been run - verify it uses the actual cost
+      const expectedUsd = actual.actual_cost_usd;
+      if (Math.abs(milestone.cost_usd - expectedUsd) > 0.01) {
+        console.log(`  ⚠ ${milestone.key}: milestones.json has $${milestone.cost_usd}, actual is $${expectedUsd}`);
+        mismatchCount++;
+      } else {
+        actualCount++;
+      }
+    } else if (estimate) {
+      // Model hasn't been run - verify it uses the estimate
+      const expectedUsd = estimate.estimate_usd;
+      if (milestone.cost_usd !== expectedUsd) {
+        console.log(`  ⚠ ${milestone.key}: milestones.json has $${milestone.cost_usd}, estimate is $${expectedUsd}`);
+        mismatchCount++;
+      } else {
+        estimateCount++;
+      }
+    } else {
+      console.error(`❌ FAIL: No estimate or actual found for ${milestone.key}`);
+      process.exit(1);
     }
   }
   
   if (mismatchCount > 0) {
-    console.error(`\n❌ FAIL: ${mismatchCount} milestone(s) have costs that don't match estimates`);
-    console.error('Update milestones.json to use the generated estimates, unless the model has an actual measured cost.');
+    console.error(`\n❌ FAIL: ${mismatchCount} milestone(s) have costs that don't match`);
+    console.error('Update milestones.json to use the generated estimates/actuals.');
     process.exit(1);
   }
   
-  console.log(`✓ All ${estimates.estimates.length} model milestones match generated estimates\n`);
+  console.log(`✓ ${actualCount} models use actual costs, ${estimateCount} use estimates\n`);
   
   // Test 4: Verify all queue models have prices
   console.log('Test 4: Verify all queue models have prices');
@@ -141,6 +158,27 @@ function test() {
   }
   
   console.log(`✓ All ${milestones.milestones.filter(m => m.kind === 'model').length} models have prices\n`);
+  
+  // Test 5: Verify actuals are not overwritten by estimates
+  console.log('Test 5: Verify actuals are not overwritten');
+  const priceMapWithActuals = new Map(prices.prices.map(p => [p.model_id, p]));
+  
+  for (const actual of estimates.actuals) {
+    const price = priceMapWithActuals.get(actual.model_id);
+    if (!price || price.actual_cost_usd == null) {
+      console.error(`❌ FAIL: Actual for ${actual.model_id} is missing from model-prices.json`);
+      process.exit(1);
+    }
+    
+    // Verify the actual wasn't turned into an estimate
+    const wrongEstimate = estimates.estimates.find(e => e.model_id === actual.model_id);
+    if (wrongEstimate) {
+      console.error(`❌ FAIL: ${actual.model_id} has both actual and estimate - actuals must not be overwritten`);
+      process.exit(1);
+    }
+  }
+  
+  console.log(`✓ ${estimates.actuals.length} actual(s) preserved, not overwritten by estimates\n`);
   
   console.log('✅ All cost estimate tests passed');
 }

@@ -503,7 +503,7 @@ function generate() {
   // Use latest suite for output (last in index)
   const latestSuite = allSuitesData[allSuitesData.length - 1];
   
-  // Write output
+  // Write output only if content changed (excluding timestamp)
   const output = {
     generated: new Date().toISOString(),
     suiteId: latestSuite.suiteId,
@@ -512,8 +512,29 @@ function generate() {
   };
   
   const outPath = join(ROOT, 'data/drift.json');
-  writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
-  console.log(`Generated ${outPath} from ${allSuitesData.length} suite(s), using latest: ${latestSuite.suiteId}`);
+  
+  // Check if file exists and content is the same (excluding timestamp)
+  let shouldWrite = true;
+  try {
+    const existing = JSON.parse(readFileSync(outPath, 'utf-8'));
+    const contentWithoutTimestamp = { ...output };
+    delete contentWithoutTimestamp.generated;
+    const existingWithoutTimestamp = { ...existing };
+    delete existingWithoutTimestamp.generated;
+    
+    if (JSON.stringify(contentWithoutTimestamp) === JSON.stringify(existingWithoutTimestamp)) {
+      // Content unchanged, preserve existing file with its timestamp
+      shouldWrite = false;
+      console.log(`Verified ${outPath} from ${allSuitesData.length} suite(s) (content unchanged)`);
+    }
+  } catch {
+    // File doesn't exist or can't be read, write it
+  }
+  
+  if (shouldWrite) {
+    writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
+    console.log(`Generated ${outPath} from ${allSuitesData.length} suite(s), using latest: ${latestSuite.suiteId}`);
+  }
   
   return output;
 }

@@ -80,6 +80,7 @@ function generate() {
   
   // Compute estimates for each model milestone
   const estimates = [];
+  const actuals = [];
   const missing = [];
   
   for (const milestone of milestones.milestones) {
@@ -91,6 +92,21 @@ function generate() {
     const price = priceMap.get(milestone.model_id);
     if (!price) {
       missing.push(milestone.model_id);
+      continue;
+    }
+    
+    // If this model has an actual measured cost, preserve it
+    if (price.actual_cost_usd != null) {
+      actuals.push({
+        key: milestone.key,
+        model_id: milestone.model_id,
+        lab: milestone.lab,
+        title: milestone.title,
+        actual_cost_usd: price.actual_cost_usd,
+        actual_note: price.actual_note || 'Measured full-v1 suite cost',
+        price_source: price.source,
+        price_as_of: price.as_of
+      });
       continue;
     }
     
@@ -129,14 +145,18 @@ function generate() {
     source: 'research-data/costs/measured-full-v1-tokens.json',
     basis,
     config: pricesData.cost_computation,
-    estimates
+    estimates,
+    actuals
   };
   
   const outPath = join(ROOT, 'data/cost-estimates.json');
   writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
   
-  console.log(`Generated ${outPath} with ${estimates.length} model estimates`);
+  console.log(`Generated ${outPath} with ${estimates.length} model estimates and ${actuals.length} actual costs`);
   console.log(`Basis: ${basis.input_tokens.toLocaleString()} input + ${basis.output_tokens.toLocaleString()} output tokens`);
+  if (actuals.length > 0) {
+    console.log(`Actuals preserved: ${actuals.map(a => a.title).join(', ')}`);
+  }
   
   return output;
 }

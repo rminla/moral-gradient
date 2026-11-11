@@ -17,10 +17,12 @@
     {
       "model_id": "openai/gpt-oss-120b",
       "provider": "groq",
-      "input_price_per_1m": 0.1,
-      "output_price_per_1m": 0.5,
+      "input_price_per_1m": 0.15,
+      "output_price_per_1m": 0.6,
       "source": "https://groq.com/pricing/",
-      "as_of": "2026-11-11"
+      "as_of": "2026-11-11",
+      "actual_cost_usd": 1.2910,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)"
     },
     {
       "model_id": "claude-sonnet-5-5",
@@ -41,26 +43,28 @@
     {
       "model_id": "deepseek/deepseek-v4.1-flash-1017",
       "provider": "openrouter",
-      "input_price_per_1m": 0.05,
-      "output_price_per_1m": 0.15,
+      "input_price_per_1m": 0.006,
+      "output_price_per_1m": 0.5,
       "source": "https://openrouter.ai/deepseek/deepseek-v4.1-flash-1017",
       "as_of": "2026-11-11"
     },
     {
       "model_id": "mistralai/mistral-large-4-0",
       "provider": "openrouter",
-      "input_price_per_1m": 1.0,
-      "output_price_per_1m": 3.0,
+      "input_price_per_1m": 0.7,
+      "output_price_per_1m": 2.1,
       "source": "https://openrouter.ai/mistralai/mistral-large-4-0",
       "as_of": "2026-11-11"
     },
     {
       "model_id": "google/gemini-3.8-flash",
       "provider": "openrouter",
-      "input_price_per_1m": 0.15,
-      "output_price_per_1m": 0.6,
+      "input_price_per_1m": 0.75,
+      "output_price_per_1m": 3.75,
       "source": "https://openrouter.ai/google/gemini-3.8-flash",
-      "as_of": "2026-11-11"
+      "as_of": "2026-11-11",
+      "actual_cost_usd": 10.6584,
+      "actual_note": "Measured full-v1 suite cost from v3final runs (calibrate + main + traces)"
     },
     {
       "model_id": "google/gemini-4-argon",
@@ -74,7 +78,7 @@
       "model_id": "gpt-6-astra",
       "provider": "azure",
       "input_price_per_1m": 10.0,
-      "output_price_per_1m": 40.0,
+      "output_price_per_1m": 50.0,
       "source": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
       "as_of": "2026-11-11"
     }
