@@ -159,4 +159,9 @@ export async function getJobs() {
   return q<any>("SELECT j.*, m.title, m.key FROM jobs j JOIN milestones m ON m.id=j.milestone_id ORDER BY j.created_at DESC LIMIT 20");
 }
 
-export const usd = (cents: number, digits = 2) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+export const usd = (cents: number, digits?: number) => {
+  const dollars = cents / 100;
+  // Show cents for amounts under $20
+  const finalDigits = digits !== undefined ? digits : (dollars < 20 ? 2 : 0);
+  return `$${dollars.toLocaleString("en-US", { minimumFractionDigits: finalDigits, maximumFractionDigits: finalDigits })}`;
+};

@@ -54,7 +54,7 @@ export default async function Costs() {
       </section>
 
       <section id="queue" className="mx-auto max-w-[1200px] scroll-mt-16 border-b border-rule px-5 py-14 md:px-8 md:py-16">
-        <SectionHead kicker="Funding queue" title="Fills in order.">Donations go into one pool and fill this queue in order. When a strip reaches 100%, that suite launches {autoLaunch() ? "automatically" : "after review"} with a hard spending cap equal to the funded amount, and the next one starts filling. If the queue is empty, money waits in the pool for the next model release. Costs are estimates based on measured token usage in past full runs plus a safety margin, replaced by actual cost after a model runs.</SectionHead>
+        <SectionHead kicker="Funding queue" title="Fills in order.">Card donations fill this queue in order. When a strip reaches 100%, that suite is reviewed and launched with a hard spending cap equal to the funded amount. Offline donations count toward totals but are reviewed before any run starts. Costs are estimates based on measured token usage in past full runs plus a safety margin, replaced by actual cost after a model runs.</SectionHead>
         <div className="mt-8 border-t border-ink">
           {all.map((m) => (
             <div key={m.key} className="grid items-center gap-3 border-b border-rule py-4 md:grid-cols-[3rem_1.4fr_2fr_8rem]">

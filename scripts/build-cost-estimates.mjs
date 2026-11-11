@@ -139,9 +139,8 @@ function generate() {
     process.exit(1);
   }
   
-  // Write output
+  // Write output only if content changed (no timestamp to keep builds deterministic)
   const output = {
-    generated: new Date().toISOString(),
     source: 'research-data/costs/measured-full-v1-tokens.json',
     basis,
     config: pricesData.cost_computation,
@@ -150,9 +149,24 @@ function generate() {
   };
   
   const outPath = join(ROOT, 'data/cost-estimates.json');
-  writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
   
-  console.log(`Generated ${outPath} with ${estimates.length} model estimates and ${actuals.length} actual costs`);
+  // Check if file exists and content is the same
+  let shouldWrite = true;
+  try {
+    const existing = JSON.parse(readFileSync(outPath, 'utf-8'));
+    if (JSON.stringify(output) === JSON.stringify(existing)) {
+      shouldWrite = false;
+      console.log(`Verified ${outPath} (content unchanged)`);
+    }
+  } catch {
+    // File doesn't exist or can't be read, write it
+  }
+  
+  if (shouldWrite) {
+    writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
+    console.log(`Generated ${outPath} with ${estimates.length} model estimates and ${actuals.length} actual costs`);
+  }
+  
   console.log(`Basis: ${basis.input_tokens.toLocaleString()} input + ${basis.output_tokens.toLocaleString()} output tokens`);
   if (actuals.length > 0) {
     console.log(`Actuals preserved: ${actuals.map(a => a.title).join(', ')}`);
