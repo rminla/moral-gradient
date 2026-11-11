@@ -5,7 +5,7 @@ import LiveBudget from "@/components/LiveBudget";
 import { NextMilestoneCard, ProgressBar } from "@/components/Milestone";
 import { getBundle } from "@/lib/bundle";
 import { autoLaunch, jobMode } from "@/lib/config";
-import { getFunding, getJobs, getLeaderboard, getRecentDonations, usd } from "@/lib/funding";
+import { getFunding, getJobs, getLeaderboard, getRecentDonations, usd, queueUsd } from "@/lib/funding";
 import { getSpend } from "@/lib/ledger";
 
 export const dynamic = "force-dynamic";
@@ -54,13 +54,13 @@ export default async function Costs() {
       </section>
 
       <section id="queue" className="mx-auto max-w-[1200px] scroll-mt-16 border-b border-rule px-5 py-14 md:px-8 md:py-16">
-        <SectionHead kicker="Funding queue" title="Fills in order.">Card donations fill this queue in order. When a strip reaches 100%, that suite is reviewed and launched with a hard spending cap equal to the funded amount. Offline donations count toward totals but are reviewed before any run starts. Costs are estimates based on measured token usage in past full runs plus a safety margin, replaced by actual cost after a model runs.</SectionHead>
+        <SectionHead kicker="Funding queue" title="Fills in order.">Card donations fill this queue in order. When a strip reaches 100%, that suite is queued to run with a hard spending cap equal to the funded amount. Offline donations count toward totals but are reviewed before any run starts. Costs are estimates based on measured token usage in past full runs plus a safety margin, replaced by actual cost after a model runs.</SectionHead>
         <div className="mt-8 border-t border-ink">
           {all.map((m) => (
             <div key={m.key} className="grid items-center gap-3 border-b border-rule py-4 md:grid-cols-[3rem_1.4fr_2fr_8rem]">
               <div className="num text-[12px] text-ink/40">{String(m.position).padStart(2, "0")}</div>
               <div className="min-w-0"><div className="text-[16px] font-semibold">{m.title}</div><div className="truncate font-mono text-[10.5px] text-ink/45">{m.kind === "model" ? `${m.lab} · ${m.model_id}` : "scenario suite"} · {m.suite}</div></div>
-              <div><ProgressBar value={Number(m.funded_cents) / Number(m.cost_cents)} /><div className="mt-1.5 flex justify-between font-mono text-[10.5px] text-ink/50"><span>{usd(m.funded_cents, 0)} of {usd(m.cost_cents, 0)}</span>{m.funded_at && <span>funded {pt(m.funded_at)}</span>}</div></div>
+              <div><ProgressBar value={Number(m.funded_cents) / Number(m.cost_cents)} /><div className="mt-1.5 flex justify-between font-mono text-[10.5px] text-ink/50"><span>{queueUsd(m.funded_cents)} of {queueUsd(m.cost_cents)}</span>{m.funded_at && <span>funded {pt(m.funded_at)}</span>}</div></div>
               <div className="md:text-right"><span className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.06em] ${STATUS[m.status] || "border-rule"}`}>{(m as any).pending_review ? "funded · launch pending review" : m.status.replace("_", " ")}</span></div>
             </div>
           ))}
