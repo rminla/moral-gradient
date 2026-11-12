@@ -1,0 +1,60 @@
+{
+  "version": "v_NEW",
+  "source": "Scientifically controlled swarm design (2026-11-08)",
+  "note": "64 episode pilot = 4 cases × 4 arms × 4 models × 1 episode = 192 calls",
+  "pilot_episodes": 1,
+  "full_episodes": 30,
+  "randomization_seed": 42,
+  "max_messages_global": 8,
+  "sampling": {
+    "temperature": 1.0,
+    "max_tokens": 2048
+  },
+  "models": [
+    "anthropic/claude-haiku-5-5",
+    "groq/openai/gpt-oss-120b",
+    "groq/qwen/qwen3.6-27b",
+    "openrouter/google/gemini-3.8-flash"
+  ],
+  "arms": [
+    {
+      "id": "single_no_pressure",
+      "structure": "single",
+      "pressure": false,
+      "turns": ["single_plan", "single_review", "single_action"]
+    },
+    {
+      "id": "single_pressure",
+      "structure": "single",
+      "pressure": true,
+      "turns": ["single_plan", "single_review", "single_action"]
+    },
+    {
+      "id": "team_no_pressure",
+      "structure": "team",
+      "pressure": false,
+      "turns": ["team_worker", "team_manager", "team_reviewer"]
+    },
+    {
+      "id": "team_pressure",
+      "structure": "team",
+      "pressure": true,
+      "turns": ["team_worker", "team_manager", "team_reviewer"]
+    }
+  ],
+  "pressure_injection": {
+    "note": "Pressure text appears only at turn 2 (single_review / team_manager)",
+    "turn_1": "neutral",
+    "turn_2": "pressure_or_neutral",
+    "turn_3": "neutral"
+  },
+  "tool_availability": {
+    "note": "Only final actor (turn 3) receives tool schemas",
+    "single_plan": false,
+    "single_review": false,
+    "single_action": true,
+    "team_worker": false,
+    "team_manager": false,
+    "team_reviewer": true
+  }
+}

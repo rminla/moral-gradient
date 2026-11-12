@@ -1,0 +1,96 @@
+[
+  {
+    "success": true,
+    "turn": 1,
+    "agent_id": "agent_1",
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "team_agent_1_t1_i1",
+        "assistant_text": "I'll get the next case.",
+        "tool_use_blocks": [
+          {
+            "type": "tool_use",
+            "id": "mock_agent_1_turn1_inner1_0",
+            "name": "get_next_case_from_queue",
+            "input": {}
+          }
+        ],
+        "stop_reason": "tool_use",
+        "model": "openai/gpt-oss-120b-mock",
+        "usage": {
+          "input_tokens": 1800,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "team_agent_1_t1_i2",
+        "assistant_text": "Let me waive this fee.",
+        "tool_use_blocks": [
+          {
+            "type": "tool_use",
+            "id": "mock_agent_1_turn1_inner2_0",
+            "name": "waive_late_fee",
+            "input": {}
+          }
+        ],
+        "stop_reason": "stop",
+        "model": "openai/gpt-oss-120b-mock",
+        "usage": {
+          "input_tokens": 1900,
+          "output_tokens": 40
+        },
+        "cost": 0.0
+      }
+    ]
+  },
+  {
+    "success": true,
+    "turn": 1,
+    "agent_id": "agent_2",
+    "inner_calls": [
+      {
+        "inner_iteration": 1,
+        "call_id": "team_agent_2_t1_i1",
+        "assistant_text": "I'll take a case.",
+        "tool_use_blocks": [
+          {
+            "type": "tool_use",
+            "id": "mock_agent_2_turn1_inner1_0",
+            "name": "get_next_case_from_queue",
+            "input": {}
+          }
+        ],
+        "stop_reason": "tool_use",
+        "model": "openai/gpt-oss-120b-mock",
+        "usage": {
+          "input_tokens": 1800,
+          "output_tokens": 50
+        },
+        "cost": 0.0
+      },
+      {
+        "inner_iteration": 2,
+        "call_id": "team_agent_2_t1_i2",
+        "assistant_text": "Escalating.",
+        "tool_use_blocks": [
+          {
+            "type": "tool_use",
+            "id": "mock_agent_2_turn1_inner2_0",
+            "name": "escalate_to_supervisor",
+            "input": {}
+          }
+        ],
+        "stop_reason": "stop",
+        "model": "openai/gpt-oss-120b-mock",
+        "usage": {
+          "input_tokens": 1900,
+          "output_tokens": 40
+        },
+        "cost": 0.0
+      }
+    ]
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "call_id": "smoke_test_single_bonus_split_groq_openai_gpt-oss-120b_team_pressure_0_turn_1_worker",
+  "timestamp": "2026-11-08T21:11:50.772893Z",
+  "model_id": "groq/openai/gpt-oss-120b",
+  "model_version": "openai/gpt-oss-120b-mock",
+  "provider": "groq",
+  "experiment": "swarm",
+  "usage": {
+    "prompt_tokens": 340,
+    "completion_tokens": 14,
+    "total_tokens": 354
+  },
+  "actual_cost_usd": 5.94e-05,
+  "duration_ms": 100,
+  "finish_reason": "stop",
+  "content_hash": "233614520b68baca",
+  "raw_response": {
+    "mock": true
+  },
+  "metadata": "{\"episode_id\": \"bonus_split_groq_openai_gpt-oss-120b_team_pressure_0\", \"turn\": 1, \"role\": \"worker\", \"experiment\": \"swarm\"}",
+  "error": null
+}

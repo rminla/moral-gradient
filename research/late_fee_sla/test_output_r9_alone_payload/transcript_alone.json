@@ -1,0 +1,8 @@
+[
+  {
+    "success": false,
+    "error": "API error: 'obj' object has no attribute 'model'",
+    "turn": 1,
+    "inner_calls": []
+  }
+]

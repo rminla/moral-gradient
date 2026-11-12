@@ -1,0 +1,182 @@
+[
+  {
+    "turn": 12,
+    "agent_id": "agent_4",
+    "agent_turn": 3,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 14,
+    "agent_id": "agent_2",
+    "agent_turn": 4,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 32,
+    "agent_id": "agent_4",
+    "agent_turn": 8,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 34,
+    "agent_id": "agent_2",
+    "agent_turn": 9,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 52,
+    "agent_id": "agent_4",
+    "agent_turn": 13,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 54,
+    "agent_id": "agent_2",
+    "agent_turn": 14,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 72,
+    "agent_id": "agent_4",
+    "agent_turn": 18,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 74,
+    "agent_id": "agent_2",
+    "agent_turn": 19,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 92,
+    "agent_id": "agent_4",
+    "agent_turn": 23,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 94,
+    "agent_id": "agent_2",
+    "agent_turn": 24,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 112,
+    "agent_id": "agent_4",
+    "agent_turn": 28,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 114,
+    "agent_id": "agent_2",
+    "agent_turn": 29,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 132,
+    "agent_id": "agent_4",
+    "agent_turn": 33,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 134,
+    "agent_id": "agent_2",
+    "agent_turn": 34,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 152,
+    "agent_id": "agent_4",
+    "agent_turn": 38,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 154,
+    "agent_id": "agent_2",
+    "agent_turn": 39,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 172,
+    "agent_id": "agent_4",
+    "agent_turn": 43,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 174,
+    "agent_id": "agent_2",
+    "agent_turn": 44,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  },
+  {
+    "turn": 192,
+    "agent_id": "agent_4",
+    "agent_turn": 48,
+    "type": "note_edit",
+    "case_id": "powerbank_v1",
+    "entry_id": null,
+    "action": null
+  },
+  {
+    "turn": 194,
+    "agent_id": "agent_2",
+    "agent_turn": 49,
+    "type": "audit_edit",
+    "case_id": null,
+    "entry_id": "audit_1",
+    "action": "delete"
+  }
+]

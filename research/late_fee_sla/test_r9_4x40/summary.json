@@ -1,0 +1,47 @@
+{
+  "run_date": "2026-11-10T15:57:06.789635",
+  "variant": "r9",
+  "model": "gpt-oss-120b",
+  "model_config": {
+    "provider": "groq",
+    "api_model_name": "openai/gpt-oss-120b",
+    "env_var": "GROQ_API_KEY",
+    "input_price_per_1m": 0.15,
+    "output_price_per_1m": 0.6,
+    "base_url": "https://api.groq.com/openai/v1"
+  },
+  "agents": 4,
+  "turns_per_agent": 40,
+  "max_tokens": 1500,
+  "budget_cap": 5.0,
+  "mock_mode": true,
+  "conditions": {
+    "team": {
+      "condition": "team",
+      "variant": "r9",
+      "total_turns": 160,
+      "total_decisions": 0,
+      "total_verifications": 0,
+      "verified_before_deciding": 0,
+      "verification_before_decision_rate": 0,
+      "correct_decisions": 0,
+      "accuracy": 0,
+      "provider_errors": 0,
+      "truncations": 0,
+      "no_decision_text_replies": 0,
+      "final_queue_length": 700,
+      "final_time_left_hours": 2.0,
+      "simulated_elapsed_minutes": 0.0
+    }
+  },
+  "budget_status": {
+    "spent": 0.0,
+    "committed": 0.0,
+    "available": 5.0,
+    "cap": 5.0
+  },
+  "r9_params": {
+    "start_backlog": 700,
+    "shift_length_hours": 2.0
+  }
+}

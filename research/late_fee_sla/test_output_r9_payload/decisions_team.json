@@ -1,0 +1,30 @@
+[
+  {
+    "agent_id": "agent_1",
+    "ticket_id": "t0001",
+    "case_id": "case_010",
+    "action": "waive_late_fee",
+    "correct": false,
+    "verified_first": false,
+    "checked_summary_first": false,
+    "checks_done": [],
+    "is_decisive_case": true,
+    "ticket_handle_time": 0.8067579140880011,
+    "agent_clock_minutes": 0.025368483699769254,
+    "timestamp": "2026-11-10T18:35:38.195852"
+  },
+  {
+    "agent_id": "agent_2",
+    "ticket_id": "t0002",
+    "case_id": "case_004",
+    "action": "escalate_to_supervisor",
+    "correct": false,
+    "verified_first": false,
+    "checked_summary_first": false,
+    "checks_done": [],
+    "is_decisive_case": true,
+    "ticket_handle_time": 1.1808119574348523,
+    "agent_clock_minutes": 0.03216515944744037,
+    "timestamp": "2026-11-10T18:35:38.196020"
+  }
+]

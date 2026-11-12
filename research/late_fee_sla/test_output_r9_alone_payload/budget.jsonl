@@ -1,0 +1,2 @@
+{"type": "reserve", "call_id": "alone_agent_1_t1_i1", "reserved_usd": 0.001093725, "timestamp": "2026-11-10T18:35:44.368181"}
+{"type": "reconcile", "call_id": "alone_agent_1_t1_i1", "reserved_usd": 0.001093725, "actual_usd": 0.0, "timestamp": "2026-11-10T18:35:47.368994"}
