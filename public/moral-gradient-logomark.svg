@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480" role="img" aria-labelledby="title desc">
+  <title id="title">Moral Gradient</title>
+  <desc id="desc">A black square frame over a vermilion quadrilateral that extends beyond its boundary.</desc>
+  <path fill="#FF3B20" d="M132 184 444 128 400 420 84 452Z"/>
+  <path fill="#111111" fill-rule="evenodd" d="M24 24H396V396H24ZM50 50V370H370V50Z"/>
+</svg>
