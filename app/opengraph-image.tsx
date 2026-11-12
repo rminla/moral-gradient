@@ -4,7 +4,7 @@ import { OG, OgCells, OgWordmark, ogFonts, siteHost } from "@/lib/og";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Moral Gradient: AI models say the right thing. We track what they do. Open data, written for everyone.";
+export const alt = "Moral Gradient: AI models say one thing. We track what they do. Open data, written for everyone.";
 
 export default async function Image() {
   const fonts = await ogFonts();
@@ -27,7 +27,7 @@ export default async function Image() {
             <div style={{ width: 10, height: 10, background: OG.signal }} />AN OPEN RESEARCH TRACKER
           </div>
           <div style={{ ...head, marginTop: 22, color: "#b4b6ba" }}>AI models say</div>
-          <div style={{ ...head, color: "#b4b6ba" }}>the right thing.</div>
+          <div style={{ ...head, color: "#b4b6ba" }}>one thing.</div>
           <div style={{ ...head }}>We track what</div>
           <div style={{ ...head, gap: 22 }}><span>they</span><span style={{ color: OG.signal }}>do.</span></div>
           <div style={{ display: "flex", flex: 1 }} />

@@ -10,7 +10,7 @@ export const RUNGS = [
   { n: "01", k: "Says", q: "What does it say is right?", d: "It advises another AI agent, or says what it would do. Cheap to give, easy to train for. Necessary, not sufficient.", href: "/stated-vs-actual", safety: false },
   { n: "02", k: "Does", q: "Does it act on it when it has the tools?", d: "Same situation, but now it is the agent: it can waive the fee or refund the money, and we log what it actually does.", href: "/stated-vs-actual", safety: false },
   { n: "03", k: "Under pressure", q: "Does it hold when pushed?", d: "Bare pushback and claimed authority, compared with real new information, where changing your mind is reasonable.", href: "/compare#fb", safety: true },
-  { n: "04", k: "When it benefits", q: "Does it hold when its own targets pull the other way, and does it say so?", d: "A budget memo or its own performance score is added; nothing about the customer changes. We check the action, the reasoning and the reasons it gives.", href: "/reasoning", safety: true },
+  { n: "04", k: "When a stake is added", q: "Does it hold when a stake pulls the other way, and does it say so?", d: "A budget memo or a performance score is added; nothing about the customer changes. We check the action, the reasoning and the reasons it gives.", href: "/reasoning", safety: true },
 ];
 
 export const POINTS = [
@@ -54,7 +54,7 @@ export function WhyItMatters({ headingLevel = "h2", dark = false }: { headingLev
       <Eyebrow dark={dark}>Why this matters</Eyebrow>
       <H className="serif mt-5 max-w-5xl text-[34px] leading-[1.02] tracking-[-0.035em] md:text-[56px]">
         <span className={dark ? "text-white/40" : "text-ink/40"}>Stated values are cheap. </span>
-        What a model <span className="text-vermilion">does</span> when it is pushed or has something to gain, and whether it tells you why, is the question we measure: what it does under pressure or when a stake is added, and whether it tells you why. A gap between advice and action shows that words may not predict behavior. It does not, by itself, show hypocrisy or failed alignment.
+        What a model <span className="text-vermilion">does</span> when it is pushed or has a stake, and whether it tells you why, is the question we measure. A gap between advice and action shows that words may not predict behavior. It does not, by itself, show hypocrisy or failed alignment.
       </H>
       <div className={`mt-10 grid gap-px border md:grid-cols-2 lg:grid-cols-4 ${dark ? "border-white/10 bg-white/10" : "border-rule bg-rule"}`}>
         {POINTS.map((p, i) => (
