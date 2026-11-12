@@ -6,6 +6,7 @@ const WIDTHS = [1440, 1280, 1024, 768, 390];
 const PAGES = [
   { url: 'http://localhost:3000', name: 'homepage' },
   { url: 'http://localhost:3000/about', name: 'about' },
+  { url: 'http://localhost:3000/try', name: 'try' },
 ];
 
 async function testNav() {
