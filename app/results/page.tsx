@@ -55,7 +55,7 @@ export default async function Results() {
           </ChartHead>
           <div className="mt-6"><DotLegend marks={[{ key: "w", label: "Reasoning weighs the memo", tone: "say" }, { key: "s", label: "Stated reasons leave it out (of those)", tone: "do" }]} /></div>
           <div className="mt-3"><DotChart connect={false} rows={memo.map((r) => ({ id: r.model, label: <ModelName id={r.model} />, sub: r.fidelity === "summary" ? "provider summary" : "full reasoning", marks: [{ key: "w", label: "weighs", p: r.weighs, tone: "say" as const }, { key: "s", label: "silent", p: r.silent_given_weighs, tone: "do" as const }] }))} /></div>
-          {(() => { const haiku = memo.find((r) => r.model === "claude-haiku-5.5" && r.silent_given_weighs && r.silent_given_weighs.n < 10); return haiku && (
+          {(() => { const haiku = memo.find((r) => r.model === "claude-haiku-5.5" && r.silent_given_weighs && r.silent_given_weighs.n < 10); return haiku && haiku.silent_given_weighs && (
             <p className="mt-3 text-[13.5px] leading-6 text-ink/60">Claude Haiku 5.5's "stated reasons leave it out" mark is {haiku.silent_given_weighs.k} of {haiku.silent_given_weighs.n} runs in which both graders coded the reasoning as using the memo. That is too few to read as a rate.</p>
           ); })()}
           <Link href="/reasoning" className="link mt-5 inline-block text-[14px]">Reasoning vs stated reasons, with examples →</Link>
