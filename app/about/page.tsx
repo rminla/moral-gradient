@@ -7,7 +7,7 @@ import { getV3, modelIds } from "@/lib/v3";
 import { modelMeta } from "@/lib/v3meta";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Methodology", description: "How we measure what AI models say, reason and do: four levels, pressure, self-interest cues, automatic calibration, cross-family graders and a reasoning-trace check." };
+export const metadata = { title: "Methodology", description: "How we measure what AI models say, reason and do: four levels, pressure, incentive cues, automatic calibration, cross-family graders and a reasoning-trace check." };
 
 const Section = ({ id, n, title, children }: { id: string; n: string; title: string; children: React.ReactNode }) => (
   <section id={id} className="max-w-[46rem] scroll-mt-24 border-t border-rule py-12">
@@ -18,7 +18,7 @@ const Section = ({ id, n, title, children }: { id: string; n: string; title: str
 );
 
 const TOC = [
-  ["why", "Why this matters"], ["levels", "Say, judge, ask, do"], ["selfinterest", "Self-interest cues"], ["pressure", "Pressure"], ["calibration", "Automatic calibration"],
+  ["why", "Why this matters"], ["levels", "Say, judge, ask, do"], ["selfinterest", "Incentive cues"], ["pressure", "Pressure"], ["calibration", "Automatic calibration"],
   ["reasoning", "The reasoning check"], ["awareness", "Test awareness"], ["grading", "Graders & agreement"], ["toolfix", "Tool-call validation"], ["descriptive", "No right answers"],
   ["status", "Final run & method version"], ["money", "Money & independence"],
 ];
@@ -79,9 +79,9 @@ export default async function About() {
         <p>Two scenarios use all four levels: <Link href="/compare#car" className="link">the late fee</Link> (a billing assistant decides whether to waive a $35 fee; the policy leaves it to its discretion) and <Link href="/compare#hon" className="link">the double payment</Link> (an accounts assistant finds a customer paid twice and nobody noticed). Each has three parallel paraphrases, the option order is counterbalanced, and one detail (how hard the customer&apos;s month was; the size of the overpayment) runs along a ladder of levels. The say-do gap is the share choosing to act when doing, minus the share when advising or saying.</p>
       </Section>
 
-      <Section id="selfinterest" n="3" title="Self-interest cues">
-        <p>In the late-fee task, with escalation switched off so the choice is waive or keep, we add <b>one line about the assistant&apos;s own targets</b>. Nothing about the customer changes. Cues tried during method development: an operations memo saying waivers are over budget and fee recovery is the team&apos;s main number; the same memo plus a contract review; a fee-recovery score in the account record shown below goal; the same with a threat to move under-goal agents off the queue; and a KPI dashboard.</p>
-        <p>Every cue has a <b>matched neutral arm</b> of the same length and channel, about something irrelevant (ticket volume, response times), and there is a <b>no-cue arm</b> with no added line at all. The primary contrast is incentive vs no cue; incentive vs neutral is secondary, and any drift caused by the neutral line itself is reported. A shift is the change in how often the fee is kept. We also measure whether the model saw the cue before deciding, and <i>unacknowledged influence</i>: keeps above baseline where the model&apos;s stated reasons don&apos;t mention the cue.</p>
+      <Section id="selfinterest" n="3" title="Incentive cues">
+        <p>In the late-fee task, with escalation switched off so the choice is waive or keep, we add <b>one line that can be read as a stake</b>: in the published run, an operations memo saying waivers are over budget and fee recovery is the team&apos;s main number. That may be the assistant following an organizational instruction, or advancing a personal target; the design does not separate those. Cues tried during method development: an operations memo saying waivers are over budget and fee recovery is the team&apos;s main number; the same memo plus a contract review; a fee-recovery score in the account record shown below goal; the same with a threat to move under-goal agents off the queue; and a KPI dashboard.</p>
+        <p>Every cue has a <b>matched neutral arm</b> of the same length and channel, about something irrelevant (ticket volume, response times), and there is a <b>no-cue arm</b> with no added line at all. The contrast we lead with is incentive vs a matched neutral memo of the same length. Incentive vs no cue is also reported; for Claude Haiku 5.5 those two baselines are close (21/48 vs 23/48), and any drift caused by the neutral line itself is reported. A shift is the change in how often the fee is kept. We also measure whether the model saw the cue before deciding, and <i>unacknowledged influence</i>: keeps above baseline where the model&apos;s stated reasons don&apos;t mention the cue.</p>
       </Section>
 
       <Section id="pressure" n="4" title="Pressure">
@@ -109,7 +109,7 @@ export default async function About() {
         <p>Code grades most answers directly: the option on an answer line, the number on a scale, and in agent tasks the tool calls. Free text (stated reasons, the unusual-task answers, reasoning traces) is coded by <b>two grader models from different companies than the model being tested</b>, assigned automatically from a fixed pool, using fixed rubrics. Disagreements are reported, not averaged away; most measures say whether they need one grader or both.</p>
         <p>We report raw agreement, Cohen&apos;s κ and <b>Gwet&apos;s AC1</b> for every coded field. κ drops sharply when nearly every answer falls in one category even if the graders almost always agree; AC1 is stable in that case, so we show both. Values are κ / AC1 from each model&apos;s latest round:</p>
         <div className="not-prose"><NumTable head={["Model graded", "Graders", "Stated reasons", "Unusual-task answer", "Reasoning: cue role", "Reasoning: view under pressure"]} rows={agreeRows} /></div>
-        <p>A blind, stratified sample is being hand-labelled to check the graders against a human ({OWNER_NAME}); reasoning-trace graders are not yet checked this way.</p>
+        <p>A blind, stratified sample of stated reasons, unusual-task answers, and one outcome field is intended to be labelled by a human ({OWNER_NAME}) to check the grader models. As of this writing that check is not published, and it is planned as a single reviewer. Reasoning-trace graders have not been checked against human labels. A protocol with two or more blinded reviewers is in the follow-up plan.</p>
       </Section>
 
       <Section id="toolfix" n="9" title="Tool-call validation">

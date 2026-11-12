@@ -31,7 +31,7 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
       <PreviewBanner v={v} />
       <PageHead eyebrow={m.lab || "Model"} grey="Weak spots of" title={<span className="text-vermilion">{m.name}</span>}>
         <span className="mr-2"><FidelityTag fidelity={m.trace} /></span>
-        Where this model is most swayed, most self-interested and least transparent across everything we&apos;ve run. Click any card for the full comparison with other models.
+        Where this model is most swayed, most moved by an added stake and least transparent across everything we&apos;ve run. Click any card for the full comparison with other models.
       </PageHead>
       <Block>
         <WeakSpots spots={weakSpots(v, id)} />
@@ -48,7 +48,7 @@ export default async function ModelPage({ params }: { params: Promise<{ slug: st
 
       {si.length > 0 && (
         <Block id="selfinterest">
-          <ChartHead v={v} kicker="Self-interest · the late fee" title="Does a stake of its own change what it does?" />
+          <ChartHead v={v} kicker="Incentive cue · the late fee" title="Does an added stake change what it does?" />
           <div className="mt-6"><DiffChart rows={si.map((r) => ({ id: r.cue, label: cueMeta(r.cue).label, sub: `n = ${r.incentive?.n ?? 0} per arm`, d: r.shift, dim: (r.incentive?.n ?? 0) < 8 }))} leftLabel="waives more" rightLabel="keeps the fee more" /></div>
           <Details><NumTable head={["Cue", "Keeps · incentive", "Keeps · neutral", "Keeps · no cue", "Shift", "vs no cue", "Kept without saying why", "Round"]} rows={si.map((r) => [cueMeta(r.cue).label, propCell(r.incentive), propCell(r.neutral), propCell(r.nocue), diffCell(r.shift), diffCell(r.vs_nocue), diffCell(r.unack), r.it])} /></Details>
         </Block>

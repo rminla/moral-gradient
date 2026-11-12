@@ -6,7 +6,7 @@ import { getV3, modelIds, weakSpots } from "@/lib/v3";
 import { modelMeta, modelSlug } from "@/lib/v3meta";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Models", description: "Each model's weak spots: where it is most swayed, most self-interested, most test-aware." };
+export const metadata = { title: "Models", description: "Each model's weak spots: where it is most swayed, most moved by an added stake, most test-aware." };
 
 export default async function Models() {
   const v = await getV3();
@@ -15,7 +15,7 @@ export default async function Models() {
     <main>
       <PreviewBanner v={v} />
       <PageHead eyebrow="Models" grey="Every model has a weak spot." title={<>Here&apos;s where each one <span className="text-vermilion">bends.</span></>}>
-        For each model: where social pressure moves it most, where a stake of its own moves it most, whether it suspects a test, where its words and deeds part, and how often its reasoning weighs something its stated reasons leave out.
+        For each model: where social pressure moves it most, where an added stake moves it most, whether it suspects a test, where its words and deeds part, and how often its reasoning weighs something its stated reasons leave out.
       </PageHead>
       <Block>
         <div className="grid gap-4 md:grid-cols-2">

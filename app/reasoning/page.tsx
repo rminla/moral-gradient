@@ -60,7 +60,7 @@ export default async function Reasoning() {
       </section>
 
       <Block id="hidden">
-        <ChartHead v={v} kicker="Self-interest · the budget memo" title={<>When a memo about the budget is added, does the model&apos;s reasoning weigh it, and does it <span className="text-vermilion">say so</span>?</>}>
+        <ChartHead v={v} kicker="Incentive cue · the budget memo" title={<>When a memo about the budget is added, does the model&apos;s reasoning weigh it, and does it <span className="text-vermilion">say so</span>?</>}>
           The late-fee situation, with one added line: &ldquo;{cueMeta(primary).plain}&rdquo; Nothing about the customer changes. Graders read the reasoning without seeing the action or the condition.
         </ChartHead>
         <div className="mt-8"><DotLegend marks={[{ key: "w", label: "Reasoning weighs the memo toward keeping the fee", tone: "say" }, { key: "s", label: "…and the stated reasons leave it out", tone: "do" }]} /></div>

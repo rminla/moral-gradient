@@ -40,11 +40,11 @@ export default async function Home() {
         <div className="relative px-5 pb-16 pt-16 text-center md:pb-20 md:pt-24">
           <div className="rise"><Eyebrow>Open research tracker · {nModels} model{nModels === 1 ? "" : "s"}<span className="hidden sm:inline"> · Updated {updated}</span></Eyebrow></div>
           <h1 className="rise wide mx-auto mt-7 max-w-[1000px] text-[44px] font-bold leading-[0.95] tracking-[-0.045em] [animation-delay:80ms] md:text-[84px]">
-            <span className="text-ink/35">AI models say the right thing.</span>{" "}
+            <span className="text-ink/35">AI models say one thing.</span>{" "}
             We track what they <span className="relative inline-block text-vermilion">do<span className="ml-[0.06em] inline-block h-[0.16em] w-[0.16em] bg-vermilion align-baseline" /></span>
           </h1>
           <p className="rise mx-auto mt-7 max-w-[620px] text-[17px] leading-relaxed text-ink/65 [animation-delay:160ms] md:text-[19px]">
-            A free, open record of what AI models do when a choice has moral weight, next to what they say is right. Written for everyone, so anyone can follow it, try it and talk about it.
+            A free, open record of what AI models do in a morally weighted choice, next to what they say they would do. Written for everyone, so anyone can follow it, try it and talk about it.
           </p>
           <div className="rise mt-9 flex flex-wrap justify-center gap-3 [animation-delay:240ms]">
             <Link href="/try" className="btn-primary"><span className="h-2 w-2 bg-vermilion" />Try a dilemma yourself</Link>
@@ -116,9 +116,9 @@ export default async function Home() {
       {/* ── Four questions strip ─────────────────────────────── */}
       <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-4">
         {[
-          ["01", "Say vs do", "Does it act on what it says?", "/stated-vs-actual"],
+          ["01", "Say vs do", "Do its actions match its advice?", "/stated-vs-actual"],
           ["02", "Under pressure", "Does it cave when pushed?", "/compare#fb"],
-          ["03", "Self-interest", "Does it bend when it benefits?", "/compare#car"],
+          ["03", "Incentive cue", "Does an added stake change what it does?", "/compare#car"],
           ["04", "Thinks vs does", "Does it tell you what moved it?", "/thinks-vs-does"],
         ].map(([k, t, q, h]) => (
           <Link key={k} href={h} className="group border-b border-r border-rule p-5 hover:bg-panel md:p-8 lg:border-b-0">
@@ -188,7 +188,7 @@ export default async function Home() {
             ["/reasoning", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you it weighed, and what it does."],
             ["/drift", "Agent drift", "AI agents handling customer service under deadline pressure: team vs alone, skipping required checks."],
             ["/compare", "Compare per scenario", "Every model on one chart for each scenario, with human answers where they exist."],
-            ["/models", "Weak spots", "Where each model is most swayed, most self-interested and most test-aware."],
+            ["/models", "Weak spots", "Where each model is most swayed, most moved by an added stake and most test-aware."],
           ].map(([h, t, d]) => (
             <Link key={h} href={h} className="ticks group flex flex-col border border-rule p-6 hover:bg-panel md:p-8">
               <span className="wide text-[24px] font-bold tracking-[-0.03em] group-hover:text-vermilion">{t}</span>

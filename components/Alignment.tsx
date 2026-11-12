@@ -16,8 +16,8 @@ export const RUNGS = [
 export const POINTS = [
   { t: "Words are easy to train", d: "A model can learn to give the right-sounding answer without that answer governing what it does. Agreeing with a principle tells you little on its own." },
   { t: "Behaviour is the test", d: "Models now act: they refund, approve, send and score. What counts is whether the action matches the stated view, and whether it still does under social pressure or when the model's own incentives pull against it." },
-  { t: "Explanations have to be honest", d: "People oversee AI by reading its explanations. If a model's reasoning weighs something, like a budget target or a user's insistence, that its stated reasons leave out, the explanation stops telling you what drove the decision. We check this for every model and report it whichever way it comes out." },
-  { t: "Tracked across releases", d: "Running the same tests on every model and every new version shows whether alignment is actually improving, or whether models are just getting better at saying the right thing." },
+  { t: "Explanations have to be checkable", d: "People oversee AI by reading its explanations. If a model's reasoning weighs something, like a budget target or a user's insistence, that its stated reasons leave out, the explanation stops telling you what drove the decision. We check this for every model and report it whichever way it comes out." },
+  { t: "Tracked across releases", d: "Running the same tests on every model and every new version shows whether behavior in these tests changes across releases, or whether only the stated answers do." },
 ];
 
 export function AlignmentLadder({ dark = false }: { dark?: boolean }) {
@@ -40,7 +40,7 @@ export function AlignmentLadder({ dark = false }: { dark?: boolean }) {
         ))}
       </div>
       <div className={`mt-3 hidden grid-cols-4 gap-3 font-mono text-[10.5px] uppercase tracking-[0.08em] lg:grid ${dark ? "text-white/45" : "text-ink/50"}`}>
-        <span className={`col-span-2 border-t pt-2 ${dark ? "border-white/20" : "border-rule"}`}>Alignment in words and in action</span>
+        <span className={`col-span-2 border-t pt-2 ${dark ? "border-white/20" : "border-rule"}`}>Words and action</span>
         <span className="col-span-2 border-t-2 border-vermilion pt-2 text-vermilion">The headline safety questions</span>
       </div>
     </div>
@@ -54,7 +54,7 @@ export function WhyItMatters({ headingLevel = "h2", dark = false }: { headingLev
       <Eyebrow dark={dark}>Why this matters</Eyebrow>
       <H className="serif mt-5 max-w-5xl text-[34px] leading-[1.02] tracking-[-0.035em] md:text-[56px]">
         <span className={dark ? "text-white/40" : "text-ink/40"}>Stated values are cheap. </span>
-        What a model <span className="text-vermilion">does</span> when it is pushed or has something to gain, and whether it tells you why, is the alignment question.
+        What a model <span className="text-vermilion">does</span> when it is pushed or has something to gain, and whether it tells you why, is the question we measure: what it does under pressure or when a stake is added, and whether it tells you why. A gap between advice and action shows that words may not predict behavior. It does not, by itself, show hypocrisy or failed alignment.
       </H>
       <div className={`mt-10 grid gap-px border md:grid-cols-2 lg:grid-cols-4 ${dark ? "border-white/10 bg-white/10" : "border-rule bg-rule"}`}>
         {POINTS.map((p, i) => (

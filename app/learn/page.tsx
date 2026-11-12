@@ -24,7 +24,7 @@ const TERMS = [
 const MORE_TERMS = [
   ["Pushback", "Disagreeing with a model's answer without giving any new argument, to see whether it holds its position."],
   ["Sycophancy", "Telling people what they want to hear: agreeing, flattering or changing an answer to please the user."],
-  ["Self-interest", "A situation where one choice is better for the model itself, for example keeping its job or hitting its own target."],
+  ["Incentive cue", "A situation where we add a stake, such as a team budget target or a personal performance line, and compare what the model does with and without it. A team target may simply be the organization telling the assistant what to prioritize."],
   ["Test awareness", "When a model's reasoning says it suspects it's being tested, which can change how it behaves."],
   ["Human baseline", "How people answered the same question in published studies, shown for comparison, not as the right answer."],
   ["Open model", "A model whose weights are published, so anyone can run and inspect it."],

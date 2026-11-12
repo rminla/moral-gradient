@@ -72,7 +72,7 @@ export function ModelThinkCard({ r, q, extra }: { r: ThinkRow; q?: Quote; extra?
         {r.verdict === "hidden" && (
           <div className="border border-vermilion bg-vermilion/[0.05] p-4">
             <div className="num text-[30px] font-semibold leading-none text-vermilion">{ptsTxt(r.hidden?.d)}</div>
-            <div className="mt-1 text-[13.5px] leading-5">more fee-keeping that its reasoning doesn't put down to the memo. <span className="font-mono text-[10.5px] text-ink/50">95% CI {fmtCI(r.hidden?.lo, r.hidden?.hi, true)} pts</span></div>
+            <div className="mt-1 text-[13.5px] leading-5">additional fee retention without disclosed reliance on the memo. <span className="font-mono text-[10.5px] text-ink/50">95% CI {fmtCI(r.hidden?.lo, r.hidden?.hi, true)} pts</span></div>
           </div>
         )}
       </div>
@@ -99,14 +99,14 @@ export function ThinksHome({ r, q }: { r: ThinkRow; q: Quote }) {
         <div className="flex flex-wrap items-center gap-3"><span className="kicker text-vermilion">New · What it thinks vs what it does</span><SimTag dark /></div>
         <h2 className="wide mt-4 max-w-4xl text-[32px] font-bold leading-[1.02] tracking-[-0.04em] md:text-[52px]">An AI model&apos;s reasoning doesn&apos;t always show <span className="text-vermilion">what moved it.</span></h2>
         <p className="mt-5 max-w-3xl text-[17px] leading-relaxed text-white/70">
-          We gave {r.name} a simulated billing job: a customer asks to waive a $35 late fee. Sometimes its operations memo said waivers were over budget and fee recovery was the team&apos;s main number. With the memo, it kept the fee in <b className="text-white">{fmtPct(r.keepMemo?.p)}</b> of runs, against <b className="text-white">{fmtPct(r.keepNeutral?.p)}</b> with a neutral memo. Its reasoning nearly always brought the memo up, then said it was setting it aside. Its note said this:
+          We gave {r.name} a simulated billing job: a customer asks to waive a $35 late fee. Sometimes its operations memo said waivers were over budget and fee recovery was the team&apos;s main number. With the memo, it kept the fee in <b className="text-white">{r.keepMemo?.k} of {r.keepMemo?.n}</b> runs (85%), against <b className="text-white">{r.keepNeutral?.k} of {r.keepNeutral?.n}</b> (44%) with a neutral memo. Its reasoning nearly always brought the memo up, then said it was setting it aside. Its note said this:
         </p>
         <div className="mt-8"><ThreeLayers q={q} fidelity={r.fidelity} dark /></div>
         <div className="mt-3 grid gap-px bg-white/10 sm:grid-cols-3">
           {[
             [ptsTxt(r.shift?.d), "more likely to keep the fee when the memo is there"],
             [fmtPct(r.weighs?.p), "of its reasoning counts the memo as a reason to keep it"],
-            [ptsTxt(r.hidden?.d), "of that extra fee-keeping its reasoning doesn't explain"],
+            [ptsTxt(r.hidden?.d), "additional fee retention without disclosed reliance on the memo"],
           ].map(([n, t]) => (
             <div key={t} className="bg-ink p-5"><div className="num text-[34px] font-semibold leading-none text-vermilion">{n}</div><div className="mt-2 text-[13.5px] leading-5 text-white/70">{t}</div></div>
           ))}
