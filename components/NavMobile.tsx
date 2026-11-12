@@ -35,6 +35,20 @@ export function NavMobile({ sections, userLink }: NavMobileProps) {
   }, [isOpen]);
 
   useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isOpen) {
+        event.preventDefault();
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscapeKey);
+      return () => document.removeEventListener("keydown", handleEscapeKey);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
 
@@ -70,11 +84,11 @@ export function NavMobile({ sections, userLink }: NavMobileProps) {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center text-ink/70 hover:text-ink"
+                className="flex h-10 w-10 items-center justify-center rounded border border-rule bg-paper text-ink transition-colors hover:bg-panel"
                 aria-label="Close menu"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
