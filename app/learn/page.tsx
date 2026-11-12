@@ -7,7 +7,7 @@ import { getV3, modelIds, sayDo } from "@/lib/v3";
 export const metadata = { title: "Learn", description: "AI alignment in plain language: what it is, why what an AI says and what it does can differ, and why that's worth talking about." };
 
 const qs = (N: number) => [
-  { n: "01", q: "What is AI alignment?", a: "Getting AI to reliably do what people intend, including when nobody is checking. Today's chat models are trained on answers people approve of, which makes them good at saying the right thing. Whether they also do it is a separate question." },
+  { n: "01", q: "What is AI alignment?", a: "Getting AI to reliably do what people intend, including when nobody is checking. Today's chat models are trained on answers people approve of, which makes them good at giving the expected answer. Whether they also act on it is a separate question." },
   { n: "02", q: "Why does say vs do matter?", a: "AI is starting to act for people: it answers customers, approves refunds, sends emails. If a model advises one thing and does another, reading its answers won't tell you what it will do." },
   { n: "03", q: "Why do its reasons matter?", a: "People check AI mostly by reading its explanations. If something swayed a decision, like a budget target or a user who kept pushing, and the explanation leaves it out, that check fails without anyone noticing." },
   { n: "04", q: "What doesn't this show?", a: `That AI is evil, that it lies on purpose, or which model is "most moral". It's a handful of everyday scenarios and ${N} models so far, from one pre-registered run, all in simulated tasks. We show what models chose, never what they should have chosen.` },

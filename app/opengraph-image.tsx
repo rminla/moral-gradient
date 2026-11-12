@@ -13,7 +13,7 @@ export default async function Image() {
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: OG.paper, color: OG.ink, fontFamily: "Archivo", position: "relative" }}>
         <div style={{ position: "absolute", top: 0, right: 0, width: 330, height: 630, display: "flex", flexDirection: "column", justifyContent: "center", gap: 18, padding: "0 48px", background: OG.ink }}>
-          {[["Says it's right", 0.95, OG.grey2], ["Tells others to", 0.85, OG.grey], ["Actually does", 0.35, OG.signal]].map(([l, v, c]) => (
+          {[["What it says", 0.95, OG.grey2], ["Tells others to", 0.85, OG.grey], ["Actually does", 0.35, OG.signal]].map(([l, v, c]) => (
             <div key={l as string} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, color: "rgba(255,255,255,0.7)" }}><span>{l as string}</span><span style={{ fontFamily: "JetBrains Mono", color: c === OG.signal ? OG.signal : "#fff" }}>{Math.round((v as number) * 100)}%</span></div>
               <OgCells value={v as number} color={c as string} w={234} h={14} empty="rgba(255,255,255,0.12)" />
