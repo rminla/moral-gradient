@@ -387,9 +387,7 @@ if __name__ == "__main__":
     assert all(c in K.CUES or c == "none" for c in CUE_SET), CUE_SET
     DILEMMA_SET[:] = a.dilemmas.split(",")
     if a.cue_n: CUE_N.update({k: int(v) for k, v in (x.split(":") for x in a.cue_n.split(","))})
-    if a.role_n: 
-        global ROLE_N
-        ROLE_N = a.role_n
+    if a.role_n: ROLE_N = a.role_n
     if a.phases: PHASES[:] = a.phases.split(",")
     if a.reuse_calibration:
         import shutil; src = ROOT / "data/v3" / a.reuse_calibration / a.model / "calibrate.jsonl"; dst = ROOT / "data/v3" / a.iter / a.model / "calibrate.jsonl"
