@@ -31,10 +31,10 @@ echo "RUNNING S1 CANARY (256 units) WITH FAKE TRANSPORT"
 echo "========================================================================"
 
 # S1 canary: 4 models × 64 units/model = 256 total
-# 4 arms × 16 units/arm/model
+# 4 arms × 16 units/arm/model  
 python3 research/prereg/run_prereg.py claude-haiku-5.5 \
     --iter s1_canary_fake \
-    --stage calibrate \
+    --stage all \
     --preset iter \
     --phases cues \
     --cues "benef_org,benef_self,benef_other,none" \
@@ -80,7 +80,7 @@ echo "========================================================================"
 # 4 cells × 16 units/cell/model
 python3 research/prereg/run_prereg.py claude-haiku-5.5 \
     --iter s2_canary_fake \
-    --stage calibrate \
+    --stage all \
     --preset iter \
     --phases role \
     --role-n 16 \
