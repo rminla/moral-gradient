@@ -158,24 +158,26 @@ def fit_firth_logistic(df: pd.DataFrame) -> Dict:
     tol = 1e-8
     
     for iteration in range(max_iter):
-        eta = X @ beta
+        # Convert to numpy arrays to avoid DataFrame @ ndarray crash
+        X_np = np.asarray(X)
+        eta = X_np @ beta
         mu = 1 / (1 + np.exp(-eta))
         mu = np.clip(mu, 1e-10, 1 - 1e-10)
         
         W = np.diag(mu * (1 - mu))
         
         try:
-            I = X.T @ W @ X
+            I = X_np.T @ W @ X_np
             I_inv = np.linalg.inv(I + np.eye(p) * 1e-10)
         except:
             I_inv = np.linalg.pinv(I + np.eye(p) * 1e-10)
         
-        H = X @ I_inv @ X.T @ W
+        H = X_np @ I_inv @ X_np.T @ W
         h = np.diag(H)
         
         z = eta + (y - mu) / (mu * (1 - mu) + 1e-10) + h * (0.5 - mu) / (mu * (1 - mu) + 1e-10)
         
-        beta_new = I_inv @ X.T @ W @ z
+        beta_new = I_inv @ X_np.T @ W @ z
         
         if np.max(np.abs(beta_new - beta)) < tol:
             beta = beta_new
@@ -275,14 +277,24 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
             })
             continue
         
-        # Compute AME from original fit
-        cell_coef = coef_dict[cell_coef_key]
-        coef_vec = np.array([coef_dict[c] for c in X_original.columns])
-        eta_baseline = X_original.values @ coef_vec
-        p_baseline = 1 / (1 + np.exp(-eta_baseline))
-        eta_treat = eta_baseline + cell_coef
+        # Compute AME as counterfactual predictions (correct estimand)
+        # Set all rows to treatment cell and predict
+        df_treat = df_clean.copy()
+        df_treat["cell"] = cell_treatment
+        _, X_treat = dmatrices(formula, df_treat, return_type="dataframe")
+        coef_vec = np.array([coef_dict[c] for c in X_treat.columns])
+        eta_treat = np.asarray(X_treat) @ coef_vec
         p_treat = 1 / (1 + np.exp(-eta_treat))
-        ame = np.mean(p_treat - p_baseline)
+        
+        # Set all rows to reference cell (agent_tools) and predict
+        df_ref = df_clean.copy()
+        df_ref["cell"] = "agent_tools"
+        _, X_ref = dmatrices(formula, df_ref, return_type="dataframe")
+        eta_ref = np.asarray(X_ref) @ coef_vec
+        p_ref = 1 / (1 + np.exp(-eta_ref))
+        
+        # AME is mean difference
+        ame = np.mean(p_treat - p_ref)
         
         # Bootstrap CI: refit model on each draw
         ames_boot = []
@@ -294,26 +306,23 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
             try:
                 model_boot = logit(formula, data=df_boot).fit(disp=0, maxiter=50)
                 
-                # Build design matrix for bootstrap sample
-                _, X_boot = dmatrices(formula, df_boot, return_type="dataframe")
-                
-                # Find cell coefficient in bootstrap fit
-                cell_coef_boot = None
-                for param_name in model_boot.params.index:
-                    if f"[T.{cell_treatment}]" in param_name:
-                        cell_coef_boot = model_boot.params[param_name]
-                        break
-                
-                if cell_coef_boot is None:
-                    continue
-                
-                # Compute AME for bootstrap sample
+                # Compute AME as counterfactual predictions (correct bootstrap estimand)
+                # Treatment cell
+                df_boot_treat = df_boot.copy()
+                df_boot_treat["cell"] = cell_treatment
+                _, X_boot_treat = dmatrices(formula, df_boot_treat, return_type="dataframe")
                 coef_vec_boot = model_boot.params.values
-                eta_baseline_boot = X_boot.values @ coef_vec_boot
-                p_baseline_boot = 1 / (1 + np.exp(-eta_baseline_boot))
-                eta_treat_boot = eta_baseline_boot + cell_coef_boot
+                eta_treat_boot = np.asarray(X_boot_treat) @ coef_vec_boot
                 p_treat_boot = 1 / (1 + np.exp(-eta_treat_boot))
-                ame_boot = np.mean(p_treat_boot - p_baseline_boot)
+                
+                # Reference cell (agent_tools)
+                df_boot_ref = df_boot.copy()
+                df_boot_ref["cell"] = "agent_tools"
+                _, X_boot_ref = dmatrices(formula, df_boot_ref, return_type="dataframe")
+                eta_ref_boot = np.asarray(X_boot_ref) @ coef_vec_boot
+                p_ref_boot = 1 / (1 + np.exp(-eta_ref_boot))
+                
+                ame_boot = np.mean(p_treat_boot - p_ref_boot)
                 
                 ames_boot.append(ame_boot)
             except:
@@ -476,19 +485,25 @@ def model_by_cell_lr_test(df: pd.DataFrame) -> Dict:
 
 
 def exclusion_rule(df: pd.DataFrame) -> List[str]:
-    """Apply >10% exclusion rule: drop model if >10% unparsed."""
+    """Apply >10% exclusion rule: drop model if >10% unparsed per no-tools cell."""
     df_all = df.copy()
     
     excluded = []
     for model in df_all["model"].unique():
-        df_model = df_all[df_all["model"] == model]
-        n_total = len(df_model)
-        n_unparsed = df_model["unparsed"].sum()
-        
-        if n_total > 0 and (n_unparsed / n_total) > 0.10:
-            excluded.append(model)
+        # Check each no-tools cell separately (prereg spec)
+        for cell in df_all["cell"].unique():
+            if "notools" not in cell:
+                continue
+            
+            df_cell = df_all[(df_all["model"] == model) & (df_all["cell"] == cell)]
+            n_total = len(df_cell)
+            n_unparsed = df_cell["unparsed"].sum()
+            
+            if n_total > 0 and (n_unparsed / n_total) > 0.10:
+                excluded.append(model)
+                break  # Model is excluded, no need to check other cells
     
-    return excluded
+    return list(set(excluded))
 
 
 def analyze_study2(data_file: Path) -> Dict:
@@ -499,6 +514,13 @@ def analyze_study2(data_file: Path) -> Dict:
     print(f"Loaded {len(df)} records")
     print(f"Cells: {df['cell'].value_counts().to_dict()}")
     print(f"Unparsed: {df['unparsed'].sum()} / {len(df)} ({100*df['unparsed'].sum()/len(df):.1f}%)")
+    
+    # Report tools episodes with no valid call separately (prereg spec)
+    tools_rows = df[df["cell"].str.endswith("_tools")]
+    no_valid_call = tools_rows[tools_rows["outcome"] == "no_valid_call"]
+    if len(no_valid_call) > 0:
+        print(f"⚠ Tools episodes with no valid call: {len(no_valid_call)} / {len(tools_rows)} ({100*len(no_valid_call)/len(tools_rows):.1f}%)")
+        print(f"  By model: {no_valid_call.groupby('model').size().to_dict()}")
     
     # Exclusion rule
     excluded = exclusion_rule(df)
