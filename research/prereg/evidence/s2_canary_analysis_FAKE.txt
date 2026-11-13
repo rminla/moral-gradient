@@ -1,0 +1,53 @@
+Loading data from research/prereg/evidence/s2_canary_combined_FAKE.jsonl...
+Loaded 256 records
+Cells: {'agent_notools': 64, 'advisor_notools': 64, 'agent_tools': 64, 'advisor_tools': 64}
+Unparsed: 0 / 256 (0.0%)
+Separation detected: False
+
+=== PRIMARY ANALYSIS ===
+Using ML logistic regression (no separation)
+Log-likelihood: -174.6401
+
+=== WALD TESTS WITH HOLM ===
+                    contrast  estimate       se        z        p   p_holm  reject_holm
+advisor_tools_vs_agent_tools  0.063315 0.355883 0.177911 0.858793 0.858793        False
+agent_notools_vs_agent_tools  0.566873 0.357305 1.586527 0.112620 0.225240        False
+
+=== AVERAGE MARGINAL EFFECTS WITH 95% CIs ===
+Traceback (most recent call last):
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 620, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 609, in main
+    results = analyze_study2(args.data_file)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 563, in analyze_study2
+    ames = compute_ames_with_cis(df, fit_result)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 284, in compute_ames_with_cis
+    _, X_treat = dmatrices(formula, df_treat, return_type="dataframe")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 317, in dmatrices
+    (lhs, rhs) = _do_highlevel_design(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 162, in _do_highlevel_design
+    design_infos = _try_incr_builders(
+                   ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 56, in _try_incr_builders
+    return design_matrix_builders(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 775, in design_matrix_builders
+    term_to_subterm_infos = _make_subterm_infos(
+                            ^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 680, in _make_subterm_infos
+    coded = code_contrast_matrix(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 642, in code_contrast_matrix
+    return contrast.code_without_intercept(levels)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 184, in code_without_intercept
+    reference = _get_level(levels, self.reference)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 127, in _get_level
+    raise PatsyError("specified level %r not found" % (level_ref,))
+patsy.PatsyError: specified level 'agent_tools' not found

@@ -1,0 +1,47 @@
+Loaded 64 records and 503 calls from research/v3final/harness/run_s1_canary_fake_main/data/v3
+Detected study: s1
+
+=== Gate (a): Logged Requests Match Prereg JSON ===
+Gate (a): FAIL
+  Stats: {'matched': 0, 'unmatched': 503}
+  20 errors (showing first 20):
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=605, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=605, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=833, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=780, tools=3
+    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
+    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_do, sys_len=777, tools=3
+    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
+    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
+
+=== Gate (b): Error Rate ===
+Gate (b): PASS - 64/64 success (100.0%)
+
+=== Gate (d): S1 Grader Coverage ===
+Gate (d): FAIL - 0/1 units with probe and rationale (0.0%)
+
+=== Gate (e): Cost Validation ===
+Gate (e): PASS - Cost checks: see stats
+  study1: $0.0010 actual vs $0.0300 cap (✓)
+
+============================================================
+CANARY CHECK SUMMARY
+============================================================
+gate_a: ✗ FAIL
+gate_b: ✓ PASS
+gate_d: ✗ FAIL
+gate_e: ✓ PASS
+============================================================
+Overall: ✗ SOME GATES FAILED

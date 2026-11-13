@@ -1,0 +1,56 @@
+Loading data from research/prereg/evidence/s1_canary_combined_FAKE.jsonl...
+Loaded 256 records
+Arms: {'ORG': 64, 'NONE': 64, 'SELF': 64, 'OTHER': 64}
+Outcomes: {'act': 112, 'keep': 86, 'no_action': 58}
+Separation detected: False
+
+=== PRIMARY ANALYSIS ===
+Using ML logistic regression (no separation)
+Log-likelihood: -173.8005
+
+=== WALD TESTS (SELF vs ORG, OTHER vs ORG) WITH HOLM ===
+    contrast  estimate       se         z        p  p_holm  reject_holm
+OTHER_vs_ORG  0.064554 0.359348  0.179641 0.857434     1.0        False
+ SELF_vs_ORG -0.064050 0.357942 -0.178940 0.857985     1.0        False
+
+=== ORG vs NONE GATE (separate α=0.05) ===
+ORG vs NONE: coef=0.0000, p=1.0000, FAIL
+
+=== AVERAGE MARGINAL EFFECTS WITH 95% CIs ===
+Traceback (most recent call last):
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s1_prereg.py", line 638, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s1_prereg.py", line 627, in main
+    results = analyze_study1(args.data_file)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s1_prereg.py", line 577, in analyze_study1
+    ames = compute_ames_with_cis(df, fit_result)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/agent/repos/moral-gradient/research/prereg/analyze_s1_prereg.py", line 284, in compute_ames_with_cis
+    _, X_treat = dmatrices(formula, df_treat, return_type="dataframe")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 317, in dmatrices
+    (lhs, rhs) = _do_highlevel_design(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 162, in _do_highlevel_design
+    design_infos = _try_incr_builders(
+                   ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 56, in _try_incr_builders
+    return design_matrix_builders(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 775, in design_matrix_builders
+    term_to_subterm_infos = _make_subterm_infos(
+                            ^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 680, in _make_subterm_infos
+    coded = code_contrast_matrix(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 642, in code_contrast_matrix
+    return contrast.code_without_intercept(levels)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 184, in code_without_intercept
+    reference = _get_level(levels, self.reference)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 127, in _get_level
+    raise PatsyError("specified level %r not found" % (level_ref,))
+patsy.PatsyError: specified level 'ORG' not found

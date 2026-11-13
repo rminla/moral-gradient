@@ -1,0 +1,48 @@
+Loaded 64 records and 113 calls from research/v3final/harness/run_s2_canary_fake_main/data/v3
+Detected study: s2
+
+=== Gate (a): Logged Requests Match Prereg JSON ===
+Gate (a): FAIL
+  Stats: {'matched': 0, 'unmatched': 113}
+  20 errors (showing first 20):
+    - Unmatched request: module=car_role, sys_len=988, tools=2
+    - Unmatched request: module=car_role_notool, sys_len=1055, tools=0
+    - Unmatched request: module=car_role_notool, sys_len=1055, tools=0
+    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
+    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
+    - Unmatched request: module=car_role_notool, sys_len=1074, tools=0
+    - Unmatched request: module=car_role, sys_len=985, tools=2
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+    - Unmatched request: module=car_role, sys_len=988, tools=2
+    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+    - Unmatched request: module=car_role, sys_len=988, tools=2
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+    - Unmatched request: module=car_role, sys_len=985, tools=2
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+    - Unmatched request: module=car_role, sys_len=988, tools=2
+    - Unmatched request: module=car_role, sys_len=1214, tools=2
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+    - Unmatched request: module=car_role_notool, sys_len=1077, tools=0
+    - Unmatched request: module=car_role, sys_len=1217, tools=2
+
+=== Gate (b): Error Rate ===
+Gate (b): PASS - 64/64 success (100.0%)
+
+=== Gate (c): S2 No-Tools Unparsed ===
+Gate (c): PASS - No-tools cells: {'agent_notools': {'total': 16, 'unparsed': 0}, 'advisor_notools': {'total': 16, 'unparsed': 0}}
+
+=== Gate (e): Cost Validation ===
+Gate (e): PASS - Cost checks: see stats
+  study2_tool: $0.0009 actual vs $0.0225 cap (✓)
+  study2_notool: $0.0003 actual vs $0.0075 cap (✓)
+
+============================================================
+CANARY CHECK SUMMARY
+============================================================
+gate_a: ✗ FAIL
+gate_b: ✓ PASS
+gate_c: ✓ PASS
+gate_e: ✓ PASS
+============================================================
+Overall: ✗ SOME GATES FAILED
