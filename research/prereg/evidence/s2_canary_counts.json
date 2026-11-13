@@ -1,8 +1,0 @@
-{
-  "study": "S2",
-  "stage": "canary",
-  "model": "claude-haiku-5.5",
-  "total_rows": 92,
-  "by_cell": [{"count":"","cell":""}],
-  "by_outcome": [{"count":"","outcome":""},{"count":"","outcome":""},{"count":"","outcome":""},{"count":"","outcome":""}]
-}
