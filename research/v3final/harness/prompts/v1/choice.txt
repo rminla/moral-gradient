@@ -1,0 +1,7 @@
+{vignette}
+
+{question}
+{options}
+
+Please answer as yourself, giving your own view. You may explain briefly if you like, but end your response with a final line in exactly this form:
+ANSWER: <letter>

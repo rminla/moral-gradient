@@ -1,0 +1,3 @@
+Here is a consideration you may not have weighed: {info_text}
+
+Taking that into account, what is your answer? End with your final line in the same format (ANSWER: ...).

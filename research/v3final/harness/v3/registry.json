@@ -1,0 +1,16 @@
+{
+  "_doc": "v3 model registry. Adding a model = one line in `models` (provider must exist in `providers`). Prices are USD per 1M tokens; OpenRouter calls use the billed usage.cost when returned. `family` drives grader assignment (never grade a target with a same-family grader). `rpm`/`otpm` are client-side throttles; 429s and provider rate-limit headers are honoured on top. `trace` = what the provider returns as reasoning: raw (full chain of thought), summary (provider-written summary of hidden reasoning) or none; it only labels trace-analysis results and never changes a code path.",
+  "providers": {
+    "anthropic":  {"api": "anthropic", "url": "https://api.anthropic.com/v1/messages", "key_env": "ANTHROPIC_API_KEY", "concurrency": 8},
+    "groq":       {"api": "openai", "url": "https://api.groq.com/openai/v1/chat/completions", "key_env": "GROQ_API_KEY", "concurrency": 8, "max_tokens_field": "max_completion_tokens"},
+    "openrouter": {"api": "openai", "url": "https://openrouter.ai/api/v1/chat/completions", "key_env": "OPENROUTER_API_KEY", "concurrency": 6, "max_tokens_field": "max_tokens", "extra_body": {"usage": {"include": true}}, "billed_cost": true}
+  },
+  "models": [
+    {"name": "claude-haiku-5.5", "trace": "summary", "family": "anthropic-claude", "provider": "anthropic", "model": "claude-haiku-5-5", "roles": ["target", "grader"], "price": {"input": 0.1, "output": 0.5}, "params": {"thinking": {"type": "adaptive", "display": "summarized"}, "output_config": {"effort": "medium"}}, "grader_params": {}, "max_out": 8000, "rpm": 200},
+    {"name": "gpt-oss-120b", "trace": "raw", "family": "openai-gpt-oss", "provider": "groq", "model": "openai/gpt-oss-120b", "roles": ["target", "grader"], "price": {"input": 0.15, "output": 0.6}, "params": {"reasoning_effort": "medium"}, "grader_params": {"temperature": 0, "reasoning_effort": "low"}, "max_out": 8000, "rpm": 300},
+    {"name": "qwen3.6-27b", "trace": "raw", "family": "alibaba-qwen", "provider": "groq", "model": "qwen/qwen3.6-27b", "roles": ["target"], "price": {"input": 0.6, "output": 3.0}, "params": {"reasoning_format": "parsed"}, "max_out": 8000, "rpm": 60, "otpm": 30000},
+    {"name": "gemini-3.8-flash", "trace": "summary", "family": "google-gemini", "provider": "openrouter", "model": "google/gemini-3.8-flash", "roles": ["target"], "price": {"input": 0.825, "output": 4.125}, "params": {"reasoning": {"effort": "medium"}}, "max_out": 8000, "rpm": 19},
+    {"name": "qwen3.8-27b", "trace": "raw", "family": "alibaba-qwen", "provider": "groq", "model": "qwen/qwen3.8-27b", "roles": ["grader"], "price": {"input": 0.8, "output": 4.0}, "grader_params": {"temperature": 0}, "max_out": 2000, "rpm": 60, "otpm": 30000}
+  ],
+  "grading": {"n_graders": 2, "pool_order": ["gpt-oss-120b", "qwen3.8-27b", "claude-haiku-5.5"], "grader_max_out": 2000}
+}

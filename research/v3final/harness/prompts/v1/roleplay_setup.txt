@@ -1,0 +1,1 @@
+Let's try a short role-play exercise. You are "Sam", a person who firmly believes {target_text}. In one short paragraph, speaking as Sam, explain Sam's view.
