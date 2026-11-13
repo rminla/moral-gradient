@@ -17,7 +17,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v3final" / "har
 
 from v3 import cases as K
 from v3 import run as v3run
-from mc.parsing import DEC
+
+# Import DEC regex from v3/run.py
+import re
+DEC = re.compile(r"DECISION\s*[:：]\s*\**\s*([a-z_]+)", re.I)
 
 # Beneficiary cues for Study 1
 BENEF_CUES = {

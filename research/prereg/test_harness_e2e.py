@@ -31,7 +31,6 @@ sys.path.insert(0, str(REPO_ROOT / "research" / "prereg"))
 
 from v3 import run as v3run
 from v3 import cases as K
-from mc.providers import REGISTRY
 
 
 def make_fake_response(text="DECISION: waive_fee", tools_used=None):
@@ -164,6 +163,9 @@ def test_s1_canary_e2e_fake_transport(fake_transport, temp_data_dir):
     
     cal = json.loads(cal_file.read_text())
     
+    # Set CUE_SET to beneficiary cues
+    v3run.CUE_SET = ["benef_org", "benef_self", "benef_other", "none"]
+    
     # Plan S1 canary: 4 arms × 8 per level × 2 levels = 64 units per model
     cue_n = {"benef_org": 8, "benef_self": 8, "benef_other": 8, "none": 8}
     plan = plan_prereg("main", cal, smoke=False, cue_n=cue_n, role_n=None, phases=["si"])
@@ -257,6 +259,9 @@ def test_plan_counts_match_spec():
     cal_file = REPO_ROOT / "research" / "v3final" / "data" / "claude-haiku-5.5" / "calibration.json"
     cal = json.loads(cal_file.read_text())
     
+    # Set CUE_SET to beneficiary cues for Study 1
+    v3run.CUE_SET = ["benef_org", "benef_self", "benef_other", "none"]
+    
     # S1 main: 4 arms × 24 per level × 2 levels = 192 per model
     # 192 × 4 models = 768 total
     cue_n_main = {"benef_org": 24, "benef_self": 24, "benef_other": 24, "none": 24}
@@ -326,22 +331,32 @@ def test_rerun_offline_zero_diffs():
 def test_budget_hard_stop_via_ledger(fake_transport, temp_data_dir):
     """Test that budget hard stop works via v3final Ledger."""
     from mc.ledger import Ledger, BudgetExceeded
+    from v3.client import prices
     
     # Create a ledger with very low cap
     ledger_path = temp_data_dir / "test_ledger.db"
-    L = Ledger(str(ledger_path))
-    L.set_pilot_cap(0.010)  # $0.01 cap
+    jsonl_path = temp_data_dir / "test.jsonl"
+    
+    # Create Ledger with proper signature (prices() is a function call)
+    L = Ledger(
+        db_path=str(ledger_path),
+        jsonl_path=str(jsonl_path),
+        prices=prices(),  # Call prices() function
+        pilot_cap_usd=0.010,  # $0.01 cap
+        run_budget_usd=0.050,
+        run_id="test"
+    )
     
     # Try to reserve more than cap
     with pytest.raises(BudgetExceeded):
-        L.reserve("test_call", 0.100, "claude-haiku-5.5", "test")
+        L.reserve(0.100)  # $0.10 > $0.01 cap
     
     # Reserve within cap should work
-    L.reserve("test_call_1", 0.005, "claude-haiku-5.5", "test")
+    L.reserve(0.005)  # $0.005 < $0.01 cap
     
-    # Second reserve exceeding cap should fail
+    # Second reserve exceeding remaining budget should fail
     with pytest.raises(BudgetExceeded):
-        L.reserve("test_call_2", 0.010, "claude-haiku-5.5", "test")
+        L.reserve(0.010)  # $0.005 + $0.010 = $0.015 > $0.01 cap
     
     print("✓ Budget hard stop via Ledger")
 
