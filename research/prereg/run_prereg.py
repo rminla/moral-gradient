@@ -243,6 +243,29 @@ def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name,
     return False
 
 
+def record_versions_isolated(iter_name, harness_dir, when):
+    """Run the frozen v3/record_versions.py with ROOT = the isolated harness dir.
+
+    The frozen script derives ROOT from its own path and opens ROOT/data/ledger.sqlite read-only,
+    which does not exist in a clean checkout. Run an unmodified copy of it from harness_dir/v3/
+    against the isolated ledger (created with the harness schema if the run has not started yet).
+    """
+    if os.environ.get("FAKE_TRANSPORT") == "1" and os.environ.get("PREREG_FORCE_VERSIONS") != "1":
+        print(f"✓ record_versions ({when}) skipped (FAKE_TRANSPORT=1)", flush=True)
+        return
+    import sqlite3
+    print(f"\n=== Recording versions ({when}) ===", flush=True)
+    db = harness_dir / "data" / "ledger.sqlite"
+    db.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(db); con.executescript(SCHEMA); con.close()
+    frozen = Path(v3run.__file__).resolve().parent.parent
+    code = ("import sys, runpy, shutil, pathlib; H, R, it = sys.argv[1:4]; sys.path.insert(0, H); import v3.client; "
+            "d = pathlib.Path(R) / 'v3'; d.mkdir(parents=True, exist_ok=True); "
+            "shutil.copy(pathlib.Path(H) / 'v3' / 'record_versions.py', d / 'record_versions.py'); "
+            "sys.argv = ['record_versions.py', it]; runpy.run_path(str(d / 'record_versions.py'), run_name='__main__')")
+    subprocess.run([sys.executable, "-c", code, str(frozen), str(harness_dir), iter_name], check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Preregistered studies runner")
     parser.add_argument("model", help="Model name")
@@ -327,17 +350,6 @@ def main():
         effective_budget = args.budget
         # seed_calibration moved inside stage loop after ROOT is set
     
-    # Record versions (skip for fake transport - no shared ledger)
-    if os.environ.get("FAKE_TRANSPORT") != "1":
-        print("\n=== Recording versions (before) ===", flush=True)
-        subprocess.run(
-            ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
-            cwd=base_dir,
-            check=True
-        )
-    else:
-        print("✓ record_versions skipped (FAKE_TRANSPORT=1)", flush=True)
-    
     # Run with modified plan function
     original_plan = v3run.plan
     v3run.plan = lambda stage, cal=None, smoke=False: plan_prereg(stage, cal, smoke, cue_n, args.role_n, phases)
@@ -397,16 +409,27 @@ def main():
         # Create real data directory (not symlink) for isolated ledger.sqlite
         data_dir = harness_dir / "data"
         data_dir.mkdir(parents=True, exist_ok=True)
+        # Never mix fake-transport and real results in one run directory (resume would treat them as done)
+        fake_marker = harness_dir / ".fake_transport"
+        has_rows = any((data_dir / "v3" / args.iter).glob("*/main.jsonl"))
+        if os.environ.get("FAKE_TRANSPORT") == "1":
+            if has_rows and not fake_marker.exists():
+                sys.exit(f"ERROR: {harness_dir} holds real results; refusing a fake-transport run into it")
+            fake_marker.touch()
+        elif fake_marker.exists():
+            sys.exit(f"ERROR: {harness_dir} holds fake-transport results; use a fresh --iter for a real run")
         
         try:
             v3run.ROOT = harness_dir
             
             # Seed calibration to the isolated harness directory
             seed_calibration(args.model, args.iter, base_dir)
+            record_versions_isolated(args.iter, harness_dir, "before")
             
             if not run_stage_with_retries(args.model, st, effective_budget, stage_cap, args.workers, args.smoke, args.iter):
                 success = False
                 break
+            record_versions_isolated(args.iter, harness_dir, "after")
             
             # Fix #8: Check stage cap after run
             if global_ledger:
@@ -423,15 +446,6 @@ def main():
     K.car_spec = original_car_spec
     Engine.unit = original_engine_unit
     
-    # Record versions after (skip for fake transport)
-    if success and os.environ.get("FAKE_TRANSPORT") != "1":
-        print("\n=== Recording versions (after) ===", flush=True)
-        subprocess.run(
-            ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
-            cwd=base_dir,
-            check=True
-        )
-        
     # Global ledger rows are written per call by ledger_wrapper; only the summary is written here.
     if global_ledger:
         summary_path = Path("/tmp") / f"global-ledger-update-{args.iter}.json"

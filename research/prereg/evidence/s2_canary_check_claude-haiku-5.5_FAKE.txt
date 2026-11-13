@@ -1,9 +1,9 @@
-Loaded 64 records and 121 calls from research/v3final/harness/run_s2_canary_fake_main/data/v3
+Loaded 64 records and 119 calls from research/v3final/harness/run_s2_canary_fake_main/data/v3
 Detected study: s2
 
 === Gate (a): Logged Requests Match Prereg JSON ===
 Gate (a): PASS
-  Stats: {'matched': 121, 'unmatched': 0, 'per_arm_or_cell': {'agent_notools': 16, 'agent_tools': 45, 'advisor_notools': 16, 'advisor_tools': 44}}
+  Stats: {'matched': 119, 'unmatched': 0, 'per_arm_or_cell': {'agent_tools': 44, 'agent_notools': 16, 'advisor_notools': 16, 'advisor_tools': 43}}
 
 === Gate (b): Error Rate ===
 Gate (b): PASS - 64/64 success (100.0%)
@@ -12,7 +12,7 @@ Gate (b): PASS - 64/64 success (100.0%)
 Gate (c): PASS - No-tools cells: {'agent_notools': {'total': 16, 'unparsed': 0}, 'advisor_notools': {'total': 16, 'unparsed': 0}}
 
 === Gate (e): Cost Validation ===
-Gate (e): PASS - $0.00066/unit vs cap $0.00125 (spend $0.0423, 64 units)
+Gate (e): PASS - $0.00065/unit vs cap $0.00125 (spend $0.0416, 64 units) [INFO only: fake-transport token counts are synthetic, so cost is not gated]
   per_unit: $0.0007 actual vs $0.0012 cap (✓)
 
 ============================================================

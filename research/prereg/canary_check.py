@@ -186,7 +186,7 @@ def gate_e_cost_validation(records: List[Dict], calls: List[Dict], cost_estimate
     return stats["per_unit"]["passed"], stats, f"${actual:.5f}/unit vs cap ${expected*margin:.5f} (spend ${spend:.4f}, {len(units)} units)"
 
 
-def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path: Path) -> Dict:
+def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path: Path, fake_costs_info: bool = False) -> Dict:
     """Run all canary gates."""
     results = {}
     
@@ -273,10 +273,20 @@ def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path
         print(f"Gate (d): {'PASS' if gate_d_passed else 'FAIL'} - {gate_d_msg}")
     
     # Gate (e): cost validation
-    if cost_estimates_path and cost_estimates_path.exists():
+    if not (cost_estimates_path and cost_estimates_path.exists()):
+        print(f"Gate (e): FAIL - cost estimates not found: {cost_estimates_path}")
+        results["gate_e"] = {"passed": False, "message": "cost estimates missing"}
+    else:
         print(f"\n=== Gate (e): Cost Validation ===")
         cost_estimates = load_cost_estimates(cost_estimates_path)
-        gate_e_passed, gate_e_stats, gate_e_msg = gate_e_cost_validation(records, calls, cost_estimates, model, study)
+        trace_file = calls_file.parent / "trace_calls.jsonl"   # S1 reasoning-trace graders (run_traces_prereg.py)
+        cost_calls = calls + (load_calls_jsonl(trace_file) if trace_file.exists() else [])
+        if study == "s1" and not trace_file.exists():
+            print("  note: no trace_calls.jsonl yet; run run_traces_prereg.py first so trace-grader cost is included")
+        gate_e_passed, gate_e_stats, gate_e_msg = gate_e_cost_validation(records, cost_calls, cost_estimates, model, study)
+        if fake_costs_info:
+            gate_e_msg += " [INFO only: fake-transport token counts are synthetic, so cost is not gated]"
+            gate_e_passed = True
         results["gate_e"] = {
             "passed": gate_e_passed,
             "cost_stats": gate_e_stats,
@@ -296,7 +306,10 @@ def main():
     parser.add_argument("iter_name", help="Iteration name (e.g., s1_canary_fake)")
     parser.add_argument("model", help="Model name")
     parser.add_argument("--data-dir", type=Path, required=True, help="Data directory")
-    parser.add_argument("--cost-estimates", type=Path, help="Cost estimates JSON file")
+    parser.add_argument("--cost-estimates", type=Path, default=Path(__file__).resolve().parent.parent / "v3" / "cost_estimates.json",
+                        help="Preregistered cost estimates JSON (default research/v3/cost_estimates.json)")
+    parser.add_argument("--fake-costs-info", action="store_true",
+                        help="Fake-transport runs only: report gate (e) but do not gate on it (token counts are synthetic)")
     
     args = parser.parse_args()
     
@@ -305,6 +318,7 @@ def main():
         args.model,
         args.data_dir,
         args.cost_estimates,
+        fake_costs_info=args.fake_costs_info,
     )
     
     if "error" in results:

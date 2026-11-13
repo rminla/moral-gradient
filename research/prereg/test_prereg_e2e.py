@@ -127,3 +127,41 @@ def test_frozen_haiku_invalid_waive_calls():
     n = sum(1 for r in _records("claude-haiku-5.5") if r["phase"] == "si"
             for t in (r.get("tool_calls") or []) if t.get("name") == "waive_fee" and t.get("valid") is False)
     assert n == 18
+
+
+def test_record_versions_writes_into_isolated_run(tmp_path, iter_name):
+    """record_versions must run (before and after) against the isolated harness dir; offline here."""
+    db = _ledger(tmp_path)
+    env = {**ENV, "PREREG_FORCE_VERSIONS": "1", "https_proxy": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9"}
+    r = subprocess.run(
+        [sys.executable, str(PREREG / "run_prereg.py"), "claude-haiku-5.5", "--iter", iter_name, "--stage", "main",
+         "--preset", "full", "--phases", "role", "--role-n", "1", "--cap", "0.5", "--budget", "0.5",
+         "--global-ledger", str(db), "--workers", "2"],
+        cwd=REPO, env=env, capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+    doc = json.loads((HARNESS / f"run_{iter_name}_main" / "data" / "v3" / iter_name / "model_versions.json").read_text())
+    e = doc["models"]["claude-haiku-5.5"]
+    assert "provider_metadata_pre" in e and e.get("returned"), e
+    assert not (HARNESS / "data").exists()                      # nothing written into the frozen harness dir
+
+
+def test_trace_grading_goes_through_global_ledger(tmp_path, iter_name):
+    db = _ledger(tmp_path)
+    r = _run(iter_name, db, ["--phases", "si", "--cues", "benef_org,none", "--cue-n", "benef_org:1,none:1"])
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+    d = HARNESS / f"run_{iter_name}_main" / "data" / "v3" / iter_name / "claude-haiku-5.5"
+    rows = [json.loads(l) for l in open(d / "main.jsonl")]
+    for x in rows:
+        x["thinking"] = "Considering the scorecard and the customer's hardship before deciding."
+    (d / "main.jsonl").write_text("".join(json.dumps(x) + "\n" for x in rows))
+    t = subprocess.run([sys.executable, str(PREREG / "run_traces_prereg.py"), iter_name, "--cap", "1.00",
+                        "--global-ledger", str(db)], cwd=REPO, env=ENV, capture_output=True, text=True, timeout=300)
+    assert t.returncode == 0, t.stdout[-2000:] + t.stderr[-2000:]
+    traces = [json.loads(l) for l in open(d / "traces.jsonl")]
+    tcalls = [json.loads(l) for l in open(d / "trace_calls.jsonl")]
+    calls = [json.loads(l) for l in open(d / "calls.jsonl")]
+    assert len(traces) == len(rows) and len(tcalls) == 2 * len(rows)
+    con = sqlite3.connect(db)
+    n, s = con.execute("SELECT COUNT(*), SUM(actual_cost_usd) FROM calls WHERE experiment=?", (iter_name,)).fetchone()
+    assert n == len(calls) + len(tcalls)
+    assert abs(s - sum(c["cost_usd"] or 0 for c in calls + tcalls)) < 1e-9

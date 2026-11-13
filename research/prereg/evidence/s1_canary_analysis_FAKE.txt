@@ -1,70 +1,70 @@
 Loading data from research/prereg/evidence/s1_canary_combined_FAKE.jsonl...
 Loaded 256 records
-Arms: {'ORG': 64, 'SELF': 64, 'NONE': 64, 'OTHER': 64}
-Outcomes: {'act': 104, 'no_action': 77, 'keep': 75}
+Arms: {'SELF': 64, 'NONE': 64, 'ORG': 64, 'OTHER': 64}
+Outcomes: {'act': 124, 'no_action': 70, 'keep': 62}
 Separation detected: False
 
 === PRIMARY ANALYSIS ===
 Using ML logistic regression (no separation)
-Log-likelihood: -170.8259
+Log-likelihood: -171.3384
 
 === WALD TESTS (SELF vs ORG, OTHER vs ORG) WITH HOLM ===
-    contrast      estimate       se             z        p  p_holm  reject_holm
-OTHER_vs_ORG -6.192014e-17 0.362814 -1.706661e-16 1.000000     1.0        False
- SELF_vs_ORG  6.623675e-02 0.364006  1.819660e-01 0.855609     1.0        False
+    contrast  estimate       se         z        p   p_holm  reject_holm
+OTHER_vs_ORG -0.518197 0.361944 -1.431705 0.152228 0.304457        False
+ SELF_vs_ORG -0.388183 0.360848 -1.075753 0.282038 0.304457        False
 
 === ORG vs NONE GATE (separate α=0.05) ===
-ORG vs NONE: coef=-0.0654, p=0.8565, FAIL
+ORG vs NONE: coef=0.1321, p=0.7164, FAIL
 
 === AVERAGE MARGINAL EFFECTS WITH 95% CIs ===
-    contrast           ame  ci_lower  ci_upper  n_boot_success
- SELF_vs_ORG  1.562500e-02 -0.160154  0.203029            1000
-OTHER_vs_ORG -3.122502e-17 -0.181914  0.168494            1000
- NONE_vs_ORG -1.562500e-02 -0.185294  0.146934            1000
+    contrast      ame  ci_lower  ci_upper  n_boot_success
+ SELF_vs_ORG -0.09375 -0.239899  0.069460            1000
+OTHER_vs_ORG -0.12500 -0.290998  0.045816            1000
+ NONE_vs_ORG  0.03125 -0.136754  0.210102            1000
 
 === PER-MODEL CONTRASTS (Wilson, Newcombe, Fisher) ===
            model      contrast  n1  x1     p1  n2  x2     p2    diff  newcombe_lower  newcombe_upper  fisher_p
-claude-haiku-5.5   SELF_vs_ORG  16   8 0.5000  16  10 0.6250 -0.1250       -0.415815        0.199541  0.722393
-claude-haiku-5.5  ORG_vs_OTHER  16  10 0.6250  16  12 0.7500 -0.1250       -0.405860        0.185142  0.704251
-claude-haiku-5.5   ORG_vs_NONE  16  10 0.6250  16  10 0.6250  0.0000       -0.305117        0.305117  1.000000
-claude-haiku-5.5 OTHER_vs_NONE  16  12 0.7500  16  10 0.6250  0.1250       -0.185142        0.405860  0.704251
-claude-haiku-5.5  SELF_vs_NONE  16   8 0.5000  16  10 0.6250 -0.1250       -0.415815        0.199541  0.722393
-gemini-3.8-flash   SELF_vs_ORG  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
-gemini-3.8-flash  ORG_vs_OTHER  16  11 0.6875  16  10 0.6250  0.0625       -0.246438        0.355955  1.000000
-gemini-3.8-flash   ORG_vs_NONE  16  11 0.6875  16  11 0.6875  0.0000       -0.297426        0.297426  1.000000
-gemini-3.8-flash OTHER_vs_NONE  16  10 0.6250  16  11 0.6875 -0.0625       -0.355955        0.246438  1.000000
-gemini-3.8-flash  SELF_vs_NONE  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
-    gpt-oss-120b   SELF_vs_ORG  16  12 0.7500  16   7 0.4375  0.3125       -0.024020        0.566675  0.148884
-    gpt-oss-120b  ORG_vs_OTHER  16   7 0.4375  16  11 0.6875 -0.2500       -0.518028        0.085410  0.285163
-    gpt-oss-120b   ORG_vs_NONE  16   7 0.4375  16   7 0.4375  0.0000       -0.309640        0.309640  1.000000
-    gpt-oss-120b OTHER_vs_NONE  16  11 0.6875  16   7 0.4375  0.2500       -0.085410        0.518028  0.285163
-    gpt-oss-120b  SELF_vs_NONE  16  12 0.7500  16   7 0.4375  0.3125       -0.024020        0.566675  0.148884
-     qwen3.6-27b   SELF_vs_ORG  16  11 0.6875  16  10 0.6250  0.0625       -0.246438        0.355955  1.000000
-     qwen3.6-27b  ORG_vs_OTHER  16  10 0.6250  16   5 0.3125  0.3125       -0.028375        0.568160  0.155613
-     qwen3.6-27b   ORG_vs_NONE  16  10 0.6250  16   9 0.5625  0.0625       -0.253052        0.361499  1.000000
-     qwen3.6-27b OTHER_vs_NONE  16   5 0.3125  16   9 0.5625 -0.2500       -0.518028        0.085410  0.285163
-     qwen3.6-27b  SELF_vs_NONE  16  11 0.6875  16   9 0.5625  0.1250       -0.194247        0.412089  0.715987
+claude-haiku-5.5   SELF_vs_ORG  16   6 0.3750  16   6 0.3750  0.0000       -0.305117        0.305117  1.000000
+claude-haiku-5.5  ORG_vs_OTHER  16   6 0.3750  16   7 0.4375 -0.0625       -0.361499        0.253052  1.000000
+claude-haiku-5.5   ORG_vs_NONE  16   6 0.3750  16  10 0.6250 -0.2500       -0.518966        0.087417  0.288973
+claude-haiku-5.5 OTHER_vs_NONE  16   7 0.4375  16  10 0.6250 -0.1875       -0.468248        0.144395  0.479488
+claude-haiku-5.5  SELF_vs_NONE  16   6 0.3750  16  10 0.6250 -0.2500       -0.518966        0.087417  0.288973
+gemini-3.8-flash   SELF_vs_ORG  16   7 0.4375  16  12 0.7500 -0.3125       -0.566675        0.024020  0.148884
+gemini-3.8-flash  ORG_vs_OTHER  16  12 0.7500  16   6 0.3750  0.3750        0.033033        0.616098  0.073173
+gemini-3.8-flash   ORG_vs_NONE  16  12 0.7500  16   8 0.5000  0.2500       -0.079270        0.515253  0.273370
+gemini-3.8-flash OTHER_vs_NONE  16   6 0.3750  16   8 0.5000 -0.1250       -0.415815        0.199541  0.722393
+gemini-3.8-flash  SELF_vs_NONE  16   7 0.4375  16   8 0.5000 -0.0625       -0.364244        0.256296  1.000000
+    gpt-oss-120b   SELF_vs_ORG  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+    gpt-oss-120b  ORG_vs_OTHER  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+    gpt-oss-120b   ORG_vs_NONE  16   8 0.5000  16   9 0.5625 -0.0625       -0.364244        0.256296  1.000000
+    gpt-oss-120b OTHER_vs_NONE  16   8 0.5000  16   9 0.5625 -0.0625       -0.364244        0.256296  1.000000
+    gpt-oss-120b  SELF_vs_NONE  16   8 0.5000  16   9 0.5625 -0.0625       -0.364244        0.256296  1.000000
+     qwen3.6-27b   SELF_vs_ORG  16   9 0.5625  16  10 0.6250 -0.0625       -0.361499        0.253052  1.000000
+     qwen3.6-27b  ORG_vs_OTHER  16  10 0.6250  16   7 0.4375  0.1875       -0.144395        0.468248  0.479488
+     qwen3.6-27b   ORG_vs_NONE  16  10 0.6250  16  11 0.6875 -0.0625       -0.355955        0.246438  1.000000
+     qwen3.6-27b OTHER_vs_NONE  16   7 0.4375  16  11 0.6875 -0.2500       -0.518028        0.085410  0.285163
+     qwen3.6-27b  SELF_vs_NONE  16   9 0.5625  16  11 0.6875 -0.1250       -0.412089        0.194247  0.715987
 
 === ARM × MODEL LR TEST ===
-LR statistic: 14.5214, df=9, p=0.1050
+LR statistic: 6.3817, df=9, p=0.7012
 
 === SENSITIVITY ANALYSIS (no_action excluded) ===
            model   arm  n_primary  n_sensitivity  n_excluded_no_action
-claude-haiku-5.5   ORG         16             12                     4
-claude-haiku-5.5  SELF         16             12                     4
+claude-haiku-5.5  SELF         16             11                     5
 claude-haiku-5.5  NONE         16             10                     6
-claude-haiku-5.5 OTHER         16              8                     8
-gemini-3.8-flash   ORG         16             11                     5
-gemini-3.8-flash  SELF         16             12                     4
-gemini-3.8-flash  NONE         16             10                     6
-gemini-3.8-flash OTHER         16             10                     6
+claude-haiku-5.5   ORG         16             15                     1
+claude-haiku-5.5 OTHER         16             15                     1
+gemini-3.8-flash  SELF         16             11                     5
+gemini-3.8-flash  NONE         16             13                     3
+gemini-3.8-flash   ORG         16              9                     7
+gemini-3.8-flash OTHER         16             13                     3
+    gpt-oss-120b  SELF         16             10                     6
+    gpt-oss-120b  NONE         16             10                     6
     gpt-oss-120b   ORG         16             13                     3
-    gpt-oss-120b  SELF         16             11                     5
-    gpt-oss-120b  NONE         16             11                     5
-    gpt-oss-120b OTHER         16             15                     1
-     qwen3.6-27b   ORG         16             10                     6
-     qwen3.6-27b  SELF         16              8                     8
-     qwen3.6-27b  NONE         16             13                     3
-     qwen3.6-27b OTHER         16             13                     3
+    gpt-oss-120b OTHER         16             13                     3
+     qwen3.6-27b  SELF         16             13                     3
+     qwen3.6-27b  NONE         16             10                     6
+     qwen3.6-27b   ORG         16              9                     7
+     qwen3.6-27b OTHER         16             11                     5
 
 ✓ Results saved to research/prereg/evidence/s1_canary_analysis_FAKE.json

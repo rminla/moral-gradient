@@ -36,6 +36,9 @@ for model in $MODELS; do
         --workers 8
 done
 
+# S1 reasoning-trace grading (fake targets carry no reasoning, so this only exercises the wiring)
+python3 research/prereg/run_traces_prereg.py s1_canary_fake --cap 2.97 --global-ledger "$TEMP_LEDGER"
+
 echo ""
 echo "========================================================================"
 echo "RUNNING S2 CANARY (256 units) WITH FAKE TRANSPORT"
@@ -143,7 +146,7 @@ for st in s1 s2; do
   for model in $MODELS; do
     python3 research/prereg/canary_check.py ${st}_canary_fake "$model" \
         --data-dir research/v3final/harness/run_${st}_canary_fake_main/data/v3 \
-        --cost-estimates research/v3/cost_estimates.json \
+        --cost-estimates research/v3/cost_estimates.json --fake-costs-info \
         > research/prereg/evidence/${st}_canary_check_${model}.txt 2>&1 || GATES_OK=0
     tail -n 1 research/prereg/evidence/${st}_canary_check_${model}.txt
   done

@@ -21,7 +21,7 @@ for model in $MODELS; do
     echo "Checking S1 $model..."
     python3 research/prereg/canary_check.py s1_canary_fake "$model" \
         --data-dir research/v3final/harness/run_s1_canary_fake_main/data/v3 \
-        --cost-estimates research/v3/cost_estimates.json \
+        --cost-estimates research/v3/cost_estimates.json --fake-costs-info \
         > "$EVIDENCE_DIR/s1_canary_check_${model}_FAKE.txt" 2>&1
 done
 
@@ -32,7 +32,7 @@ for model in $MODELS; do
     echo "Checking S2 $model..."
     python3 research/prereg/canary_check.py s2_canary_fake "$model" \
         --data-dir research/v3final/harness/run_s2_canary_fake_main/data/v3 \
-        --cost-estimates research/v3/cost_estimates.json \
+        --cost-estimates research/v3/cost_estimates.json --fake-costs-info \
         > "$EVIDENCE_DIR/s2_canary_check_${model}_FAKE.txt" 2>&1
 done
 

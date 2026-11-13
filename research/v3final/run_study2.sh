@@ -34,6 +34,7 @@ REAL_LEDGER=/workspace/moral-compass/runs/v4-20261108/ledger.db
 if [[ "$FAKE_TRANSPORT" == "--fake-transport" ]]; then
     export FAKE_TRANSPORT=1
     echo "✓ Fake transport enabled (zero real API calls)"
+    ITER="${ITER}_dryrun"   # keep fake results out of the real run directory
     # Fake runs never write to the real ledger: default to a throwaway copy
     if [[ -z "${GLOBAL_LEDGER:-}" ]]; then
         GLOBAL_LEDGER="$(mktemp /tmp/fake_ledger_XXXXXX.db)"
@@ -41,11 +42,6 @@ if [[ "$FAKE_TRANSPORT" == "--fake-transport" ]]; then
     fi
     if [[ "$(realpath "$GLOBAL_LEDGER")" == "$(realpath "$REAL_LEDGER")" ]]; then
         echo "✗ Refusing to write fake-transport rows into the real ledger" >&2
-        exit 1
-    fi
-    # Ensure ledger has mock rows
-    if ! sqlite3 "$GLOBAL_LEDGER" "SELECT COUNT(*) FROM calls WHERE is_mock = 1" | grep -q '^[1-9]'; then
-        echo "✗ Fake transport requires a ledger with mock rows" >&2
         exit 1
     fi
     echo "✓ Using throwaway ledger $GLOBAL_LEDGER"
