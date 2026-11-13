@@ -29,6 +29,7 @@ from v3_prereg_layer import (
     unit_with_car_role,
     make_cue_seen_checker
 )
+from global_ledger import GlobalLedger, BudgetExceeded
 
 # Preregistered Study 1: per-cue arms
 CUE_ARMS = {
@@ -225,6 +226,7 @@ def main():
     parser.add_argument("--cue-n", default=None)
     parser.add_argument("--role-n", type=int, default=None)
     parser.add_argument("--cap", type=float, default=None)
+    parser.add_argument("--global-ledger", type=str, default=None, help="Path to global SQLite ledger")
     
     args = parser.parse_args()
     
@@ -240,8 +242,8 @@ def main():
     
     phases = args.phases.split(",") if args.phases else v3run.PHASES
     
-    # Budget handling - Fix 3: Global ledger pre-flight
-    global_ledger_path = None
+    # Budget handling - Fix 4 (deviation-4): Global SQLite ledger
+    global_ledger = None
     if args.cap:
         effective_cap = args.cap
         effective_budget = args.cap
@@ -252,39 +254,21 @@ def main():
         # Seed calibration
         seed_calibration(args.model, args.iter, base_dir)
         
-        # Fix 3: Pre-flight check on global JSON ledger
-        ledger_path_str = os.environ.get("GLOBAL_LEDGER_PATH")
-        if not ledger_path_str:
+        # Fix 4: Global SQLite ledger
+        if not args.global_ledger:
             sys.exit(
-                "Pre-flight check FAILED: GLOBAL_LEDGER_PATH environment variable not set.\n"
-                "This must point to the global research ledger JSON file."
+                "ERROR: --global-ledger is required when --cap is specified.\n"
+                "This must point to the global SQLite ledger database."
             )
         
-        global_ledger_path = Path(ledger_path_str)
+        global_ledger_path = Path(args.global_ledger)
         
-        if not global_ledger_path.exists():
-            sys.exit(
-                f"Pre-flight check FAILED: Global research ledger not found at {global_ledger_path}"
-            )
-        
-        # Read JSON ledger
+        # Initialize global ledger
         try:
-            ledger_data = json.loads(global_ledger_path.read_text())
-        except Exception as e:
-            sys.exit(f"Pre-flight check FAILED: Cannot read global ledger: {e}")
-        
-        # Calculate committed spend
-        committed = sum(
-            entry.get("cost_usd", 0) 
-            for entry in ledger_data.get("entries", [])
-        )
-        
-        if committed + effective_cap > 70.0:
-            sys.exit(
-                f"Pre-flight check FAILED: committed ${committed:.2f} + cap ${effective_cap:.2f} > $70.00"
-            )
-        
-        print(f"✓ Pre-flight passed: ${committed:.2f} committed + ${effective_cap:.2f} cap = ${committed + effective_cap:.2f} <= $70.00", flush=True)
+            global_ledger = GlobalLedger(global_ledger_path, args.iter, stage_cap_usd=effective_cap)
+            global_ledger.pre_flight_check()
+        except BudgetExceeded as e:
+            sys.exit(f"ERROR: {e}")
         
         # Fix 5: Run pytest pre-flight
         print("\n=== Running pytest pre-flight ===", flush=True)
@@ -341,41 +325,49 @@ def main():
             check=True
         )
         
-        # Fix 3: Write back to global ledger
-        if global_ledger_path:
-            print(f"\n=== Writing back to global ledger ===", flush=True)
+        # Fix 4 (deviation-4): Write to global SQLite ledger and generate summary
+        if global_ledger:
+            print(f"\n=== Writing to global ledger and generating summary ===", flush=True)
             try:
-                # Read current ledger
-                ledger_data = json.loads(global_ledger_path.read_text())
-                
-                # Read completed run data
+                # Read completed run data from v3final output
                 d = v3run.ROOT / "data" / "v3" / args.iter / args.model
                 out = d / f"{st}{'_smoke' if args.smoke else ''}.jsonl"
                 
                 total_cost = 0
+                n_calls = 0
+                total_prompt_tokens = 0
+                total_completion_tokens = 0
+                
                 if out.exists():
                     with open(out) as f:
                         for line in f:
                             row = json.loads(line)
                             total_cost += row.get("cost_usd", 0)
+                            n_calls += 1
+                            total_prompt_tokens += row.get("prompt_tokens", 0)
+                            total_completion_tokens += row.get("completion_tokens", 0)
                 
-                # Append entry
-                if "entries" not in ledger_data:
-                    ledger_data["entries"] = []
+                # Insert aggregate call into global ledger
+                if n_calls > 0:
+                    global_ledger.insert_call(
+                        call_id=f"{args.iter}_{args.model}_{st}",
+                        model_id=args.model,
+                        provider="aggregate",
+                        actual_cost_usd=total_cost,
+                        prompt_tokens=total_prompt_tokens,
+                        completion_tokens=total_completion_tokens,
+                        metadata=json.dumps({"n_calls": n_calls, "stage": st}),
+                        mock_data=1 if args.smoke else 0,
+                    )
+                    print(f"✓ Inserted ${total_cost:.4f} ({n_calls} calls) into global ledger", flush=True)
                 
-                ledger_data["entries"].append({
-                    "iter": args.iter,
-                    "model": args.model,
-                    "stage": st,
-                    "cost_usd": total_cost,
-                    "timestamp": v3run.now_local(),
-                })
+                # Generate and write summary
+                summary_path = base_dir / "research" / "prereg" / "global-ledger-update.json"
+                global_ledger.generate_summary(summary_path)
                 
-                # Write back
-                global_ledger_path.write_text(json.dumps(ledger_data, indent=2))
-                print(f"✓ Wrote ${total_cost:.4f} to global ledger", flush=True)
+                print(f"✓ Generated global ledger summary", flush=True)
             except Exception as e:
-                print(f"Warning: Could not write to global ledger: {e}", flush=True)
+                print(f"Warning: Could not update global ledger: {e}", flush=True)
     
     sys.exit(0 if success else 1)
 
