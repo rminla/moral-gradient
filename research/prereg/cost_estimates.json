@@ -1,0 +1,25 @@
+{
+  "margin": 1.5,
+  "per_unit_usd": {
+    "claude-haiku-5.5": {
+      "study1_unit": 0.020,
+      "study2_tool_unit": 0.015,
+      "study2_notool_unit": 0.005
+    },
+    "gpt-oss-120b": {
+      "study1_unit": 0.015,
+      "study2_tool_unit": 0.012,
+      "study2_notool_unit": 0.004
+    },
+    "qwen3.6-27b": {
+      "study1_unit": 0.018,
+      "study2_tool_unit": 0.014,
+      "study2_notool_unit": 0.005
+    },
+    "gemini-3.8-flash": {
+      "study1_unit": 0.022,
+      "study2_tool_unit": 0.017,
+      "study2_notool_unit": 0.006
+    }
+  }
+}
