@@ -1,10 +1,9 @@
 #!/bin/bash
 # Run Study 1: Beneficiary Control
-# Usage: bash run_study1.sh [canary|main] [--retry-only]
+# Usage: bash run_study1.sh [canary|main]
 set -euo pipefail
 
 STAGE="${1:-canary}"
-RETRY_ONLY="${2:-}"
 
 if [[ "$STAGE" != "canary" && "$STAGE" != "main" ]]; then
     echo "Error: Stage must be 'canary' or 'main'" >&2
@@ -22,63 +21,61 @@ MODELS=("claude-haiku-5.5" "gpt-oss-120b" "qwen3.6-27b" "gemini-3.8-flash")
 CUES="benef_org,benef_self,benef_other,none"
 
 if [[ "$STAGE" == "canary" ]]; then
-    N_PER_CUE=16  # 16 per arm per level per model = 64 per model (256 total)
+    N_PER_CUE=8  # 8 per arm per level = 64 per model (256 total with 2 levels × 4 models)
     CAP=2.97
 else
-    N_PER_CUE=48  # 48 per arm per level per model = 192 per model (768 total)
+    N_PER_CUE=24  # 24 per arm per level = 192 per model (768 total with 2 levels × 4 models)
     CAP=8.92
 fi
 
-# Retry parameters
-MAX_RETRIES=3
-RETRY_DELAY=5
+# Pre-flight checks
+echo "Running pre-flight checks..."
+if ! python3 -m pytest research/v3final/harness/v3/test_*.py research/v3final/test_*.py -v --tb=short; then
+    echo "✗ Pre-flight tests failed" >&2
+    exit 1
+fi
+echo "✓ Pre-flight tests passed"
+echo
 
 run_model() {
     local model="$1"
-    local attempt=1
     
     echo "----------------------------------------"
     echo "Model: $model"
     echo "----------------------------------------"
     
-    while [[ $attempt -le $MAX_RETRIES ]]; do
-        echo "Attempt $attempt of $MAX_RETRIES..."
+    # Seed calibration from v3final
+    mkdir -p "data/v3/$ITER/$model"
+    cp "research/v3final/data/$model/calibration.json" "data/v3/$ITER/$model/calibration.json"
+    
+    # Record versions before
+    python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" before
+    
+    # Run the harness with correct spec flags
+    # --phases si: Only run SI phase (not say/ladder/press)
+    # --preset full: Use full preset (not iter)
+    # --cue-n X:N: Per-cue per-level n (8 or 24)
+    # --cap: Hard budget cap per study/stage
+    if python3 research/v3final/harness/v3/run.py "$model" \
+        --iter "$ITER" \
+        --stage main \
+        --preset full \
+        --phases si \
+        --cues "$CUES" \
+        --cue-n "benef_org:$N_PER_CUE,benef_self:$N_PER_CUE,benef_other:$N_PER_CUE,none:$N_PER_CUE" \
+        --cap "$CAP" \
+        --budget "$CAP" \
+        --workers 8; then
         
-        if [[ "$RETRY_ONLY" == "--retry-only" ]]; then
-            # Retry mode: only run units that failed or are missing
-            echo "  Running in retry mode (only missing/failed units)"
-        fi
+        # Record versions after
+        python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" after
         
-        # Run the harness
-        # --cap: Hard budget cap
-        # --cue-n: Per-cue per-level n
-        # --cues: Comma list of cues
-        # --preset iter: Use iteration preset (smaller n for other phases)
-        # --stage main: Run main stage (not calibrate)
-        if python3 harness/v3/run.py "$model" \
-            --iter "$ITER" \
-            --stage main \
-            --preset iter \
-            --cues "$CUES" \
-            --cue-n "benef_org:$N_PER_CUE,benef_self:$N_PER_CUE,benef_other:$N_PER_CUE,none:$N_PER_CUE" \
-            --cap "$CAP" \
-            --workers 8; then
-            
-            echo "✓ $model completed successfully"
-            return 0
-        else
-            echo "✗ $model failed on attempt $attempt"
-            
-            if [[ $attempt -lt $MAX_RETRIES ]]; then
-                echo "  Retrying in ${RETRY_DELAY}s..."
-                sleep "$RETRY_DELAY"
-                ((attempt++))
-            else
-                echo "  Max retries reached, moving to next model"
-                return 1
-            fi
-        fi
-    done
+        echo "✓ $model completed successfully"
+        return 0
+    else
+        echo "✗ $model failed (errors remain after retries)"
+        return 1
+    fi
 }
 
 # Run all models

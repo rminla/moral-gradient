@@ -1,10 +1,9 @@
 #!/bin/bash
 # Run Study 2: Role × Tools 2x2
-# Usage: bash run_study2.sh [canary|main] [--retry-only]
+# Usage: bash run_study2.sh [canary|main]
 set -euo pipefail
 
 STAGE="${1:-canary}"
-RETRY_ONLY="${2:-}"
 
 if [[ "$STAGE" != "canary" && "$STAGE" != "main" ]]; then
     echo "Error: Stage must be 'canary' or 'main'" >&2
@@ -21,63 +20,60 @@ ITER="s2-${STAGE}"
 MODELS=("claude-haiku-5.5" "gpt-oss-120b" "qwen3.6-27b" "gemini-3.8-flash")
 
 if [[ "$STAGE" == "canary" ]]; then
-    ROLE_N=16  # 16 per cell per level per model = 64 per model (256 total)
+    ROLE_N=8  # 8 per cell per level = 64 per model (256 total with 4 cells × 2 levels × 4 models)
     CAP=1.40
 else
-    ROLE_N=48  # 48 per cell per level per model = 192 per model (768 total)
+    ROLE_N=24  # 24 per cell per level = 192 per model (768 total with 4 cells × 2 levels × 4 models)
     CAP=4.21
 fi
 
-# Retry parameters
-MAX_RETRIES=3
-RETRY_DELAY=5
+# Pre-flight checks
+echo "Running pre-flight checks..."
+if ! python3 -m pytest research/v3final/harness/v3/test_*.py research/v3final/test_*.py -v --tb=short; then
+    echo "✗ Pre-flight tests failed" >&2
+    exit 1
+fi
+echo "✓ Pre-flight tests passed"
+echo
 
 run_model() {
     local model="$1"
-    local attempt=1
     
     echo "----------------------------------------"
     echo "Model: $model"
     echo "----------------------------------------"
     
-    while [[ $attempt -le $MAX_RETRIES ]]; do
-        echo "Attempt $attempt of $MAX_RETRIES..."
+    # Seed calibration from v3final
+    mkdir -p "data/v3/$ITER/$model"
+    cp "research/v3final/data/$model/calibration.json" "data/v3/$ITER/$model/calibration.json"
+    
+    # Record versions before
+    python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" before
+    
+    # Run the harness with correct spec flags
+    # --phases role: Only run role phase (Study 2)
+    # --preset full: Use full preset
+    # --role-n N: Per-level n (8 or 24)
+    # --cap: Hard budget cap per study/stage
+    if python3 research/v3final/harness/v3/run.py "$model" \
+        --iter "$ITER" \
+        --stage main \
+        --preset full \
+        --phases role \
+        --role-n "$ROLE_N" \
+        --cap "$CAP" \
+        --budget "$CAP" \
+        --workers 8; then
         
-        if [[ "$RETRY_ONLY" == "--retry-only" ]]; then
-            # Retry mode: only run units that failed or are missing
-            echo "  Running in retry mode (only missing/failed units)"
-        fi
+        # Record versions after
+        python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" after
         
-        # Run the harness
-        # --cap: Hard budget cap
-        # --role-n: Per-level n for role phase
-        # --phases: Only run role phase
-        # --preset iter: Use iteration preset
-        # --stage main: Run main stage (not calibrate)
-        if python3 harness/v3/run.py "$model" \
-            --iter "$ITER" \
-            --stage main \
-            --preset iter \
-            --role-n "$ROLE_N" \
-            --phases role \
-            --cap "$CAP" \
-            --workers 8; then
-            
-            echo "✓ $model completed successfully"
-            return 0
-        else
-            echo "✗ $model failed on attempt $attempt"
-            
-            if [[ $attempt -lt $MAX_RETRIES ]]; then
-                echo "  Retrying in ${RETRY_DELAY}s..."
-                sleep "$RETRY_DELAY"
-                ((attempt++))
-            else
-                echo "  Max retries reached, moving to next model"
-                return 1
-            fi
-        fi
-    done
+        echo "✓ $model completed successfully"
+        return 0
+    else
+        echo "✗ $model failed (errors remain after retries)"
+        return 1
+    fi
 }
 
 # Run all models
