@@ -323,7 +323,7 @@ def main():
     else:
         effective_cap = args.pilot_cap
         effective_budget = args.budget
-        seed_calibration(args.model, args.iter, base_dir)
+        # seed_calibration moved inside stage loop after ROOT is set
     
     # Record versions (skip for fake transport - no shared ledger)
     if os.environ.get("FAKE_TRANSPORT") != "1":
@@ -380,6 +380,9 @@ def main():
         
         try:
             v3run.ROOT = harness_dir
+            
+            # Seed calibration to the isolated harness directory
+            seed_calibration(args.model, args.iter, base_dir)
             
             if not run_stage_with_retries(args.model, st, effective_budget, stage_cap, args.workers, args.smoke, args.iter):
                 success = False
