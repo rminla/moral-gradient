@@ -22,12 +22,13 @@ from mc.ledger import SCHEMA
 
 # Import prereg layer
 from v3_prereg_layer import (
-    BENEF_CUES, 
     SYSTEM_CUE_SET, 
-    car_spec_prereg, 
     car_role_spec, 
     unit_with_car_role,
-    make_cue_seen_checker
+    make_cue_seen_checker,
+    make_car_spec_for_model,
+    patch_engine_for_car_role,
+    CUE_TO_ARM,
 )
 from global_ledger import GlobalLedger, BudgetExceeded
 
@@ -303,19 +304,30 @@ def main():
     original_plan = v3run.plan
     v3run.plan = lambda stage, cal=None, smoke=False: plan_prereg(stage, cal, smoke, cue_n, args.role_n, phases)
     
-    # Override car_spec for beneficiary cues
+    # Fix #2: Override car_spec for Study 1 beneficiary cues with model-specific version
     original_car_spec = K.car_spec
-    K.car_spec = car_spec_prereg
+    K.car_spec = make_car_spec_for_model(args.model)
+    
+    # Fix #3: Patch Engine class for Study 2 car_role
+    from v3.run import Engine
+    original_engine_unit = Engine.unit
+    def patched_unit(self, j):
+        if j.get("case") == "car_role":
+            return unit_with_car_role(self, j)
+        else:
+            return original_engine_unit(self, j)
+    Engine.unit = patched_unit
     
     success = True
     for st in (["calibrate", "main"] if args.stage == "all" else [args.stage]):
-        if not run_stage_with_retries(args.model, st, effective_budget, effective_cap, args.workers, args.smoke, args.iter, global_ledger_path):
+        if not run_stage_with_retries(args.model, st, effective_budget, effective_cap, args.workers, args.smoke, args.iter):
             success = False
             break
     
     # Restore originals
     v3run.plan = original_plan
     K.car_spec = original_car_spec
+    Engine.unit = original_engine_unit
     
     # Fix 5: Record versions after
     if success:
@@ -326,7 +338,7 @@ def main():
             check=True
         )
         
-        # Fix 4 (deviation-4): Write to global SQLite ledger and generate summary
+        # Fix #8: Write to global SQLite ledger and generate summary
         if global_ledger:
             print(f"\n=== Writing to global ledger and generating summary ===", flush=True)
             try:
@@ -343,13 +355,18 @@ def main():
                     with open(out) as f:
                         for line in f:
                             row = json.loads(line)
-                            total_cost += row.get("cost_usd", 0)
+                            # Fix #8: Read 'cost' not 'cost_usd'
+                            total_cost += row.get("cost", 0)
                             n_calls += 1
                             total_prompt_tokens += row.get("prompt_tokens", 0)
                             total_completion_tokens += row.get("completion_tokens", 0)
                 
                 # Insert aggregate call into global ledger
                 if n_calls > 0:
+                    # Fix #8: Set mock_data=1 for fake runs (check if using FakeTransport)
+                    # For now, mark as mock if cost is exactly 0
+                    is_mock = (total_cost == 0 and n_calls > 0)
+                    
                     global_ledger.insert_call(
                         call_id=f"{args.iter}_{args.model}_{st}",
                         model_id=args.model,
@@ -358,15 +375,15 @@ def main():
                         prompt_tokens=total_prompt_tokens,
                         completion_tokens=total_completion_tokens,
                         metadata=json.dumps({"n_calls": n_calls, "stage": st}),
-                        mock_data=1 if args.smoke else 0,
+                        mock_data=1 if is_mock else 0,
                     )
                     print(f"✓ Inserted ${total_cost:.4f} ({n_calls} calls) into global ledger", flush=True)
                 
-                # Generate and write summary
-                summary_path = base_dir / "research" / "prereg" / "global-ledger-update.json"
+                # Fix #8: Generate and write summary outside repo
+                summary_path = Path("/tmp") / f"global-ledger-update-{args.iter}.json"
                 global_ledger.generate_summary(summary_path)
                 
-                print(f"✓ Generated global ledger summary", flush=True)
+                print(f"✓ Generated global ledger summary at {summary_path}", flush=True)
             except Exception as e:
                 print(f"Warning: Could not update global ledger: {e}", flush=True)
     
