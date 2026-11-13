@@ -238,29 +238,25 @@ def gate_org_vs_none(fit_result: Dict) -> Tuple[bool, float, float]:
 
 
 def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
-    """Compute AMEs as average discrete differences with 95% CIs (bootstrap)."""
+    """Compute AMEs as average discrete differences with 95% CIs (bootstrap).
+    
+    Fix deviation-1: Bootstrap refits model on each draw for proper CI estimation.
+    """
     df_clean = df.dropna(subset=["keep"]).copy()
     
-    # Build design matrix once from original data
     from patsy import dmatrices
     formula = fit_result["formula"]
-    _, X_original = dmatrices(formula, df_clean, return_type="dataframe")
-    
-    # Get coefficient dict
-    coef_dict = fit_result["coefficients"]
     
     results = []
     
-    # Bootstrap CIs
+    # Bootstrap CIs with refitting
     n_boot = 1000
     np.random.seed(42)
     
     for arm_treatment in ["SELF", "OTHER", "NONE"]:
-        # Compute AME for this arm vs ORG
-        # Average discrete difference: P(keep|arm) - P(keep|ORG)
-        
-        # For each observation, manually compute the discrete difference
-        # by adjusting only the arm coefficient
+        # Compute AME for original data
+        _, X_original = dmatrices(formula, df_clean, return_type="dataframe")
+        coef_dict = fit_result["coefficients"]
         
         # Find the relevant coefficient key
         arm_coef_key = None
@@ -279,38 +275,63 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
             })
             continue
         
+        # Compute AME from original fit
         arm_coef = coef_dict[arm_coef_key]
-        
-        # Compute predictions at ORG (baseline)
         coef_vec = np.array([coef_dict[c] for c in X_original.columns])
         eta_org = X_original.values @ coef_vec
         p_org = 1 / (1 + np.exp(-eta_org))
-        
-        # Compute predictions at treatment arm
-        # This is like ORG baseline + arm_coef increment
         eta_treat = eta_org + arm_coef
         p_treat = 1 / (1 + np.exp(-eta_treat))
-        
         ame = np.mean(p_treat - p_org)
         
-        # Bootstrap CI
+        # Bootstrap CI: refit model on each draw
         ames_boot = []
-        for _ in range(n_boot):
-            idx = np.random.choice(len(df_clean), len(df_clean), replace=True)
+        for b in range(n_boot):
+            # Resample rows with replacement
+            df_boot = df_clean.sample(n=len(df_clean), replace=True, random_state=42+b)
             
-            # Resample predictions
-            p_org_boot = p_org[idx]
-            p_treat_boot = p_treat[idx]
-            
-            ames_boot.append(np.mean(p_treat_boot - p_org_boot))
+            # Refit model on bootstrap sample
+            try:
+                # Use statsmodels logit for speed (Firth would be too slow for 1000 bootstraps)
+                model_boot = logit(formula, data=df_boot).fit(disp=0, maxiter=50)
+                
+                # Build design matrix for bootstrap sample
+                _, X_boot = dmatrices(formula, df_boot, return_type="dataframe")
+                
+                # Find arm coefficient in bootstrap fit
+                arm_coef_boot = None
+                for param_name in model_boot.params.index:
+                    if f"[T.{arm_treatment}]" in param_name:
+                        arm_coef_boot = model_boot.params[param_name]
+                        break
+                
+                if arm_coef_boot is None:
+                    continue
+                
+                # Compute AME for bootstrap sample
+                coef_vec_boot = model_boot.params.values
+                eta_org_boot = X_boot.values @ coef_vec_boot
+                p_org_boot = 1 / (1 + np.exp(-eta_org_boot))
+                eta_treat_boot = eta_org_boot + arm_coef_boot
+                p_treat_boot = 1 / (1 + np.exp(-eta_treat_boot))
+                ame_boot = np.mean(p_treat_boot - p_org_boot)
+                
+                ames_boot.append(ame_boot)
+            except:
+                # If bootstrap sample fails to converge, skip
+                continue
         
-        ci_lower, ci_upper = np.percentile(ames_boot, [2.5, 97.5]) if ames_boot else (np.nan, np.nan)
+        if len(ames_boot) >= 100:  # Need at least 100 successful bootstraps
+            ci_lower, ci_upper = np.percentile(ames_boot, [2.5, 97.5])
+        else:
+            ci_lower, ci_upper = np.nan, np.nan
         
         results.append({
             "contrast": f"{arm_treatment}_vs_ORG",
             "ame": ame,
             "ci_lower": ci_lower,
             "ci_upper": ci_upper,
+            "n_boot_success": len(ames_boot),
         })
     
     return pd.DataFrame(results)
