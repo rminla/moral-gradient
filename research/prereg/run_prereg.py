@@ -325,13 +325,16 @@ def main():
         effective_budget = args.budget
         seed_calibration(args.model, args.iter, base_dir)
     
-    # Record versions
-    print("\n=== Recording versions (before) ===", flush=True)
-    subprocess.run(
-        ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
-        cwd=base_dir,
-        check=True
-    )
+    # Record versions (skip for fake transport - no shared ledger)
+    if os.environ.get("FAKE_TRANSPORT") != "1":
+        print("\n=== Recording versions (before) ===", flush=True)
+        subprocess.run(
+            ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
+            cwd=base_dir,
+            check=True
+        )
+    else:
+        print("✓ record_versions skipped (FAKE_TRANSPORT=1)", flush=True)
     
     # Run with modified plan function
     original_plan = v3run.plan
@@ -397,8 +400,8 @@ def main():
     K.car_spec = original_car_spec
     Engine.unit = original_engine_unit
     
-    # Record versions after
-    if success:
+    # Record versions after (skip for fake transport)
+    if success and os.environ.get("FAKE_TRANSPORT") != "1":
         print("\n=== Recording versions (after) ===", flush=True)
         subprocess.run(
             ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
