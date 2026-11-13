@@ -45,9 +45,12 @@ BENEF_CUES = {
 # System cues that should be checked in cue_seen logic
 SYSTEM_CUE_SET = {"memo", "memo_soft", "memo_soft_eval", "benef_org", "benef_self", "benef_other", "benef_bridge"}
 
-# Study 2 prompts
+# Study 1 and Study 2 prompts with expected SHA256 hashes
+S1_PROMPTS_PATH = Path(__file__).resolve().parent.parent.parent / "research" / "v3" / "prompts_study1.json"
+S1_PROMPTS_SHA256 = "522422ac87b3908ba37d28271433ae91b3e72bcda67f202278afcb80d398d9c1"
+
 S2_PROMPTS_PATH = Path(__file__).resolve().parent.parent.parent / "research" / "v3" / "prompts_study2.json"
-S2_PROMPTS_SHA256 = "2fa4403c0606b95e42c29fab3ffaec7dfe84eb78dbf25384cf9fa4a1a5b57e6e"
+S2_PROMPTS_SHA256 = "2fa4403cac3ce81cfd7a52f81353959fec2c8efb7284100fe8fba9fe55b58c9f"
 
 
 def car_spec_prereg(level, para, lvl, policy="discretion", escalation=True, cue=None, arm=None):
@@ -65,37 +68,67 @@ def car_spec_prereg(level, para, lvl, policy="discretion", escalation=True, cue=
         return K.car_spec(level, para, lvl, policy, escalation, cue, arm)
 
 
-def car_role_spec(role, tools, para, lvl):
-    """Generate Study 2 car_role specs from prompts_study2.json."""
+def verify_prompts_sha256(prompts_path, expected_sha256, study_name):
+    """Verify prompts file SHA256 hash at load time."""
     import hashlib
     
-    if not S2_PROMPTS_PATH.exists():
-        raise FileNotFoundError(f"Study 2 prompts not found: {S2_PROMPTS_PATH}")
+    if not prompts_path.exists():
+        raise FileNotFoundError(f"{study_name} prompts not found: {prompts_path}")
     
-    # Verify SHA256
-    content = S2_PROMPTS_PATH.read_bytes()
+    content = prompts_path.read_bytes()
     actual_sha = hashlib.sha256(content).hexdigest()
-    if actual_sha != S2_PROMPTS_SHA256:
+    
+    if actual_sha != expected_sha256:
         raise ValueError(
-            f"Study 2 prompts SHA256 mismatch:\n"
-            f"  Expected: {S2_PROMPTS_SHA256}\n"
-            f"  Actual:   {actual_sha}"
+            f"{study_name} prompts SHA256 mismatch - prompts do not match preregistered specification:\n"
+            f"  Expected: {expected_sha256}\n"
+            f"  Actual:   {actual_sha}\n"
+            f"  File: {prompts_path}"
         )
     
-    prompts = json.loads(content)
+    return json.loads(content)
+
+
+def car_role_spec(model, role, tools, para, lvl):
+    """Generate Study 2 car_role specs from prompts_study2.json.
     
-    # Build key matching JSON structure
-    key = f"role={role}_tools={tools}_para={para}_level={lvl}"
+    Verifies SHA256 at load time to ensure byte-identical prompts.
     
-    if key not in prompts:
-        raise KeyError(f"No prompt found for {key}")
+    Args:
+        model: Model name (e.g. "claude-haiku-5.5")
+        role: "agent" or "advisor"
+        tools: True for tools cells, False for no-tools cells
+        para: Paraphrase index (0, 1, 2)
+        lvl: Calibrated level (e.g. 4, 5 for Haiku)
     
-    return prompts[key]
+    Returns:
+        Dict with system, user, tools, tool_results, decisions
+    """
+    prompts_data = verify_prompts_sha256(S2_PROMPTS_PATH, S2_PROMPTS_SHA256, "Study 2")
+    
+    # Build cell name
+    cell = f"{role}_{'tools' if tools else 'notools'}"
+    
+    # Navigate structure: specs[model][cell] is a list of specs
+    if model not in prompts_data['specs']:
+        raise KeyError(f"Model '{model}' not found in prompts")
+    
+    if cell not in prompts_data['specs'][model]:
+        raise KeyError(f"Cell '{cell}' not found for model '{model}'")
+    
+    specs_list = prompts_data['specs'][model][cell]
+    
+    # Find matching spec by level and para
+    for spec in specs_list:
+        if spec['level'] == lvl and spec['para'] == para:
+            return spec
+    
+    raise KeyError(f"No spec found for model={model}, cell={cell}, level={lvl}, para={para}")
 
 
 def unit_with_car_role(engine, j, key_str):
     """Execute car_role unit with proper tools/no-tools handling."""
-    spec = car_role_spec(j["role"], j["tools"], j["para"], j["level"])
+    spec = car_role_spec(engine.model, j["role"], j["tools"], j["para"], j["level"])
     
     row = {
         "key": key_str,
