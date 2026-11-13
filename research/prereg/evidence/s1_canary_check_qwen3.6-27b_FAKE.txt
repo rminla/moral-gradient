@@ -1,0 +1,27 @@
+Loaded 64 records and 491 calls from research/v3final/harness/run_s1_canary_fake_main/data/v3
+Detected study: s1
+
+=== Gate (a): Logged Requests Match Prereg JSON ===
+Gate (a): PASS
+  Stats: {'matched': 171, 'unmatched': 0, 'per_arm_or_cell': {'self': 45, 'org': 41, 'none': 42, 'other': 43}}
+
+=== Gate (b): Error Rate ===
+Gate (b): PASS - 64/64 success (100.0%)
+
+=== Gate (d): S1 Grader Coverage ===
+Gate (d): PASS - 64/64 units with rationale and probe labels (100.0%)
+
+=== Gate (e): Cost Validation ===
+  note: no trace_calls.jsonl yet; run run_traces_prereg.py first so trace-grader cost is included
+Gate (e): PASS - $0.00934/unit vs cap $0.01375 (spend $0.5978, 64 units) [INFO only: fake-transport token counts are synthetic, so cost is not gated]
+  per_unit: $0.0093 actual vs $0.0137 cap (✓)
+
+============================================================
+CANARY CHECK SUMMARY
+============================================================
+gate_a: ✓ PASS
+gate_b: ✓ PASS
+gate_d: ✓ PASS
+gate_e: ✓ PASS
+============================================================
+Overall: ✓ ALL GATES PASSED

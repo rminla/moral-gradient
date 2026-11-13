@@ -1,0 +1,47 @@
+Loading data from research/prereg/evidence/s2_canary_combined_FAKE.jsonl...
+Loaded 256 records
+Cells: {'agent_notools': 64, 'advisor_notools': 64, 'agent_tools': 64, 'advisor_tools': 64}
+Unparsed: 0 / 256 (0.0%)
+Separation detected: False
+
+=== PRIMARY ANALYSIS ===
+Using ML logistic regression (no separation)
+Log-likelihood: -172.8262
+
+=== WALD TESTS WITH HOLM ===
+                    contrast  estimate       se        z        p   p_holm  reject_holm
+advisor_tools_vs_agent_tools  0.063859 0.357406 0.178673 0.858195 0.858195        False
+agent_notools_vs_agent_tools  0.385662 0.359668 1.072273 0.283598 0.567195        False
+
+=== AVERAGE MARGINAL EFFECTS WITH 95% CIs ===
+                      contrast      ame  ci_lower  ci_upper  n_boot_success
+  agent_notools_vs_agent_tools 0.093750 -0.082457  0.267923            1000
+  advisor_tools_vs_agent_tools 0.015625 -0.168525  0.188753            1000
+advisor_notools_vs_agent_tools 0.109375 -0.057181  0.283425            1000
+
+=== PER-MODEL CONTRASTS (Wilson, Newcombe, Fisher) ===
+           model                         contrast  n1  x1     p1  n2  x2     p2    diff  newcombe_lower  newcombe_upper  fisher_p
+claude-haiku-5.5     agent_tools_vs_agent_notools  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
+claude-haiku-5.5     agent_tools_vs_advisor_tools  16   8 0.5000  16   6 0.3750  0.1250       -0.199541        0.415815  0.722393
+claude-haiku-5.5 agent_notools_vs_advisor_notools  16  11 0.6875  16   8 0.5000  0.1875       -0.140636        0.466055  0.472548
+claude-haiku-5.5 advisor_tools_vs_advisor_notools  16   6 0.3750  16   8 0.5000 -0.1250       -0.415815        0.199541  0.722393
+gemini-3.8-flash     agent_tools_vs_agent_notools  16   8 0.5000  16  10 0.6250 -0.1250       -0.415815        0.199541  0.722393
+gemini-3.8-flash     agent_tools_vs_advisor_tools  16   8 0.5000  16  10 0.6250 -0.1250       -0.415815        0.199541  0.722393
+gemini-3.8-flash agent_notools_vs_advisor_notools  16  10 0.6250  16  11 0.6875 -0.0625       -0.355955        0.246438  1.000000
+gemini-3.8-flash advisor_tools_vs_advisor_notools  16  10 0.6250  16  11 0.6875 -0.0625       -0.355955        0.246438  1.000000
+    gpt-oss-120b     agent_tools_vs_agent_notools  16   5 0.3125  16   8 0.5000 -0.1875       -0.466055        0.140636  0.472548
+    gpt-oss-120b     agent_tools_vs_advisor_tools  16   5 0.3125  16   8 0.5000 -0.1875       -0.466055        0.140636  0.472548
+    gpt-oss-120b agent_notools_vs_advisor_notools  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+    gpt-oss-120b advisor_tools_vs_advisor_notools  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+     qwen3.6-27b     agent_tools_vs_agent_notools  16  10 0.6250  16   8 0.5000  0.1250       -0.199541        0.415815  0.722393
+     qwen3.6-27b     agent_tools_vs_advisor_tools  16  10 0.6250  16   8 0.5000  0.1250       -0.199541        0.415815  0.722393
+     qwen3.6-27b agent_notools_vs_advisor_notools  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
+     qwen3.6-27b advisor_tools_vs_advisor_notools  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
+
+=== ROLE × TOOLS LR TEST ===
+LR statistic: 0.0000, df=1, p=0.9970
+
+=== MODEL × CELL LR TEST ===
+LR statistic: 5.6549, df=9, p=0.7739
+
+✓ Results saved to research/prereg/evidence/s2_canary_analysis_FAKE.json

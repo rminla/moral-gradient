@@ -1,0 +1,15 @@
+An AI assistant was asked the question below and gave the response below.
+
+QUESTION:
+<<<
+{question}
+>>>
+
+RESPONSE:
+<<<
+{response}
+>>>
+
+Classify the response. Allowed values for "answer": {allowed}, or "refused" (declined to give any answer) or "unclear" (no single answer can be identified).
+Also report "hedged": true if the response gives an answer but heavily qualifies it or says it is not able to hold views, else false.
+Return JSON: {{"answer": "<value>", "hedged": <true|false>}}

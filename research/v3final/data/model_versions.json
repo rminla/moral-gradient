@@ -1,0 +1,181 @@
+{
+ "iteration": "v3final",
+ "models": {
+  "claude-haiku-5.5": {
+   "provider": "anthropic",
+   "model_requested": "claude-haiku-5-5",
+   "params": {
+    "thinking": {
+     "type": "adaptive",
+     "display": "summarized"
+    },
+    "output_config": {
+     "effort": "medium"
+    }
+   },
+   "grader_params": {},
+   "roles": [
+    "target",
+    "grader"
+   ],
+   "provider_metadata_pre": {
+    "checked_utc": "2026-11-02T10:01:28+00:00",
+    "id": "claude-haiku-5-5",
+    "display_name": "Claude Haiku 5.5",
+    "created_at": "2026-10-07T18:00:00Z"
+   },
+   "returned": [
+    {
+     "model_returned": "claude-haiku-5-5",
+     "calls": 4567,
+     "first_utc": "2026-11-02T10:02:29.655+00:00",
+     "last_utc": "2026-11-02T11:51:58.857+00:00"
+    },
+    {
+     "model_returned": "claude-haiku-5-5",
+     "calls": 662,
+     "first_utc": "2026-11-02T13:56:25.480+00:00",
+     "last_utc": "2026-11-02T14:05:23.020+00:00"
+    }
+   ]
+  },
+  "gpt-oss-120b": {
+   "provider": "groq",
+   "model_requested": "openai/gpt-oss-120b",
+   "params": {
+    "reasoning_effort": "medium"
+   },
+   "grader_params": {
+    "temperature": 0,
+    "reasoning_effort": "low"
+   },
+   "roles": [
+    "target",
+    "grader"
+   ],
+   "provider_metadata_pre": {
+    "checked_utc": "2026-11-02T10:01:28+00:00",
+    "id": "openai/gpt-oss-120b",
+    "owned_by": "OpenAI",
+    "created": 1754408224
+   },
+   "returned": [
+    {
+     "model_returned": null,
+     "calls": 505,
+     "first_utc": "2026-11-02T10:02:36.132+00:00",
+     "last_utc": "2026-11-02T10:29:45.935+00:00"
+    },
+    {
+     "model_returned": "openai/gpt-oss-120b",
+     "calls": 5106,
+     "first_utc": "2026-11-02T10:02:26.731+00:00",
+     "last_utc": "2026-11-02T13:28:36.749+00:00"
+    },
+    {
+     "model_returned": "openai/gpt-oss-120b",
+     "calls": 985,
+     "first_utc": "2026-11-02T13:28:42.158+00:00",
+     "last_utc": "2026-11-02T14:05:19.003+00:00"
+    }
+   ]
+  },
+  "qwen3.6-27b": {
+   "provider": "groq",
+   "model_requested": "qwen/qwen3.6-27b",
+   "params": {
+    "reasoning_format": "parsed"
+   },
+   "grader_params": null,
+   "roles": [
+    "target"
+   ],
+   "provider_metadata_pre": {
+    "checked_utc": "2026-11-02T10:01:28+00:00",
+    "id": "qwen/qwen3.6-27b",
+    "owned_by": "Alibaba Cloud",
+    "created": 1778288776
+   },
+   "returned": [
+    {
+     "model_returned": null,
+     "calls": 2,
+     "first_utc": "2026-11-02T10:48:01.387+00:00",
+     "last_utc": "2026-11-02T11:11:25.534+00:00"
+    },
+    {
+     "model_returned": "qwen/qwen3.6-27b",
+     "calls": 3560,
+     "first_utc": "2026-11-02T10:02:29.191+00:00",
+     "last_utc": "2026-11-02T11:51:57.021+00:00"
+    }
+   ]
+  },
+  "gemini-3.8-flash": {
+   "provider": "openrouter",
+   "model_requested": "google/gemini-3.8-flash",
+   "params": {
+    "reasoning": {
+     "effort": "medium"
+    }
+   },
+   "grader_params": null,
+   "roles": [
+    "target"
+   ],
+   "provider_metadata_pre": {
+    "checked_utc": "2026-11-02T10:01:28+00:00",
+    "id": "google/gemini-3.8-flash",
+    "canonical_slug": "google/gemini-3.8-flash-20260902",
+    "created": 1788362056,
+    "context_length": 1048576
+   },
+   "returned": [
+    {
+     "model_returned": null,
+     "calls": 2,
+     "first_utc": "2026-11-02T13:12:02.818+00:00",
+     "last_utc": "2026-11-02T13:14:41.004+00:00"
+    },
+    {
+     "model_returned": "google/gemini-3.8-flash",
+     "calls": 3481,
+     "first_utc": "2026-11-02T10:02:32.174+00:00",
+     "last_utc": "2026-11-02T13:28:35.969+00:00"
+    }
+   ]
+  },
+  "qwen3.8-27b": {
+   "provider": "groq",
+   "model_requested": "qwen/qwen3.8-27b",
+   "params": null,
+   "grader_params": {
+    "temperature": 0
+   },
+   "roles": [
+    "grader"
+   ],
+   "provider_metadata_pre": {
+    "checked_utc": "2026-11-02T10:01:28+00:00",
+    "id": "qwen/qwen3.8-27b",
+    "owned_by": "Alibaba Cloud",
+    "created": 1786984846
+   },
+   "returned": [
+    {
+     "model_returned": "qwen/qwen3.8-27b",
+     "calls": 1733,
+     "first_utc": "2026-11-02T10:04:38.040+00:00",
+     "last_utc": "2026-11-02T13:28:36.428+00:00"
+    },
+    {
+     "model_returned": "qwen/qwen3.8-27b",
+     "calls": 964,
+     "first_utc": "2026-11-02T13:28:44.478+00:00",
+     "last_utc": "2026-11-02T14:01:34.170+00:00"
+    }
+   ]
+  }
+ },
+ "updated_utc": "2026-11-02T14:06:14+00:00"
+}

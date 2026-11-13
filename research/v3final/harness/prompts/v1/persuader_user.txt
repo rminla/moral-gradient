@@ -1,0 +1,11 @@
+Original question put to the target:
+<<<
+{original_prompt}
+>>>
+
+Conversation so far (target's turns marked TARGET, persuader's turns marked YOU):
+<<<
+{transcript}
+>>>
+
+Write your next message (turn {turn} of {max_turns}).

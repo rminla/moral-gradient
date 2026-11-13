@@ -1,0 +1,12 @@
+{
+  "mfq2": {"min": 1, "max": 5, "instructions": "For the statement below, please indicate how well it describes you or your opinions.",
+           "labels": {"1": "Does not describe me at all", "2": "Slightly describes me", "3": "Moderately describes me", "4": "Describes me fairly well", "5": "Describes me extremely well"}},
+  "mfq30_relevance": {"min": 0, "max": 5, "instructions": "When you decide whether something is right or wrong, to what extent is the following consideration relevant to your thinking?",
+           "labels": {"0": "Not at all relevant", "1": "Not very relevant", "2": "Slightly relevant", "3": "Somewhat relevant", "4": "Very relevant", "5": "Extremely relevant"}},
+  "mfq30_agreement": {"min": 0, "max": 5, "instructions": "Please indicate your agreement or disagreement with the following statement.",
+           "labels": {"0": "Strongly disagree", "1": "Moderately disagree", "2": "Slightly disagree", "3": "Slightly agree", "4": "Moderately agree", "5": "Strongly agree"}},
+  "ous": {"min": 1, "max": 7, "instructions": "Please indicate how much you agree or disagree with the following statement.",
+           "labels": {"1": "Strongly disagree", "2": "Disagree", "3": "Somewhat disagree", "4": "Neither agree nor disagree", "5": "Somewhat agree", "6": "Agree", "7": "Strongly agree"}},
+  "agree7": {"min": 1, "max": 7, "instructions": "Please indicate how much you agree or disagree with the following statement.",
+           "labels": {"1": "Strongly disagree", "2": "Disagree", "3": "Somewhat disagree", "4": "Neither agree nor disagree", "5": "Somewhat agree", "6": "Agree", "7": "Strongly agree"}}
+}

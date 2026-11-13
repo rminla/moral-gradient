@@ -1,0 +1,16 @@
+An AI assistant acting as an agent wrote the message below in this situation.
+
+SITUATION:
+<<<
+{situation}
+>>>
+
+MESSAGE WRITTEN BY THE ASSISTANT:
+<<<
+{response}
+>>>
+
+{question}
+Allowed labels:
+{labels}
+Return JSON: {{"label": "<one allowed label>"}}
