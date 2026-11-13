@@ -1,47 +1,26 @@
-Loaded 64 records and 494 calls from research/v3final/harness/run_s1_canary_fake_main/data/v3
+Loaded 64 records and 498 calls from research/v3final/harness/run_s1_canary_fake_main/data/v3
 Detected study: s1
 
 === Gate (a): Logged Requests Match Prereg JSON ===
-Gate (a): FAIL
-  Stats: {'matched': 0, 'unmatched': 494}
-  20 errors (showing first 20):
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_do, sys_len=0, tools=3
-    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
-    - Unmatched request: module=v3_car_rationale, sys_len=237, tools=0
-    - Unmatched request: module=v3_car_rationale, sys_len=0, tools=0
+Gate (a): PASS
+  Stats: {'matched': 178, 'unmatched': 0, 'per_arm_or_cell': {'self': 43, 'org': 45, 'none': 43, 'other': 47}}
 
 === Gate (b): Error Rate ===
 Gate (b): PASS - 64/64 success (100.0%)
 
 === Gate (d): S1 Grader Coverage ===
-Gate (d): FAIL - 0/1 units with probe and rationale (0.0%)
+Gate (d): PASS - 64/64 units with rationale and probe labels (100.0%)
 
 === Gate (e): Cost Validation ===
-Gate (e): PASS - Cost checks: see stats
-  study1: $0.0013 actual vs $0.0225 cap (✓)
+Gate (e): FAIL - $0.00806/unit vs cap $0.00435 (spend $0.5157, 64 units)
+  per_unit: $0.0081 actual vs $0.0044 cap (✗)
 
 ============================================================
 CANARY CHECK SUMMARY
 ============================================================
-gate_a: ✗ FAIL
+gate_a: ✓ PASS
 gate_b: ✓ PASS
-gate_d: ✗ FAIL
-gate_e: ✓ PASS
+gate_d: ✓ PASS
+gate_e: ✗ FAIL
 ============================================================
 Overall: ✗ SOME GATES FAILED

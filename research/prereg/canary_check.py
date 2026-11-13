@@ -52,85 +52,54 @@ def load_cost_estimates(cost_file: Path) -> Dict:
         return json.load(f)
 
 
+TARGET_MODULES = {"v3_car_do", "car_role", "car_role_notool"}
+
+
+def _req_system_user(req):
+    """System and first user turn from an Anthropic- or OpenAI-format logged request."""
+    msgs = req.get("messages", []) or []
+    sys_text = req.get("system")
+    if isinstance(sys_text, list):
+        sys_text = "".join(b.get("text", "") for b in sys_text if isinstance(b, dict))
+    if sys_text is None:
+        sys_text = next((m.get("content") for m in msgs if m.get("role") == "system"), "")
+    user = next((m.get("content") for m in msgs if m.get("role") == "user"), "")
+    if isinstance(user, list):
+        user = "".join(b.get("text", "") for b in user if isinstance(b, dict) and b.get("type") == "text")
+    return sys_text or "", user or ""
+
+
+def _tool_names(tools):
+    return sorted((t.get("name") or t.get("function", {}).get("name")) for t in (tools or []))
+
+
 def gate_a_validation(calls: List[Dict], prompts: Dict, model: str, study: str) -> Tuple[bool, List[str], Dict]:
-    """Gate (a): validate logged requests match prereg JSON byte-for-byte.
-    
-    Returns (passed, errors, stats)
-    """
-    errors = []
-    matched = 0
-    unmatched = 0
-    
+    """Gate (a): every logged TARGET request matches a prereg spec byte-for-byte
+    (system, first user turn, tool names; no-tools specs must send no tools)."""
+    specs = prompts.get("specs", prompts).get(model, {})
+    index = {}
+    for arm, specs_list in specs.items():
+        for spec in specs_list:
+            index[(spec["system"], spec["user"])] = (arm, _tool_names(spec.get("tools")))
+    errors, matched, unmatched, per_arm = [], 0, 0, {}
     for call in calls:
-        # Skip probe/grader calls
-        if call.get('module') in ['unusual_probe', 'rationale_grader']:
+        if not str(call.get("role", "")).startswith("target") or call.get("module") not in TARGET_MODULES:
             continue
-        
-        req = call.get('request_json', {})
+        req = call.get("request_json") or {}
         if isinstance(req, str):
             req = json.loads(req)
-        
-        sys_text = req.get('system', '')
-        
-        # Get user text
-        if req.get('messages'):
-            user_text = req.get('messages', [{}])[0].get('content', '')
-        else:
-            user_text = req.get('user', '')
-        
-        tools_sent = req.get('tools', [])
-        
-        # Match against prompts
-        found = False
-        if study == "s1":
-            # Match S1: arm → specs list
-            for arm, specs_list in prompts.get(model, {}).items():
-                for spec in specs_list:
-                    if spec['system'] == sys_text and spec['user'] == user_text:
-                        # Check tools match
-                        expected_tools = spec.get('tools', [])
-                        tools_match = (len(tools_sent) == len(expected_tools))
-                        if tools_match and len(expected_tools) > 0:
-                            # Check tool names match
-                            sent_names = {t.get('name') or t.get('function', {}).get('name') for t in tools_sent}
-                            expected_names = {t.get('name') or t.get('function', {}).get('name') for t in expected_tools}
-                            tools_match = (sent_names == expected_names)
-                        
-                        if tools_match:
-                            found = True
-                            break
-                if found:
-                    break
-        else:
-            # Match S2: cell → specs list
-            for cell, specs_list in prompts.get(model, {}).items():
-                for spec in specs_list:
-                    if spec['system'] == sys_text and spec['user'] == user_text:
-                        # Check tools
-                        expected_tools = spec.get('tools', [])
-                        tools_match = (len(tools_sent) == len(expected_tools))
-                        if tools_match and len(expected_tools) > 0:
-                            sent_names = {t.get('name') or t.get('function', {}).get('name') for t in tools_sent}
-                            expected_names = {t.get('name') or t.get('function', {}).get('name') for t in expected_tools}
-                            tools_match = (sent_names == expected_names)
-                        
-                        if tools_match:
-                            found = True
-                            break
-                if found:
-                    break
-        
-        if found:
+        sys_text, user_text = _req_system_user(req)
+        hit = index.get((sys_text, user_text))
+        if hit and _tool_names(req.get("tools")) == hit[1]:
             matched += 1
+            per_arm[hit[0]] = per_arm.get(hit[0], 0) + 1
         else:
             unmatched += 1
             if len(errors) < 20:
-                errors.append(f"Unmatched request: module={call.get('module')}, sys_len={len(sys_text)}, tools={len(tools_sent)}")
-    
-    passed = unmatched == 0
-    stats = {"matched": matched, "unmatched": unmatched}
-    
-    return passed, errors, stats
+                why = "no prereg spec with this system+user" if not hit else f"tools {_tool_names(req.get('tools'))} != {hit[1]}"
+                errors.append(f"Unmatched {call.get('module')} call {call.get('call_id')}: {why}")
+    passed = unmatched == 0 and matched > 0
+    return passed, errors, {"matched": matched, "unmatched": unmatched, "per_arm_or_cell": per_arm}
 
 
 def gate_b_validation(records: List[Dict]) -> Tuple[bool, float, str]:
@@ -181,93 +150,40 @@ def gate_c_validation_s2(records: List[Dict]) -> Tuple[bool, Dict, str]:
     return passed, per_cell, message
 
 
-def gate_d_validation_s1(calls: List[Dict]) -> Tuple[bool, float, str]:
-    """Gate (d): S1 ≥95% of units have rationale and probe labels."""
-    
-    # Count target calls (not graders)
-    target_calls = [c for c in calls if c.get('module') not in ['unusual_probe', 'rationale_grader']]
-    
-    if len(target_calls) == 0:
-        return False, 0.0, "No target calls found"
-    
-    # Find corresponding probe and rationale calls
-    # Group calls by unit key
-    units_with_probe = set()
-    units_with_rationale = set()
-    
-    for call in calls:
-        key = call.get('key', '')
-        if call.get('module') == 'unusual_probe':
-            units_with_probe.add(key)
-        elif call.get('module') == 'rationale_grader':
-            units_with_rationale.add(key)
-    
-    # Check target calls have corresponding grader calls
-    target_keys = {c.get('key', '') for c in target_calls}
-    n_with_both = len(target_keys & units_with_probe & units_with_rationale)
-    
-    coverage_rate = n_with_both / len(target_keys) if target_keys else 0
-    passed = coverage_rate >= 0.95
-    message = f"{n_with_both}/{len(target_keys)} units with probe and rationale ({100*coverage_rate:.1f}%)"
-    
-    return passed, coverage_rate, message
+def gate_d_validation_s1(records: List[Dict]) -> Tuple[bool, float, str]:
+    """Gate (d): >=95% of S1 units have a rationale label and an unusual-probe label from graders."""
+    units = [r for r in records if r.get("phase") == "si" and not r.get("error")]
+    if not units:
+        return False, 0.0, "No S1 units found"
+    def labelled(d):
+        return isinstance(d, dict) and any(v for v in d.values())
+    ok = sum(1 for r in units if labelled(r.get("rationale"))
+             and isinstance(r.get("unusual_probe"), dict) and labelled(r["unusual_probe"].get("codes")))
+    rate = ok / len(units)
+    return rate >= 0.95, rate, f"{ok}/{len(units)} units with rationale and probe labels ({100*rate:.1f}%)"
 
 
-def gate_e_cost_validation(records: List[Dict], cost_estimates: Dict, model: str, study: str) -> Tuple[bool, Dict, str]:
-    """Gate (e): Cost per unit ≤1.5× cost_estimates.json."""
+def gate_e_cost_validation(records: List[Dict], calls: List[Dict], cost_estimates: Dict, model: str, study: str) -> Tuple[bool, Dict, str]:
+    """Gate (e): actual spend per unit for this model (ALL logged calls incl. graders/probes,
+    from calls.jsonl cost_usd) <= margin x the preregistered per-unit estimate."""
     margin = cost_estimates.get("margin", 1.5)
     per_unit = cost_estimates.get("per_unit_usd", {}).get(model, {})
-    
     if not per_unit:
         return False, {}, f"No cost estimates found for model {model}"
-    
-    # Calculate actual costs using 'cost' field (not cost_usd)
+    units = [r for r in records if not r.get("error")]
+    if not units:
+        return False, {}, "No units"
+    spend = sum(float(c.get("cost_usd") or 0) for c in calls)
+    actual = spend / len(units)
     if study == "s1":
-        units = [r for r in records if r.get("phase") == "si"]
-        costs = [r.get("cost", 0) for r in units]
-        actual = sum(costs) / len(costs) if costs else 0
-        expected = per_unit.get("study1_unit", 0)
-        
-        stats = {
-            "study1": {
-                "actual": actual,
-                "expected": expected,
-                "cap": expected * margin,
-                "passed": actual <= expected * margin if expected > 0 else True
-            }
-        }
+        expected = per_unit["study1_unit"]
     else:
-        tool_units = [r for r in records if r.get("cell", "").endswith("_tools")]
-        notool_units = [r for r in records if r.get("cell", "").endswith("_notools")]
-        
-        tool_costs = [r.get("cost", 0) for r in tool_units]
-        notool_costs = [r.get("cost", 0) for r in notool_units]
-        
-        actual_tool = sum(tool_costs) / len(tool_costs) if tool_costs else 0
-        actual_notool = sum(notool_costs) / len(notool_costs) if notool_costs else 0
-        
-        expected_tool = per_unit.get("study2_tool_unit", 0)
-        expected_notool = per_unit.get("study2_notool_unit", 0)
-        
-        stats = {
-            "study2_tool": {
-                "actual": actual_tool,
-                "expected": expected_tool,
-                "cap": expected_tool * margin,
-                "passed": actual_tool <= expected_tool * margin if expected_tool > 0 else True
-            },
-            "study2_notool": {
-                "actual": actual_notool,
-                "expected": expected_notool,
-                "cap": expected_notool * margin,
-                "passed": actual_notool <= expected_notool * margin if expected_notool > 0 else True
-            }
-        }
-    
-    all_passed = all(s["passed"] for s in stats.values())
-    message = f"Cost checks: see stats"
-    
-    return all_passed, stats, message
+        n_tool = sum(1 for r in units if str(r.get("cell", "")).endswith("_tools"))
+        n_no = len(units) - n_tool
+        expected = (n_tool * per_unit["study2_tool_unit"] + n_no * per_unit["study2_notool_unit"]) / len(units)
+    stats = {"per_unit": {"actual": actual, "expected": expected, "cap": expected * margin,
+                          "passed": actual <= expected * margin, "spend": spend, "units": len(units)}}
+    return stats["per_unit"]["passed"], stats, f"${actual:.5f}/unit vs cap ${expected*margin:.5f} (spend ${spend:.4f}, {len(units)} units)"
 
 
 def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path: Path) -> Dict:
@@ -300,6 +216,12 @@ def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path
         print(f"Error: Prompts file not found: {prompts_file}")
         return {"error": "Prompts file not found"}
     
+    import hashlib
+    PREREG_SHA = {"1": "522422ac87b3908ba37d28271433ae91b3e72bcda67f202278afcb80d398d9c1",
+                  "2": "2fa4403cac3ce81cfd7a52f81353959fec2c8efb7284100fe8fba9fe55b58c9f"}
+    if hashlib.sha256(prompts_file.read_bytes()).hexdigest() != PREREG_SHA[study[1]]:
+        print(f"Error: {prompts_file} sha256 does not match the preregistered hash")
+        return {"error": "prompts sha256 mismatch"}
     prompts = load_prompts_json(prompts_file)
     
     # Gate (a): request validation
@@ -342,7 +264,7 @@ def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path
     # Gate (d): S1 grader coverage
     if study == "s1":
         print(f"\n=== Gate (d): S1 Grader Coverage ===")
-        gate_d_passed, gate_d_rate, gate_d_msg = gate_d_validation_s1(calls)
+        gate_d_passed, gate_d_rate, gate_d_msg = gate_d_validation_s1(records)
         results["gate_d"] = {
             "passed": gate_d_passed,
             "coverage_rate": gate_d_rate,
@@ -354,7 +276,7 @@ def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path
     if cost_estimates_path and cost_estimates_path.exists():
         print(f"\n=== Gate (e): Cost Validation ===")
         cost_estimates = load_cost_estimates(cost_estimates_path)
-        gate_e_passed, gate_e_stats, gate_e_msg = gate_e_cost_validation(records, cost_estimates, model, study)
+        gate_e_passed, gate_e_stats, gate_e_msg = gate_e_cost_validation(records, calls, cost_estimates, model, study)
         results["gate_e"] = {
             "passed": gate_e_passed,
             "cost_stats": gate_e_stats,
@@ -363,7 +285,7 @@ def check_canary(iter_name: str, model: str, data_dir: Path, cost_estimates_path
         print(f"Gate (e): {'PASS' if gate_e_passed else 'FAIL'} - {gate_e_msg}")
         if gate_e_stats:
             for key, val in gate_e_stats.items():
-                if val.get("actual", 0) > 0:
+                if True:
                     print(f"  {key}: ${val['actual']:.4f} actual vs ${val['cap']:.4f} cap ({'✓' if val['passed'] else '✗'})")
     
     return results

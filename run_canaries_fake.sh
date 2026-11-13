@@ -70,7 +70,7 @@ from pathlib import Path
 
 data = []
 for model in ['claude-haiku-5.5', 'gpt-oss-120b', 'qwen3.6-27b', 'gemini-3.8-flash']:
-    path = Path('research/v3final/harness/data/v3/s1_canary_fake') / model / 'main.jsonl'
+    path = Path('research/v3final/harness/run_s1_canary_fake_main/data/v3/s1_canary_fake') / model / 'main.jsonl'
     if path.exists():
         with open(path) as f:
             for line in f:
@@ -107,7 +107,7 @@ from pathlib import Path
 
 data = []
 for model in ['claude-haiku-5.5', 'gpt-oss-120b', 'qwen3.6-27b', 'gemini-3.8-flash']:
-    path = Path('research/v3final/harness/data/v3/s2_canary_fake') / model / 'main.jsonl'
+    path = Path('research/v3final/harness/run_s2_canary_fake_main/data/v3/s2_canary_fake') / model / 'main.jsonl'
     if path.exists():
         with open(path) as f:
             for line in f:
@@ -136,6 +136,19 @@ print(f'Total: {summary[\"total_units\"]}')
 for model, count in sorted(summary['by_model'].items()):
     print(f'  {model}: {count}')
 "
+
+echo "Running canary gates..."
+GATES_OK=1
+for st in s1 s2; do
+  for model in $MODELS; do
+    python3 research/prereg/canary_check.py ${st}_canary_fake "$model" \
+        --data-dir research/v3final/harness/run_${st}_canary_fake_main/data/v3 \
+        --cost-estimates research/v3/cost_estimates.json \
+        > research/prereg/evidence/${st}_canary_check_${model}.txt 2>&1 || GATES_OK=0
+    tail -n 1 research/prereg/evidence/${st}_canary_check_${model}.txt
+  done
+done
+[ "$GATES_OK" = 1 ] || { echo "CANARY GATES FAILED"; exit 1; }
 
 echo ""
 echo "========================================================================"

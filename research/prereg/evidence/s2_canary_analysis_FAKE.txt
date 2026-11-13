@@ -6,48 +6,42 @@ Separation detected: False
 
 === PRIMARY ANALYSIS ===
 Using ML logistic regression (no separation)
-Log-likelihood: -174.6401
+Log-likelihood: -173.9210
 
 === WALD TESTS WITH HOLM ===
-                    contrast  estimate       se        z        p   p_holm  reject_holm
-advisor_tools_vs_agent_tools  0.063315 0.355883 0.177911 0.858793 0.858793        False
-agent_notools_vs_agent_tools  0.566873 0.357305 1.586527 0.112620 0.225240        False
+                    contrast  estimate       se         z       p   p_holm  reject_holm
+advisor_tools_vs_agent_tools -0.189887 0.356065 -0.533294 0.59383 0.950741        False
+agent_notools_vs_agent_tools  0.255443 0.357879  0.713769 0.47537 0.950741        False
 
 === AVERAGE MARGINAL EFFECTS WITH 95% CIs ===
-Traceback (most recent call last):
-  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 620, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 609, in main
-    results = analyze_study2(args.data_file)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 563, in analyze_study2
-    ames = compute_ames_with_cis(df, fit_result)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/agent/repos/moral-gradient/research/prereg/analyze_s2_prereg.py", line 284, in compute_ames_with_cis
-    _, X_treat = dmatrices(formula, df_treat, return_type="dataframe")
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 317, in dmatrices
-    (lhs, rhs) = _do_highlevel_design(
-                 ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 162, in _do_highlevel_design
-    design_infos = _try_incr_builders(
-                   ^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/highlevel.py", line 56, in _try_incr_builders
-    return design_matrix_builders(
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 775, in design_matrix_builders
-    term_to_subterm_infos = _make_subterm_infos(
-                            ^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/build.py", line 680, in _make_subterm_infos
-    coded = code_contrast_matrix(
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 642, in code_contrast_matrix
-    return contrast.code_without_intercept(levels)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 184, in code_without_intercept
-    reference = _get_level(levels, self.reference)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ubuntu/.local/lib/python3.12/site-packages/patsy/contrasts.py", line 127, in _get_level
-    raise PatsyError("specified level %r not found" % (level_ref,))
-patsy.PatsyError: specified level 'agent_tools' not found
+                      contrast       ame  ci_lower  ci_upper  n_boot_success
+  agent_notools_vs_agent_tools  0.062500 -0.127470  0.227808            1000
+  advisor_tools_vs_agent_tools -0.046875 -0.231689  0.113566            1000
+advisor_notools_vs_agent_tools  0.078125 -0.099786  0.238846            1000
+
+=== PER-MODEL CONTRASTS (Wilson, Newcombe, Fisher) ===
+           model                         contrast  n1  x1     p1  n2  x2     p2    diff  newcombe_lower  newcombe_upper  fisher_p
+claude-haiku-5.5     agent_tools_vs_agent_notools  16  12 0.7500  16  11 0.6875  0.0625       -0.236177        0.347506  1.000000
+claude-haiku-5.5     agent_tools_vs_advisor_tools  16  12 0.7500  16   9 0.5625  0.1875       -0.132913        0.461701  0.457794
+claude-haiku-5.5 agent_notools_vs_advisor_notools  16  11 0.6875  16   8 0.5000  0.1875       -0.140636        0.466055  0.472548
+claude-haiku-5.5 advisor_tools_vs_advisor_notools  16   9 0.5625  16   8 0.5000  0.0625       -0.256296        0.364244  1.000000
+gemini-3.8-flash     agent_tools_vs_agent_notools  16   8 0.5000  16  10 0.6250 -0.1250       -0.415815        0.199541  0.722393
+gemini-3.8-flash     agent_tools_vs_advisor_tools  16   8 0.5000  16   5 0.3125  0.1875       -0.140636        0.466055  0.472548
+gemini-3.8-flash agent_notools_vs_advisor_notools  16  10 0.6250  16  11 0.6875 -0.0625       -0.355955        0.246438  1.000000
+gemini-3.8-flash advisor_tools_vs_advisor_notools  16   5 0.3125  16  11 0.6875 -0.3750       -0.616623       -0.030701  0.075597
+    gpt-oss-120b     agent_tools_vs_agent_notools  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+    gpt-oss-120b     agent_tools_vs_advisor_tools  16   8 0.5000  16   9 0.5625 -0.0625       -0.364244        0.256296  1.000000
+    gpt-oss-120b agent_notools_vs_advisor_notools  16   8 0.5000  16   8 0.5000  0.0000       -0.311133        0.311133  1.000000
+    gpt-oss-120b advisor_tools_vs_advisor_notools  16   9 0.5625  16   8 0.5000  0.0625       -0.256296        0.364244  1.000000
+     qwen3.6-27b     agent_tools_vs_agent_notools  16   5 0.3125  16   8 0.5000 -0.1875       -0.466055        0.140636  0.472548
+     qwen3.6-27b     agent_tools_vs_advisor_tools  16   5 0.3125  16   7 0.4375 -0.1250       -0.412089        0.194247  0.715987
+     qwen3.6-27b agent_notools_vs_advisor_notools  16   8 0.5000  16  11 0.6875 -0.1875       -0.466055        0.140636  0.472548
+     qwen3.6-27b advisor_tools_vs_advisor_notools  16   7 0.4375  16  11 0.6875 -0.2500       -0.518028        0.085410  0.285163
+
+=== ROLE × TOOLS LR TEST ===
+LR statistic: 0.2531, df=1, p=0.6149
+
+=== MODEL × CELL LR TEST ===
+LR statistic: 10.4513, df=9, p=0.3152
+
+✓ Results saved to research/prereg/evidence/s2_canary_analysis_FAKE.json

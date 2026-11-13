@@ -175,24 +175,27 @@ class GlobalLedger:
         Raises:
             BudgetExceeded: If reservation would exceed stage cap
         """
-        # Check stage cap
-        stage_spend = self.get_stage_spend()
-        committed = self.get_committed_spend()
-        
-        # Check against global cap
-        if committed + estimated_usd > self.GLOBAL_CAP:
-            raise BudgetExceeded(
-                f"BUDGET STOP: global committed ${committed:.2f} + ${estimated_usd:.4f} "
-                f"> ${self.GLOBAL_CAP:.2f} cap"
-            )
-        
-        # Check against stage cap
-        if stage_spend + estimated_usd > self.stage_cap_usd:
-            raise BudgetExceeded(
-                f"BUDGET STOP: stage spend ${stage_spend:.2f} + ${estimated_usd:.4f} "
-                f"> ${self.stage_cap_usd:.2f} stage cap"
-            )
-        
+        import threading
+        if not hasattr(self, "_open"):
+            self._open, self._lock = {}, threading.Lock()
+        with self._lock:
+            stage_spend = self.get_stage_spend()
+            committed = self.get_committed_spend()
+            # Global cap (committed already includes every open reservation in the DB)
+            if committed + estimated_usd > self.GLOBAL_CAP:
+                raise BudgetExceeded(
+                    f"BUDGET STOP: global committed ${committed:.2f} + ${estimated_usd:.4f} "
+                    f"> ${self.GLOBAL_CAP:.2f} cap"
+                )
+            # Stage cap: this stage's recorded spend + this process's in-flight holds
+            in_flight = sum(self._open.values())
+            if stage_spend + in_flight + estimated_usd > self.stage_cap_usd:
+                raise BudgetExceeded(
+                    f"BUDGET STOP: stage spend ${stage_spend:.4f} + in-flight ${in_flight:.4f} + ${estimated_usd:.4f} "
+                    f"> ${self.stage_cap_usd:.2f} stage cap"
+                )
+            self._open[call_id] = estimated_usd
+
         # Back up before first insert
         self.backup()
         
@@ -214,6 +217,16 @@ class GlobalLedger:
         finally:
             conn.close()
     
+    def release(self, call_id: str):
+        """Release a reservation whose call was never sent."""
+        conn = sqlite3.connect(str(self.db_path))
+        try:
+            conn.execute("UPDATE reservations SET reconciled = 1 WHERE call_id = ?", (call_id,))
+            getattr(self, "_open", {}).pop(call_id, None)
+            conn.commit()
+        finally:
+            conn.close()
+
     def insert_call(
         self,
         call_id: str,
@@ -282,6 +295,7 @@ class GlobalLedger:
             )
             
             conn.commit()
+            getattr(self, "_open", {}).pop(call_id, None)
         finally:
             conn.close()
     

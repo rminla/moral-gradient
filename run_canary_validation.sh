@@ -21,8 +21,8 @@ for model in $MODELS; do
     echo "Checking S1 $model..."
     python3 research/prereg/canary_check.py s1_canary_fake "$model" \
         --data-dir research/v3final/harness/run_s1_canary_fake_main/data/v3 \
-        --cost-estimates research/prereg/cost_estimates.json \
-        > "$EVIDENCE_DIR/s1_canary_check_${model}_FAKE.txt" 2>&1 || true
+        --cost-estimates research/v3/cost_estimates.json \
+        > "$EVIDENCE_DIR/s1_canary_check_${model}_FAKE.txt" 2>&1
 done
 
 # S2 canary_check
@@ -32,8 +32,8 @@ for model in $MODELS; do
     echo "Checking S2 $model..."
     python3 research/prereg/canary_check.py s2_canary_fake "$model" \
         --data-dir research/v3final/harness/run_s2_canary_fake_main/data/v3 \
-        --cost-estimates research/prereg/cost_estimates.json \
-        > "$EVIDENCE_DIR/s2_canary_check_${model}_FAKE.txt" 2>&1 || true
+        --cost-estimates research/v3/cost_estimates.json \
+        > "$EVIDENCE_DIR/s2_canary_check_${model}_FAKE.txt" 2>&1
 done
 
 # Combine S1 data
@@ -48,7 +48,7 @@ echo "=== S1 ANALYSIS ==="
 python3 research/prereg/analyze_s1_prereg.py \
     "$EVIDENCE_DIR/s1_canary_combined_FAKE.jsonl" \
     --output "$EVIDENCE_DIR/s1_canary_analysis_FAKE.json" \
-    > "$EVIDENCE_DIR/s1_canary_analysis_FAKE.txt" 2>&1 || true
+    > "$EVIDENCE_DIR/s1_canary_analysis_FAKE.txt" 2>&1
 
 # Combine S2 data
 echo ""
@@ -62,7 +62,7 @@ echo "=== S2 ANALYSIS ==="
 python3 research/prereg/analyze_s2_prereg.py \
     "$EVIDENCE_DIR/s2_canary_combined_FAKE.jsonl" \
     --output "$EVIDENCE_DIR/s2_canary_analysis_FAKE.json" \
-    > "$EVIDENCE_DIR/s2_canary_analysis_FAKE.txt" 2>&1 || true
+    > "$EVIDENCE_DIR/s2_canary_analysis_FAKE.txt" 2>&1
 
 # Create README
 cat > "$EVIDENCE_DIR/README_FAKE.md" << 'EOF'

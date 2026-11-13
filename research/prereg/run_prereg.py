@@ -283,8 +283,7 @@ def main():
         # Validate calibration for preregistered studies
         validate_calibration(args.model, base_dir)
         
-        # Seed calibration
-        seed_calibration(args.model, args.iter, base_dir)
+        # (calibration is seeded inside the stage loop, after ROOT points at the isolated harness dir)
         
         # Fix 4: Global SQLite ledger
         if not args.global_ledger:
@@ -294,6 +293,9 @@ def main():
             )
         
         global_ledger_path = Path(args.global_ledger)
+        real_ledger = Path(os.environ.get("PREREG_REAL_LEDGER", "/workspace/moral-compass/runs/v4-20261108/ledger.db"))
+        if os.environ.get("FAKE_TRANSPORT") == "1" and real_ledger.exists() and global_ledger_path.resolve() == real_ledger.resolve():
+            sys.exit("ERROR: FAKE_TRANSPORT=1 must not write to the real global ledger; pass a copy.")
         
         # Initialize global ledger
         try:
@@ -430,60 +432,12 @@ def main():
             check=True
         )
         
-        # Fix #8: Write to global SQLite ledger per-call and generate summary
-        if global_ledger:
-            print(f"\n=== Writing to global ledger and generating summary ===", flush=True)
-            try:
-                # Read completed run data from v3final output
-                d = v3run.ROOT / "data" / "v3" / args.iter / args.model
-                out = d / f"{st}{'_smoke' if args.smoke else ''}.jsonl"
-                
-                # Fix #8: Determine if this is a fake/mock run
-                # Pass via environment variable or CLI flag
-                is_fake_run = os.environ.get("FAKE_TRANSPORT", "0") == "1"
-                
-                if out.exists():
-                    inserted = 0
-                    total_cost = 0
-                    
-                    with open(out) as f:
-                        for line in f:
-                            row = json.loads(line)
-                            cost = row.get("cost", 0)
-                            total_cost += cost
-                            
-                            # Fix #8: Insert each call individually into global ledger
-                            call_id = f"{args.iter}_{args.model}_{st}_{row.get('key', inserted)}"
-                            
-                            global_ledger.insert_call(
-                                call_id=call_id,
-                                model_id=args.model,
-                                provider=row.get("target", args.model),
-                                actual_cost_usd=cost,
-                                prompt_tokens=row.get("prompt_tokens", 0),
-                                completion_tokens=row.get("completion_tokens", 0),
-                                metadata=json.dumps({
-                                    "stage": st,
-                                    "phase": row.get("phase"),
-                                    "case": row.get("case"),
-                                    "key": row.get("key"),
-                                }),
-                                mock_data=1 if is_fake_run else 0,
-                                error=row.get("error"),
-                                finish_reason=row.get("finish", "stop"),
-                            )
-                            inserted += 1
-                    
-                    print(f"✓ Inserted {inserted} calls (${total_cost:.4f}) into global ledger", flush=True)
-                
-                # Fix #8: Generate and write summary outside repo
-                summary_path = Path("/tmp") / f"global-ledger-update-{args.iter}.json"
-                global_ledger.generate_summary(summary_path)
-                
-                print(f"✓ Generated global ledger summary at {summary_path}", flush=True)
-            except Exception as e:
-                print(f"Warning: Could not update global ledger: {e}", flush=True)
-    
+    # Global ledger rows are written per call by ledger_wrapper; only the summary is written here.
+    if global_ledger:
+        summary_path = Path("/tmp") / f"global-ledger-update-{args.iter}.json"
+        global_ledger.generate_summary(summary_path)
+        print(f"✓ Generated global ledger summary at {summary_path}", flush=True)
+
     sys.exit(0 if success else 1)
 
 

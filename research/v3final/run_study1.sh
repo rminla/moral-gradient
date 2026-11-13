@@ -29,15 +29,30 @@ else
     CAP=8.92
 fi
 
-# Global ledger path (read-only)
-GLOBAL_LEDGER="${GLOBAL_LEDGER:-/workspace/moral-compass/runs/v4-20261108/ledger.db}"
+REAL_LEDGER=/workspace/moral-compass/runs/v4-20261108/ledger.db
 
 # Set FAKE_TRANSPORT env var if requested
 if [[ "$FAKE_TRANSPORT" == "--fake-transport" ]]; then
     export FAKE_TRANSPORT=1
     echo "✓ Fake transport enabled (zero real API calls)"
+    # Fake runs never write to the real ledger: default to a throwaway copy
+    if [[ -z "${GLOBAL_LEDGER:-}" ]]; then
+        GLOBAL_LEDGER="$(mktemp /tmp/fake_ledger_XXXXXX.db)"
+        cp "$REAL_LEDGER" "$GLOBAL_LEDGER"
+    fi
+    if [[ "$(realpath "$GLOBAL_LEDGER")" == "$(realpath "$REAL_LEDGER")" ]]; then
+        echo "✗ Refusing to write fake-transport rows into the real ledger" >&2
+        exit 1
+    fi
+    # Ensure ledger has mock rows
+    if ! sqlite3 "$GLOBAL_LEDGER" "SELECT COUNT(*) FROM calls WHERE is_mock = 1" | grep -q '^[1-9]'; then
+        echo "✗ Fake transport requires a ledger with mock rows" >&2
+        exit 1
+    fi
+    echo "✓ Using throwaway ledger $GLOBAL_LEDGER"
 else
     export FAKE_TRANSPORT=0
+    GLOBAL_LEDGER="${GLOBAL_LEDGER:-$REAL_LEDGER}"
 fi
 
 # Fix #10: Pre-flight checks from research/prereg
@@ -101,7 +116,7 @@ if [[ ${#failed_models[@]} -eq 0 ]]; then
     echo "Next steps:"
     if [[ "$STAGE" == "canary" ]]; then
         echo "1. Run canary checks:"
-        echo "     python research/prereg/canary_check.py"
+        echo "     for m in ${MODELS[*]}; do python research/prereg/canary_check.py $ITER \$m --data-dir research/v3final/harness/run_${ITER}_main/data/v3 --cost-estimates research/v3/cost_estimates.json; done"
         echo
         echo "2. If canary checks pass, run main stage:"
         echo "     bash run_study1.sh main"

@@ -46,6 +46,10 @@ def load_data(data_file: Path) -> pd.DataFrame:
                 records.append(json.loads(line))
     
     df = pd.DataFrame(records)
+    # One row per unit: a unit that errored and was re-run keeps only its final row
+    if "key" in df.columns:
+        ok = df["error"].isna() if "error" in df.columns else pd.Series(True, index=df.index)
+        df = df.assign(_ok=ok).sort_values("_ok", kind="stable").drop_duplicates([c for c in ("target", "model", "key") if c in df.columns], keep="last").drop(columns="_ok")
     
     # Fix 7: Harness rows have 'target' not 'model'
     if "target" in df.columns:
@@ -132,21 +136,20 @@ def fit_firth_logistic(df: pd.DataFrame) -> Dict:
         mu = 1 / (1 + np.exp(-eta))
         mu = np.clip(mu, 1e-10, 1 - 1e-10)
         
-        W = np.diag(mu * (1 - mu))
+        w = mu * (1 - mu)
         
         try:
-            I = X_np.T @ W @ X_np
+            I = (X_np * w[:, None]).T @ X_np
             I_inv = np.linalg.inv(I + np.eye(p) * 1e-10)
         except:
             I_inv = np.linalg.pinv(I + np.eye(p) * 1e-10)
         
-        H = X_np @ I_inv @ X_np.T @ W
-        h = np.diag(H)
+        h = np.einsum("ij,jk,ik->i", X_np, I_inv, X_np) * w
         
         # Working response with Firth adjustment
         z = eta + (y - mu) / (mu * (1 - mu) + 1e-10) + h * (0.5 - mu) / (mu * (1 - mu) + 1e-10)
         
-        beta_new = I_inv @ X_np.T @ W @ z
+        beta_new = I_inv @ (X_np.T @ (w * z))
         
         if np.max(np.abs(beta_new - beta)) < tol:
             beta = beta_new
@@ -155,11 +158,11 @@ def fit_firth_logistic(df: pd.DataFrame) -> Dict:
         beta = beta_new
     
     # Standard errors
-    eta = X @ beta
+    X_np = np.asarray(X)
+    eta = X_np @ beta
     mu = 1 / (1 + np.exp(-eta))
     mu = np.clip(mu, 1e-10, 1 - 1e-10)
-    W = np.diag(mu * (1 - mu))
-    I = X.T @ W @ X
+    I = (X_np * (mu * (1 - mu))[:, None]).T @ X_np
     
     try:
         cov = np.linalg.inv(I + np.eye(p) * 1e-10)
@@ -181,6 +184,7 @@ def fit_firth_logistic(df: pd.DataFrame) -> Dict:
         "loglik": loglik,
         "converged": iteration < max_iter - 1,
         "formula": formula,
+        "method": "firth",
     }
 
 
@@ -280,7 +284,7 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
         # Compute AME as counterfactual predictions (correct estimand)
         # Set all rows to treatment arm and predict
         df_treat = df_clean.copy()
-        df_treat["arm"] = arm_treatment
+        df_treat["arm"] = pd.Categorical([arm_treatment] * len(df_treat), categories=["ORG", "SELF", "OTHER", "NONE"])
         _, X_treat = dmatrices(formula, df_treat, return_type="dataframe")
         coef_vec = np.array([coef_dict[c] for c in X_treat.columns])
         eta_treat = np.asarray(X_treat) @ coef_vec
@@ -288,7 +292,7 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
         
         # Set all rows to reference arm (ORG) and predict
         df_ref = df_clean.copy()
-        df_ref["arm"] = "ORG"
+        df_ref["arm"] = pd.Categorical(["ORG"] * len(df_ref), categories=["ORG", "SELF", "OTHER", "NONE"])
         _, X_ref = dmatrices(formula, df_ref, return_type="dataframe")
         eta_ref = np.asarray(X_ref) @ coef_vec
         p_ref = 1 / (1 + np.exp(-eta_ref))
@@ -305,20 +309,23 @@ def compute_ames_with_cis(df: pd.DataFrame, fit_result: Dict) -> pd.DataFrame:
             # Refit model on bootstrap sample
             try:
                 # Use statsmodels logit for speed (Firth would be too slow for 1000 bootstraps)
-                model_boot = logit(formula, data=df_boot).fit(disp=0, maxiter=50)
+                if fit_result.get("method") == "firth":
+                    coef_boot = fit_firth_logistic(df_boot)["coefficients"]
+                else:
+                    coef_boot = dict(logit(formula, data=df_boot).fit(disp=0, maxiter=50).params)
                 
                 # Compute AME as counterfactual predictions (correct bootstrap estimand)
                 # Treatment arm
                 df_boot_treat = df_boot.copy()
-                df_boot_treat["arm"] = arm_treatment
+                df_boot_treat["arm"] = pd.Categorical([arm_treatment] * len(df_boot_treat), categories=["ORG", "SELF", "OTHER", "NONE"])
                 _, X_boot_treat = dmatrices(formula, df_boot_treat, return_type="dataframe")
-                coef_vec_boot = model_boot.params.values
+                coef_vec_boot = np.array([coef_boot[c] for c in X_boot_treat.columns])  # align by name
                 eta_treat_boot = np.asarray(X_boot_treat) @ coef_vec_boot
                 p_treat_boot = 1 / (1 + np.exp(-eta_treat_boot))
                 
                 # Reference arm (ORG)
                 df_boot_ref = df_boot.copy()
-                df_boot_ref["arm"] = "ORG"
+                df_boot_ref["arm"] = pd.Categorical(["ORG"] * len(df_boot_ref), categories=["ORG", "SELF", "OTHER", "NONE"])
                 _, X_boot_ref = dmatrices(formula, df_boot_ref, return_type="dataframe")
                 eta_ref_boot = np.asarray(X_boot_ref) @ coef_vec_boot
                 p_ref_boot = 1 / (1 + np.exp(-eta_ref_boot))

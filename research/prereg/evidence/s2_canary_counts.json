@@ -1,6 +1,19 @@
 {
-  "total_units": 0,
-  "by_model": {},
-  "by_cell": {},
-  "by_outcome": {}
+  "total_units": 256,
+  "by_model": {
+    "claude-haiku-5.5": 64,
+    "gpt-oss-120b": 64,
+    "qwen3.6-27b": 64,
+    "gemini-3.8-flash": 64
+  },
+  "by_cell": {
+    "agent_notools": 64,
+    "advisor_notools": 64,
+    "agent_tools": 64,
+    "advisor_tools": 64
+  },
+  "by_outcome": {
+    "keep": 118,
+    "act": 138
+  }
 }

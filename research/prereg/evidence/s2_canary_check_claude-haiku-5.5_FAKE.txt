@@ -1,30 +1,9 @@
-Loaded 64 records and 113 calls from research/v3final/harness/run_s2_canary_fake_main/data/v3
+Loaded 64 records and 121 calls from research/v3final/harness/run_s2_canary_fake_main/data/v3
 Detected study: s2
 
 === Gate (a): Logged Requests Match Prereg JSON ===
-Gate (a): FAIL
-  Stats: {'matched': 0, 'unmatched': 113}
-  20 errors (showing first 20):
-    - Unmatched request: module=car_role, sys_len=988, tools=2
-    - Unmatched request: module=car_role_notool, sys_len=1055, tools=0
-    - Unmatched request: module=car_role_notool, sys_len=1055, tools=0
-    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
-    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
-    - Unmatched request: module=car_role_notool, sys_len=1074, tools=0
-    - Unmatched request: module=car_role, sys_len=985, tools=2
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
-    - Unmatched request: module=car_role, sys_len=988, tools=2
-    - Unmatched request: module=car_role_notool, sys_len=1058, tools=0
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
-    - Unmatched request: module=car_role, sys_len=988, tools=2
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
-    - Unmatched request: module=car_role, sys_len=985, tools=2
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
-    - Unmatched request: module=car_role, sys_len=988, tools=2
-    - Unmatched request: module=car_role, sys_len=1214, tools=2
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
-    - Unmatched request: module=car_role_notool, sys_len=1077, tools=0
-    - Unmatched request: module=car_role, sys_len=1217, tools=2
+Gate (a): PASS
+  Stats: {'matched': 121, 'unmatched': 0, 'per_arm_or_cell': {'agent_notools': 16, 'agent_tools': 45, 'advisor_notools': 16, 'advisor_tools': 44}}
 
 === Gate (b): Error Rate ===
 Gate (b): PASS - 64/64 success (100.0%)
@@ -33,16 +12,15 @@ Gate (b): PASS - 64/64 success (100.0%)
 Gate (c): PASS - No-tools cells: {'agent_notools': {'total': 16, 'unparsed': 0}, 'advisor_notools': {'total': 16, 'unparsed': 0}}
 
 === Gate (e): Cost Validation ===
-Gate (e): PASS - Cost checks: see stats
-  study2_tool: $0.0009 actual vs $0.0225 cap (✓)
-  study2_notool: $0.0003 actual vs $0.0075 cap (✓)
+Gate (e): PASS - $0.00066/unit vs cap $0.00125 (spend $0.0423, 64 units)
+  per_unit: $0.0007 actual vs $0.0012 cap (✓)
 
 ============================================================
 CANARY CHECK SUMMARY
 ============================================================
-gate_a: ✗ FAIL
+gate_a: ✓ PASS
 gate_b: ✓ PASS
 gate_c: ✓ PASS
 gate_e: ✓ PASS
 ============================================================
-Overall: ✗ SOME GATES FAILED
+Overall: ✓ ALL GATES PASSED

@@ -26,3 +26,4 @@ cloud-fixture-*/
 **/ledger*.db
 **/*.journal
 **/*fixture*.tar.gz
+research/v3final/harness/run_*/
