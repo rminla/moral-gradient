@@ -147,9 +147,13 @@ def validate_calibration(model, base_dir):
 
 
 def seed_calibration(model, iter_name, base_dir):
-    """Seed calibration.json from v3final into the iteration directory."""
+    """Seed calibration.json from v3final into the iteration directory.
+    
+    Fix #6: Write to v3run.ROOT/data/v3/<iter>/<model>/ where harness reads it.
+    """
     src = base_dir / "research" / "v3final" / "data" / model / "calibration.json"
-    dst = base_dir / "data" / "v3" / iter_name / model / "calibration.json"
+    # Fix #6: Write to research/v3final/harness/data/v3/<iter>/<model>/
+    dst = v3run.ROOT / "data" / "v3" / iter_name / model / "calibration.json"
     
     if not src.exists():
         sys.exit(f"Source calibration not found: {src}")
@@ -159,15 +163,11 @@ def seed_calibration(model, iter_name, base_dir):
     print(f"✓ Seeded calibration: {src} → {dst}", flush=True)
 
 
-def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name, global_ledger_path=None, max_retries=2):
+def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name, max_retries=2):
     """Run stage with error retry logic.
     
-    Fix 4: Error rows fail the run, with 2 retry passes for errored keys only.
+    Fix #7: Detect failures by row's 'error' field (frozen schema), exit non-zero on remaining errors.
     """
-    import threading
-    from concurrent.futures import ThreadPoolExecutor
-    
-    # Call frozen v3final run_stage (7 args only)
     retry_count = 0
     
     while retry_count <= max_retries:
@@ -180,7 +180,7 @@ def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name,
         if not success:
             return False
         
-        # Check for error rows
+        # Fix #7: Check for error rows by 'error' field (frozen schema)
         d = v3run.ROOT / "data" / "v3" / iter_name / model
         out = d / f"{stage}{'_smoke' if smoke else ''}.jsonl"
         
@@ -192,7 +192,8 @@ def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name,
         with open(out) as f:
             for line in f:
                 row = json.loads(line)
-                if row.get("outcome") == "error":
+                # Fix #7: Check 'error' field, not outcome
+                if row.get("error"):
                     error_keys.append(row.get("key"))
         
         if not error_keys:

@@ -63,21 +63,27 @@ class GlobalLedger:
     CREATE INDEX IF NOT EXISTS idx_calls_provider ON calls(provider);
     """
     
-    def __init__(self, db_path: Path, experiment: str, stage_cap_usd: float):
+    def __init__(self, db_path: Path, experiment: str, stage_cap_usd: float, allow_create: bool = False):
         """Initialize global ledger.
         
         Args:
             db_path: Path to SQLite database
             experiment: Experiment name (iteration name)
             stage_cap_usd: Hard cap for this stage (e.g. $2.97 for S1 canary)
+            allow_create: If False, refuse when file is missing (Fix #8)
         """
         self.db_path = Path(db_path)
         self.experiment = experiment
         self.stage_cap_usd = float(stage_cap_usd)
         self.backed_up = False
         
-        # Create database if it doesn't exist
+        # Fix #8: Refuse when file is missing unless explicitly allowed
         if not self.db_path.exists():
+            if not allow_create:
+                raise FileNotFoundError(
+                    f"Global ledger not found: {self.db_path}\n"
+                    f"The ledger file must exist before running. Never auto-create in production."
+                )
             self._initialize_db()
         
         # Verify schema
