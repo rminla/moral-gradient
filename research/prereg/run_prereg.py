@@ -320,9 +320,29 @@ def main():
     
     success = True
     for st in (["calibrate", "main"] if args.stage == "all" else [args.stage]):
-        if not run_stage_with_retries(args.model, st, effective_budget, effective_cap, args.workers, args.smoke, args.iter):
+        # Determine stage-specific cap
+        if args.iter.startswith("s1_canary"):
+            stage_cap = 2.97
+        elif args.iter.startswith("s1_main"):
+            stage_cap = 8.92
+        elif args.iter.startswith("s2_canary"):
+            stage_cap = 1.40
+        elif args.iter.startswith("s2_main"):
+            stage_cap = 4.21
+        else:
+            stage_cap = effective_cap
+        
+        if not run_stage_with_retries(args.model, st, effective_budget, stage_cap, args.workers, args.smoke, args.iter):
             success = False
             break
+        
+        # Fix #8: Check stage cap after run
+        if global_ledger:
+            stage_spend = global_ledger.get_stage_spend()
+            if stage_spend > stage_cap:
+                print(f"✗ BUDGET EXCEEDED: Stage spend ${stage_spend:.2f} > ${stage_cap:.2f} cap", flush=True)
+                success = False
+                break
     
     # Restore originals
     v3run.plan = original_plan
@@ -338,7 +358,7 @@ def main():
             check=True
         )
         
-        # Fix #8: Write to global SQLite ledger and generate summary
+        # Fix #8: Write to global SQLite ledger per-call and generate summary
         if global_ledger:
             print(f"\n=== Writing to global ledger and generating summary ===", flush=True)
             try:
@@ -346,38 +366,43 @@ def main():
                 d = v3run.ROOT / "data" / "v3" / args.iter / args.model
                 out = d / f"{st}{'_smoke' if args.smoke else ''}.jsonl"
                 
-                total_cost = 0
-                n_calls = 0
-                total_prompt_tokens = 0
-                total_completion_tokens = 0
+                # Fix #8: Determine if this is a fake/mock run
+                # Pass via environment variable or CLI flag
+                is_fake_run = os.environ.get("FAKE_TRANSPORT", "0") == "1"
                 
                 if out.exists():
+                    inserted = 0
+                    total_cost = 0
+                    
                     with open(out) as f:
                         for line in f:
                             row = json.loads(line)
-                            # Fix #8: Read 'cost' not 'cost_usd'
-                            total_cost += row.get("cost", 0)
-                            n_calls += 1
-                            total_prompt_tokens += row.get("prompt_tokens", 0)
-                            total_completion_tokens += row.get("completion_tokens", 0)
-                
-                # Insert aggregate call into global ledger
-                if n_calls > 0:
-                    # Fix #8: Set mock_data=1 for fake runs (check if using FakeTransport)
-                    # For now, mark as mock if cost is exactly 0
-                    is_mock = (total_cost == 0 and n_calls > 0)
+                            cost = row.get("cost", 0)
+                            total_cost += cost
+                            
+                            # Fix #8: Insert each call individually into global ledger
+                            call_id = f"{args.iter}_{args.model}_{st}_{row.get('key', inserted)}"
+                            
+                            global_ledger.insert_call(
+                                call_id=call_id,
+                                model_id=args.model,
+                                provider=row.get("target", args.model),
+                                actual_cost_usd=cost,
+                                prompt_tokens=row.get("prompt_tokens", 0),
+                                completion_tokens=row.get("completion_tokens", 0),
+                                metadata=json.dumps({
+                                    "stage": st,
+                                    "phase": row.get("phase"),
+                                    "case": row.get("case"),
+                                    "key": row.get("key"),
+                                }),
+                                mock_data=1 if is_fake_run else 0,
+                                error=row.get("error"),
+                                finish_reason=row.get("finish", "stop"),
+                            )
+                            inserted += 1
                     
-                    global_ledger.insert_call(
-                        call_id=f"{args.iter}_{args.model}_{st}",
-                        model_id=args.model,
-                        provider="aggregate",
-                        actual_cost_usd=total_cost,
-                        prompt_tokens=total_prompt_tokens,
-                        completion_tokens=total_completion_tokens,
-                        metadata=json.dumps({"n_calls": n_calls, "stage": st}),
-                        mock_data=1 if is_mock else 0,
-                    )
-                    print(f"✓ Inserted ${total_cost:.4f} ({n_calls} calls) into global ledger", flush=True)
+                    print(f"✓ Inserted {inserted} calls (${total_cost:.4f}) into global ledger", flush=True)
                 
                 # Fix #8: Generate and write summary outside repo
                 summary_path = Path("/tmp") / f"global-ledger-update-{args.iter}.json"
