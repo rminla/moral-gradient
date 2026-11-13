@@ -50,7 +50,10 @@ def test_reference_aggregates_exist(v3final_root):
     
     with open(bundle) as f:
         data = json.load(f)
-        assert "v3final" in data, "bundle.json missing v3final key"
+        # Bundle uses "iteration" key with value "v3final", not nested "v3final" key
+        assert "iteration" in data, "bundle.json missing iteration key"
+        assert data["iteration"] == "v3final", f"Expected iteration v3final, got {data['iteration']}"
+        assert "models" in data, "bundle.json missing models key"
 
 
 def test_regrade_v3final_zero_diffs(v3final_root):
@@ -115,14 +118,15 @@ def test_regrade_v3final_zero_diffs(v3final_root):
             with open(rerun_bundle) as f:
                 rerun = json.load(f)
             
-            # Check that v3final key exists in both
-            assert "v3final" in ref, "Reference bundle missing v3final"
-            assert "v3final" in rerun, "Rerun bundle missing v3final"
+            # Check that iteration is v3final in both
+            assert ref.get("iteration") == "v3final", "Reference bundle missing iteration=v3final"
+            assert rerun.get("iteration") == "v3final", "Rerun bundle missing iteration=v3final"
             
             # The bundles should be very similar
             # Exact comparison would require ignoring cost fields
             # For now, verify the structure is present
-            assert len(rerun["v3final"]) > 0, "Rerun bundle is empty"
+            assert "models" in rerun, "Rerun bundle missing models"
+            assert len(rerun["models"]) > 0, "Rerun bundle is empty"
 
 
 def test_outcome_rules_preserved():
