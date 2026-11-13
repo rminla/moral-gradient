@@ -56,7 +56,8 @@ run_model() {
     # --preset full: Use full preset (not iter)
     # --cue-n X:N: Per-cue per-level n (8 or 24)
     # --cap: Hard budget cap per study/stage
-    if python3 research/v3final/harness/v3/run.py "$model" \
+    # Uses research/prereg/run_prereg.py which wraps v3final and validates calibration
+    if python3 research/prereg/run_prereg.py "$model" \
         --iter "$ITER" \
         --stage main \
         --preset full \
