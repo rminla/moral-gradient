@@ -1,9 +1,10 @@
 #!/bin/bash
 # Run Study 2: Role × Tools 2x2
-# Usage: bash run_study2.sh [canary|main]
+# Usage: bash run_study2.sh [canary|main] [--fake-transport]
 set -euo pipefail
 
 STAGE="${1:-canary}"
+FAKE_TRANSPORT="${2:-}"
 
 if [[ "$STAGE" != "canary" && "$STAGE" != "main" ]]; then
     echo "Error: Stage must be 'canary' or 'main'" >&2
@@ -16,20 +17,31 @@ echo "========================================================================"
 echo
 
 # Study 2 parameters
-ITER="s2-${STAGE}"
+ITER="s2_${STAGE}"
 MODELS=("claude-haiku-5.5" "gpt-oss-120b" "qwen3.6-27b" "gemini-3.8-flash")
 
 if [[ "$STAGE" == "canary" ]]; then
-    ROLE_N=8  # 8 per cell per level = 64 per model (256 total with 4 cells × 2 levels × 4 models)
+    ROLE_N=16  # 16 per cell per model = 64 per model (256 total with 4 cells × 4 models)
     CAP=1.40
 else
-    ROLE_N=24  # 24 per cell per level = 192 per model (768 total with 4 cells × 2 levels × 4 models)
+    ROLE_N=48  # 48 per cell per model = 192 per model (768 total with 4 cells × 4 models)
     CAP=4.21
 fi
 
-# Pre-flight checks
+# Global ledger path (read-only)
+GLOBAL_LEDGER="${GLOBAL_LEDGER:-/workspace/moral-compass/runs/v4-20261108/ledger.db}"
+
+# Set FAKE_TRANSPORT env var if requested
+if [[ "$FAKE_TRANSPORT" == "--fake-transport" ]]; then
+    export FAKE_TRANSPORT=1
+    echo "✓ Fake transport enabled (zero real API calls)"
+else
+    export FAKE_TRANSPORT=0
+fi
+
+# Fix #10: Pre-flight checks from research/prereg
 echo "Running pre-flight checks..."
-if ! python3 -m pytest research/v3final/harness/v3/test_*.py research/v3final/test_*.py -v --tb=short; then
+if ! python3 -m pytest research/prereg/ -q --tb=short; then
     echo "✗ Pre-flight tests failed" >&2
     exit 1
 fi
@@ -43,31 +55,18 @@ run_model() {
     echo "Model: $model"
     echo "----------------------------------------"
     
-    # Seed calibration from v3final
-    mkdir -p "data/v3/$ITER/$model"
-    cp "research/v3final/data/$model/calibration.json" "data/v3/$ITER/$model/calibration.json"
-    
-    # Record versions before
-    python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" before
-    
-    # Run the harness with correct spec flags
-    # --phases role: Only run role phase (Study 2)
-    # --preset full: Use full preset
-    # --role-n N: Per-level n (8 or 24)
-    # --cap: Hard budget cap per study/stage
-    # Uses research/prereg/run_prereg.py which wraps v3final and validates calibration
+    # Fix #10: run_prereg.py handles calibration seeding
+    # Fix #10: Pass --global-ledger
     if python3 research/prereg/run_prereg.py "$model" \
         --iter "$ITER" \
-        --stage main \
-        --preset full \
+        --stage "$STAGE" \
+        --preset iter \
         --phases role \
         --role-n "$ROLE_N" \
         --cap "$CAP" \
         --budget "$CAP" \
+        --global-ledger "$GLOBAL_LEDGER" \
         --workers 8; then
-        
-        # Record versions after
-        python3 research/v3final/harness/v3/record_versions.py "$ITER" "$model" after
         
         echo "✓ $model completed successfully"
         return 0
@@ -99,21 +98,16 @@ if [[ ${#failed_models[@]} -eq 0 ]]; then
     echo "Next steps:"
     if [[ "$STAGE" == "canary" ]]; then
         echo "1. Run canary checks:"
-        echo "     python canary_check.py s2 all"
+        echo "     python research/prereg/canary_check.py"
         echo
         echo "2. If canary checks pass, run main stage:"
         echo "     bash run_study2.sh main"
-        echo
-        echo "Note: Main stage requires manual approval after canary validation."
     else
         echo "1. Run analysis:"
-        echo "     python analyze_s2.py data/v3/$ITER/combined.jsonl --output results_s2_${STAGE}.json"
+        echo "     python research/prereg/analyze_s2_prereg.py"
     fi
     exit 0
 else
     echo "✗ Failed models: ${failed_models[*]}"
-    echo
-    echo "To retry failed models only:"
-    echo "  bash run_study2.sh $STAGE --retry-only"
     exit 1
 fi
