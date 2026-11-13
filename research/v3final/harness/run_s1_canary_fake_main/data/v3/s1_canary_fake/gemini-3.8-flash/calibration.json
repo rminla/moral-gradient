@@ -1,0 +1,92 @@
+{
+ "car_si": {
+  "levels": [
+   2,
+   3
+  ],
+  "fitted_p": {
+   "1": 0.009,
+   "2": 0.15,
+   "3": 0.765,
+   "4": 0.984,
+   "5": 0.999,
+   "6": 1.0,
+   "7": 1.0,
+   "8": 1.0
+  },
+  "tipping": {
+   "est": 2.594772758736595,
+   "lo": 2.594772756065621,
+   "hi": 2.594772756065621,
+   "valid": true,
+   "side": null,
+   "b": [
+    -7.563341918443298,
+    2.914837876641621
+   ],
+   "in_range": 1.0
+  },
+  "flag": null,
+  "fit_flag": null,
+  "observed_p": 0.5
+ },
+ "n_car": 48,
+ "fb_press": {
+  "levels": [
+   3
+  ],
+  "fitted_p": {
+   "1": 0.992,
+   "2": 0.992,
+   "3": 0.992,
+   "4": 0.992,
+   "5": 0.992
+  },
+  "tipping": {
+   "est": -993791.1742281951,
+   "lo": NaN,
+   "hi": NaN,
+   "valid": false,
+   "side": "always above",
+   "b": [
+    4.816751429580196,
+    4.846844643514785e-06
+   ],
+   "in_range": 0.0
+  },
+  "flag": "ceiling",
+  "fit_flag": "ceiling",
+  "observed_p": 1.0
+ },
+ "n_fb": 60,
+ "ds_press": {
+  "levels": [
+   2
+  ],
+  "fitted_p": {
+   "0": 0.001,
+   "1": 0.044,
+   "2": 0.766,
+   "3": 0.996,
+   "4": 1.0,
+   "5": 1.0
+  },
+  "tipping": {
+   "est": 1.7226779154872112,
+   "lo": 1.5547961506078742,
+   "hi": 1.9422918625162042,
+   "valid": true,
+   "side": null,
+   "b": [
+    -7.353806397409331,
+    4.268822587958651
+   ],
+   "in_range": 1.0
+  },
+  "flag": "ceiling",
+  "fit_flag": null,
+  "observed_p": 0.833
+ },
+ "n_ds": 72,
+ "rule": "bracket the fitted 50% point with floor/ceil levels (pressure: the one closer to 50%); else closest-to-50% level. Flag = observed P(act) at the chosen level outside [25%,75%] (v3-final)"
+}
