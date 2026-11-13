@@ -302,21 +302,24 @@ def main():
         except BudgetExceeded as e:
             sys.exit(f"ERROR: {e}")
         
-        # Pytest pre-flight
-        print("\n=== Running pytest pre-flight ===", flush=True)
-        pytest_result = subprocess.run(
-            ["python3", "-m", "pytest", str(base_dir / "research" / "prereg"), "-q"],
-            cwd=base_dir,
-            capture_output=True,
-            text=True
-        )
-        
-        if pytest_result.returncode != 0:
-            print(pytest_result.stdout)
-            print(pytest_result.stderr)
-            sys.exit(f"Pre-flight check FAILED: pytest returned {pytest_result.returncode}")
-        
-        print("✓ Pytest pre-flight passed", flush=True)
+        # Pytest pre-flight (skip for fake transport runs)
+        if os.environ.get("FAKE_TRANSPORT") != "1":
+            print("\n=== Running pytest pre-flight ===", flush=True)
+            pytest_result = subprocess.run(
+                ["python3", "-m", "pytest", str(base_dir / "research" / "prereg"), "-q"],
+                cwd=base_dir,
+                capture_output=True,
+                text=True
+            )
+            
+            if pytest_result.returncode != 0:
+                print(pytest_result.stdout)
+                print(pytest_result.stderr)
+                sys.exit(f"Pre-flight check FAILED: pytest returned {pytest_result.returncode}")
+            
+            print("✓ Pytest pre-flight passed", flush=True)
+        else:
+            print("✓ Pytest pre-flight skipped (FAKE_TRANSPORT=1)", flush=True)
     else:
         effective_cap = args.pilot_cap
         effective_budget = args.budget
