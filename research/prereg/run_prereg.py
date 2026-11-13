@@ -344,6 +344,24 @@ def main():
     original_car_spec = K.car_spec
     K.car_spec = make_car_spec_for_model(args.model)
     
+    # Install ledger wrapper for per-call reserve/insert (Fix D)
+    if args.cap and global_ledger:
+        from ledger_wrapper import install_ledger_wrapper
+        # Determine stage cap based on iteration
+        if args.iter.startswith("s1_canary"):
+            wrapper_stage_cap = 2.97
+        elif args.iter.startswith("s1_main"):
+            wrapper_stage_cap = 8.92
+        elif args.iter.startswith("s2_canary"):
+            wrapper_stage_cap = 1.40
+        elif args.iter.startswith("s2_main"):
+            wrapper_stage_cap = 4.21
+        else:
+            wrapper_stage_cap = args.cap
+        
+        is_fake = os.environ.get("FAKE_TRANSPORT") == "1"
+        install_ledger_wrapper(global_ledger, wrapper_stage_cap, args.iter, is_fake)
+    
     # Fix #3: Patch Engine class for Study 2 car_role
     from v3.run import Engine
     original_engine_unit = Engine.unit
