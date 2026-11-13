@@ -7,7 +7,8 @@ while keeping the vendored v3final/ directory byte-identical to MANIFEST.sha256.
 import argparse
 import json
 import os
-import sqlite3
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -18,6 +19,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v3final" / "har
 from v3 import run as v3run
 from v3 import cases as K
 from mc.ledger import SCHEMA
+
+# Import prereg layer
+from v3_prereg_layer import (
+    BENEF_CUES, 
+    SYSTEM_CUE_SET, 
+    car_spec_prereg, 
+    car_role_spec, 
+    unit_with_car_role,
+    make_cue_seen_checker
+)
 
 # Preregistered Study 1: per-cue arms
 CUE_ARMS = {
@@ -86,6 +97,8 @@ def plan_prereg(stage, cal, smoke, cue_n, role_n, phases):
         
         if "role" in phases and role_n is not None:
             # Study 2: role×tools 2x2
+            # Fix 2: si must be defined before use
+            si = cal["car_si"]["levels"]
             for cell, (role, tools) in CELL_CONFIG.items():
                 for L in si:
                     add("car_role", "do", L, role_n, "role", esc=False, cell=cell, role=role, tools=tools)
@@ -102,10 +115,8 @@ def plan_prereg(stage, cal, smoke, cue_n, role_n, phases):
     return J
 
 
-def validate_calibration(model):
+def validate_calibration(model, base_dir):
     """Validate calibration levels match v3final expectations."""
-    from v3.calibration_guard import get_car_si_levels
-    
     expected_levels = {
         "claude-haiku-5.5": [4, 5],
         "gpt-oss-120b": [1, 2],
@@ -116,18 +127,87 @@ def validate_calibration(model):
     if model not in expected_levels:
         sys.exit(f"Unknown model: {model}")
     
-    try:
-        actual_levels = get_car_si_levels(model, Path(__file__).resolve().parent.parent / "v3final")
-        if actual_levels != expected_levels[model]:
-            sys.exit(
-                f"Calibration validation FAILED for {model}:\n"
-                f"  Expected levels: {expected_levels[model]}\n"
-                f"  Actual levels: {actual_levels}\n"
-                f"  The frozen v3final calibration must be used."
-            )
-        print(f"✓ Calibration validated: {model} levels {actual_levels}", flush=True)
-    except Exception as e:
-        sys.exit(f"Calibration validation error: {e}")
+    # Read calibration from v3final
+    cal_file = base_dir / "research" / "v3final" / "data" / model / "calibration.json"
+    if not cal_file.exists():
+        sys.exit(f"Calibration file not found: {cal_file}")
+    
+    cal = json.loads(cal_file.read_text())
+    actual_levels = cal["car_si"]["levels"]
+    
+    if actual_levels != expected_levels[model]:
+        sys.exit(
+            f"Calibration validation FAILED for {model}:\n"
+            f"  Expected levels: {expected_levels[model]}\n"
+            f"  Actual levels: {actual_levels}\n"
+            f"  The frozen v3final calibration must be used."
+        )
+    print(f"✓ Calibration validated: {model} levels {actual_levels}", flush=True)
+
+
+def seed_calibration(model, iter_name, base_dir):
+    """Seed calibration.json from v3final into the iteration directory."""
+    src = base_dir / "research" / "v3final" / "data" / model / "calibration.json"
+    dst = base_dir / "data" / "v3" / iter_name / model / "calibration.json"
+    
+    if not src.exists():
+        sys.exit(f"Source calibration not found: {src}")
+    
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+    print(f"✓ Seeded calibration: {src} → {dst}", flush=True)
+
+
+def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name, global_ledger_path=None, max_retries=2):
+    """Run stage with error retry logic.
+    
+    Fix 4: Error rows fail the run, with 2 retry passes for errored keys only.
+    """
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    
+    # Call frozen v3final run_stage (7 args only)
+    retry_count = 0
+    
+    while retry_count <= max_retries:
+        if retry_count > 0:
+            print(f"\n=== Retry pass {retry_count}/{max_retries} ===\n", flush=True)
+        
+        # Run stage
+        success = v3run.run_stage(model, stage, budget, cap, workers, smoke, iter_name)
+        
+        if not success:
+            return False
+        
+        # Check for error rows
+        d = v3run.ROOT / "data" / "v3" / iter_name / model
+        out = d / f"{stage}{'_smoke' if smoke else ''}.jsonl"
+        
+        if not out.exists():
+            print(f"Output file not found: {out}", flush=True)
+            return False
+        
+        error_keys = []
+        with open(out) as f:
+            for line in f:
+                row = json.loads(line)
+                if row.get("outcome") == "error":
+                    error_keys.append(row.get("key"))
+        
+        if not error_keys:
+            print(f"✓ Stage completed with 0 errors", flush=True)
+            return True
+        
+        if retry_count >= max_retries:
+            print(f"\n✗ Stage FAILED: {len(error_keys)} error rows remain after {max_retries} retries", flush=True)
+            return False
+        
+        print(f"Found {len(error_keys)} error rows, preparing retry pass {retry_count + 1}...", flush=True)
+        
+        # For retry: v3final automatically skips completed keys
+        retry_count += 1
+    
+    return False
 
 
 def main():
@@ -148,6 +228,8 @@ def main():
     
     args = parser.parse_args()
     
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    
     # Update globals
     v3run.DESIGN.update(v3run.PRESETS[args.preset])
     v3run.CUE_SET[:] = args.cues.split(",")
@@ -158,47 +240,144 @@ def main():
     
     phases = args.phases.split(",") if args.phases else v3run.PHASES
     
-    # Budget handling
+    # Budget handling - Fix 3: Global ledger pre-flight
     global_ledger_path = None
     if args.cap:
         effective_cap = args.cap
         effective_budget = args.cap
         
         # Validate calibration for preregistered studies
-        validate_calibration(args.model)
+        validate_calibration(args.model, base_dir)
         
-        # Pre-flight check
-        global_ledger_path = Path(os.environ.get("GLOBAL_LEDGER_PATH", v3run.ROOT / "data" / "global_ledger.sqlite"))
+        # Seed calibration
+        seed_calibration(args.model, args.iter, base_dir)
+        
+        # Fix 3: Pre-flight check on global JSON ledger
+        ledger_path_str = os.environ.get("GLOBAL_LEDGER_PATH")
+        if not ledger_path_str:
+            sys.exit(
+                "Pre-flight check FAILED: GLOBAL_LEDGER_PATH environment variable not set.\n"
+                "This must point to the global research ledger JSON file."
+            )
+        
+        global_ledger_path = Path(ledger_path_str)
         
         if not global_ledger_path.exists():
             sys.exit(
-                f"Pre-flight check FAILED: Global research ledger not found at {global_ledger_path}\n"
-                f"Set GLOBAL_LEDGER_PATH environment variable."
+                f"Pre-flight check FAILED: Global research ledger not found at {global_ledger_path}"
             )
         
-        conn = sqlite3.connect(str(global_ledger_path))
-        committed = conn.execute("SELECT COALESCE(SUM(cost_usd), 0) FROM calls WHERE status = 'ok'").fetchone()[0]
-        conn.close()
+        # Read JSON ledger
+        try:
+            ledger_data = json.loads(global_ledger_path.read_text())
+        except Exception as e:
+            sys.exit(f"Pre-flight check FAILED: Cannot read global ledger: {e}")
+        
+        # Calculate committed spend
+        committed = sum(
+            entry.get("cost_usd", 0) 
+            for entry in ledger_data.get("entries", [])
+        )
         
         if committed + effective_cap > 70.0:
             sys.exit(
                 f"Pre-flight check FAILED: committed ${committed:.2f} + cap ${effective_cap:.2f} > $70.00"
             )
         
-        print(f"✓ Pre-flight passed: ${committed:.2f} + ${effective_cap:.2f} = ${committed + effective_cap:.2f} <= $70.00", flush=True)
+        print(f"✓ Pre-flight passed: ${committed:.2f} committed + ${effective_cap:.2f} cap = ${committed + effective_cap:.2f} <= $70.00", flush=True)
+        
+        # Fix 5: Run pytest pre-flight
+        print("\n=== Running pytest pre-flight ===", flush=True)
+        pytest_result = subprocess.run(
+            ["python", "-m", "pytest", str(base_dir / "research" / "prereg"), "-v"],
+            cwd=base_dir,
+            capture_output=True,
+            text=True
+        )
+        
+        if pytest_result.returncode != 0:
+            print(pytest_result.stdout)
+            print(pytest_result.stderr)
+            sys.exit(f"Pre-flight check FAILED: pytest returned {pytest_result.returncode}")
+        
+        print("✓ Pytest pre-flight passed", flush=True)
     else:
         effective_cap = args.pilot_cap
         effective_budget = args.budget
+        seed_calibration(args.model, args.iter, base_dir)
+    
+    # Fix 5: Record versions before
+    print("\n=== Recording versions (before) ===", flush=True)
+    subprocess.run(
+        ["python", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
+        cwd=base_dir,
+        check=True
+    )
     
     # Run with modified plan function
     original_plan = v3run.plan
     v3run.plan = lambda stage, cal=None, smoke=False: plan_prereg(stage, cal, smoke, cue_n, args.role_n, phases)
     
-    for st in (["calibrate", "main"] if args.stage == "all" else [args.stage]):
-        if not v3run.run_stage(args.model, st, effective_budget, effective_cap, args.workers, args.smoke, args.iter, global_ledger_path):
-            sys.exit(1)
+    # Override car_spec for beneficiary cues
+    original_car_spec = K.car_spec
+    K.car_spec = car_spec_prereg
     
+    success = True
+    for st in (["calibrate", "main"] if args.stage == "all" else [args.stage]):
+        if not run_stage_with_retries(args.model, st, effective_budget, effective_cap, args.workers, args.smoke, args.iter, global_ledger_path):
+            success = False
+            break
+    
+    # Restore originals
     v3run.plan = original_plan
+    K.car_spec = original_car_spec
+    
+    # Fix 5: Record versions after
+    if success:
+        print("\n=== Recording versions (after) ===", flush=True)
+        subprocess.run(
+            ["python", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
+            cwd=base_dir,
+            check=True
+        )
+        
+        # Fix 3: Write back to global ledger
+        if global_ledger_path:
+            print(f"\n=== Writing back to global ledger ===", flush=True)
+            try:
+                # Read current ledger
+                ledger_data = json.loads(global_ledger_path.read_text())
+                
+                # Read completed run data
+                d = v3run.ROOT / "data" / "v3" / args.iter / args.model
+                out = d / f"{st}{'_smoke' if args.smoke else ''}.jsonl"
+                
+                total_cost = 0
+                if out.exists():
+                    with open(out) as f:
+                        for line in f:
+                            row = json.loads(line)
+                            total_cost += row.get("cost_usd", 0)
+                
+                # Append entry
+                if "entries" not in ledger_data:
+                    ledger_data["entries"] = []
+                
+                ledger_data["entries"].append({
+                    "iter": args.iter,
+                    "model": args.model,
+                    "stage": st,
+                    "cost_usd": total_cost,
+                    "timestamp": v3run.now_local(),
+                })
+                
+                # Write back
+                global_ledger_path.write_text(json.dumps(ledger_data, indent=2))
+                print(f"✓ Wrote ${total_cost:.4f} to global ledger", flush=True)
+            except Exception as e:
+                print(f"Warning: Could not write to global ledger: {e}", flush=True)
+    
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

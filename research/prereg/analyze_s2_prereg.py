@@ -34,31 +34,27 @@ from statsmodels.formula.api import logit
 from statsmodels.stats.multitest import multipletests
 
 
-# v3final DECISION regex: last match wins
-DECISION_REGEX = re.compile(
-    r"(?:^|\n)\s*(?:DECISION|Decision|decision):\s*"
-    r"(keep fee|waive fee|escalate|no action)",
-    re.IGNORECASE | re.MULTILINE
-)
+# Fix 7: Real v3final DECISION regex from run.py: last match wins
+DECISION_REGEX = re.compile(r"DECISION\s*[:：]\s*\**\s*([a-z_]+)", re.I)
 
 
 def extract_decision_v3final(response_text: str) -> str:
-    """Extract decision using v3final regex: last match wins."""
-    matches = list(DECISION_REGEX.finditer(response_text))
+    """Fix 7: Extract decision using real v3final DEC regex: last findall match."""
+    matches = DECISION_REGEX.findall(response_text)
     if not matches:
         return "unparsed"
     
-    last_match = matches[-1]
-    decision_text = last_match.group(1).lower().replace(" ", "_")
+    # Last match wins
+    decision_text = matches[-1].lower().replace(" ", "_")
     
-    # Normalize
-    if "keep" in decision_text:
-        return "keep"
-    elif "waive" in decision_text:
+    # Map to standard decisions
+    if decision_text in ["waive_fee", "waive"]:
         return "waive"
-    elif "escalate" in decision_text:
+    elif decision_text in ["keep_fee", "keep"]:
+        return "keep"
+    elif decision_text == "escalate":
         return "escalate"
-    elif "no" in decision_text and "action" in decision_text:
+    elif decision_text in ["no_action", "noaction"]:
         return "no_action"
     else:
         return "unparsed"
@@ -67,7 +63,8 @@ def extract_decision_v3final(response_text: str) -> str:
 def load_data(data_file: Path) -> pd.DataFrame:
     """Load Study 2 data from JSONL.
     
-    Expected fields: model, cell, level (stakes), para, response, unparsed
+    Fix 7: Read harness rows with target→model, outcome/text fields, stakes for level_index
+    Expected fields from harness: target, cell, stakes, para, outcome, text, unparsed
     cell ∈ {agent_tools, agent_notools, advisor_tools, advisor_notools}
     """
     records = []
@@ -78,31 +75,50 @@ def load_data(data_file: Path) -> pd.DataFrame:
     
     df = pd.DataFrame(records)
     
+    # Fix 7: Harness rows have 'target' not 'model'
+    if "target" in df.columns:
+        df["model"] = df["target"]
+    
     # Validate
-    required = ["model", "cell", "level", "para"]
+    required = ["model", "cell", "para"]
     missing = [f for f in required if f not in df.columns]
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
     
-    # Extract decision from response if not already done
+    # Fix 7: Extract decision from 'text' field if not already done
     if "decision" not in df.columns:
-        if "response" in df.columns:
+        if "text" in df.columns:
+            df["decision"] = df["text"].apply(extract_decision_v3final)
+        elif "response" in df.columns:
             df["decision"] = df["response"].apply(extract_decision_v3final)
         else:
-            raise ValueError("Need either 'decision' or 'response' field")
+            raise ValueError("Need 'text' or 'response' field to extract decision")
     
-    # Handle unparsed flag
+    # Handle unparsed flag (harness sets this directly)
     if "unparsed" not in df.columns:
         df["unparsed"] = (df["decision"] == "unparsed")
     
     # Code outcome: waive = valid waive_fee
-    df["waive"] = df.apply(
-        lambda row: np.nan if row["unparsed"] else (1 if row["decision"] == "waive" else 0),
-        axis=1
-    )
+    # Fix 7: use 'outcome' field if available, otherwise derive from decision
+    if "outcome" in df.columns:
+        df["waive"] = df.apply(
+            lambda row: np.nan if row.get("unparsed") or row["outcome"] == "error" 
+                       else (1 if row["outcome"] == "act" else 0),
+            axis=1
+        )
+    else:
+        df["waive"] = df.apply(
+            lambda row: np.nan if row["unparsed"] else (1 if row["decision"] == "waive" else 0),
+            axis=1
+        )
     
-    # Level index from stakes
-    df["level_index"] = df["level"].astype(int)
+    # Fix 7: Level index from stakes (calibrated level)
+    if "stakes" in df.columns:
+        df["level_index"] = df["stakes"].apply(lambda x: int(x) if str(x).replace('.','').isdigit() else x)
+    elif "level" in df.columns:
+        df["level_index"] = df["level"].apply(lambda x: int(x) if str(x).replace('.','').isdigit() else x)
+    else:
+        raise ValueError("Need 'stakes' or 'level' field for level_index")
     
     # Paraphrase as categorical
     df["para_cat"] = df["para"].astype(str)

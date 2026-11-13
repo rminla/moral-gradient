@@ -36,7 +36,8 @@ from statsmodels.stats.multitest import multipletests
 def load_data(data_file: Path) -> pd.DataFrame:
     """Load Study 1 data from JSONL.
     
-    Expected fields: model, cue, level (stakes), para, outcome
+    Fix 7: Read harness rows with target→model, stakes for level_index, cue None→NONE
+    Expected fields from harness: target, cue, stakes, para, outcome
     """
     records = []
     with open(data_file) as f:
@@ -46,11 +47,20 @@ def load_data(data_file: Path) -> pd.DataFrame:
     
     df = pd.DataFrame(records)
     
+    # Fix 7: Harness rows have 'target' not 'model'
+    if "target" in df.columns:
+        df["model"] = df["target"]
+    
     # Validate
-    required = ["model", "cue", "level", "para", "outcome"]
+    required = ["model", "para", "outcome"]
     missing = [f for f in required if f not in df.columns]
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
+    
+    # Fix 7: Handle cue=None → "NONE"
+    if "cue" not in df.columns:
+        df["cue"] = None
+    df["cue"] = df["cue"].fillna("none")
     
     # Map cue to arm
     df["arm"] = df["cue"].map({
@@ -66,8 +76,14 @@ def load_data(data_file: Path) -> pd.DataFrame:
         lambda x: 1 if x in ["keep", "no_action", "escalate"] else (0 if x == "act" else np.nan)
     )
     
-    # Level index from stakes
-    df["level_index"] = df["level"].astype(int)
+    # Fix 7: Level index from stakes (calibrated level)
+    if "stakes" in df.columns:
+        # Stakes is the calibrated level for SI units
+        df["level_index"] = df["stakes"].apply(lambda x: int(x) if str(x).replace('.','').isdigit() else x)
+    elif "level" in df.columns:
+        df["level_index"] = df["level"].apply(lambda x: int(x) if str(x).replace('.','').isdigit() else x)
+    else:
+        raise ValueError("Need 'stakes' or 'level' field for level_index")
     
     # Paraphrase as categorical
     df["para_cat"] = df["para"].astype(str)
