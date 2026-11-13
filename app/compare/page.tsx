@@ -47,7 +47,7 @@ export default async function Compare() {
 
             {sir.length > 0 && (
               <div className="mt-14">
-                <h3 className="text-[18px] font-semibold">Does a stake of its own change what it does? <span className="font-normal text-ink/55">Change in how often it keeps the fee when one line about its own targets is added, versus a matched neutral line.</span></h3>
+                <h3 className="text-[18px] font-semibold">Does an added stake change what it does? <span className="font-normal text-ink/55">Change in how often it keeps the fee when a stake is added (in the published run, a team budget memo), versus a matched neutral line.</span></h3>
                 <div className="mt-6 space-y-10">
                   {cues.map((c) => {
                     const rows = sir.filter((r) => r.cue === c);

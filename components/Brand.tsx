@@ -60,7 +60,7 @@ export function GradientRule({ left, right, className = "", dark = false }: { le
 const PILLAR: Record<string, { name: string; color: string; text: string }> = {
   saydo: { name: "Say vs Do", color: "bg-vermilion", text: "text-vermilion" },
   pressure: { name: "Under pressure", color: "bg-ink", text: "text-ink" },
-  selfinterest: { name: "Self-interest", color: "bg-prussian", text: "text-prussian" },
+  selfinterest: { name: "Incentive cue", color: "bg-prussian", text: "text-prussian" },
   baseline: { name: "Baseline", color: "bg-ink", text: "text-ink" },
 };
 export const pillar = (k: string) => PILLAR[k] || { name: k, color: "bg-ink", text: "text-ink" };

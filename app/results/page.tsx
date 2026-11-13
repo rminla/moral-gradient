@@ -13,7 +13,7 @@ const DOORS = [
   ["/reasoning", "02", "Reasoning vs stated reasons", "What the reasoning weighs, what the model tells you, and what it does."],
   ["/drift", "03", "Agent drift", "AI agents handling customer service under deadline pressure: team vs alone, skipping required checks."],
   ["/compare", "04", "Compare per scenario", "Every model on one chart for each scenario, with human answers where we have them."],
-  ["/models", "05", "Weak spots per model", "Where each model is most swayed, most self-interested, most test-aware."],
+  ["/models", "05", "Weak spots per model", "Where each model is most swayed, most moved by an added stake, most test-aware."],
 ] as const;
 
 export default async function Results() {
@@ -25,7 +25,7 @@ export default async function Results() {
     <main>
       <PreviewBanner v={v} />
       <PageHead eyebrow="Results" grey="What models do when words, reasons and incentives" title={<>point different <span className="text-vermilion">ways.</span></>}>
-        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies. {v.status === "final" ? "These are the final numbers from the pre-registered locked run." : "These are preliminary numbers from developing the method; the final run replaces them."}
+        {ids.length} models ({ids.map((m) => modelMeta(m).name).join(", ")}), the same scenarios and tools, graded by models from other companies on free-text fields (more on grading at <Link href="/about#grading" className="underline decoration-ink/25 underline-offset-2 hover:text-vermilion">methodology</Link>). {v.status === "final" ? "These are the final numbers from the pre-registered locked run." : "These are preliminary numbers from developing the method; the final run replaces them."}
       </PageHead>
 
       <section className="mx-auto grid max-w-[1200px] border-b border-rule sm:grid-cols-2 lg:grid-cols-5">
@@ -50,9 +50,14 @@ export default async function Results() {
 
       {memo.length > 0 && (
         <Block>
-          <ChartHead v={v} kicker="At a glance · hidden influence" title={<>When a budget memo is added, how often each model&apos;s reasoning weighs it, and how often its stated reasons then <span className="text-vermilion">leave it out</span>.</>} />
+          <ChartHead v={v} kicker="At a glance · hidden influence" title={<>When a budget memo is added, how often each model&apos;s reasoning weighs it, and how often its stated reasons then <span className="text-vermilion">leave it out</span>.</>}>
+            {(() => { const haiku = memo.find((r) => r.model === "claude-haiku-5.5"); return haiku?.weighs?.n ? `The second mark is among runs where the reasoning was coded as using the memo, not among all ${haiku.weighs.n}.` : "The second mark is among runs where the reasoning was coded as using the memo, not among the full memo-arm sample."; })()}
+          </ChartHead>
           <div className="mt-6"><DotLegend marks={[{ key: "w", label: "Reasoning weighs the memo", tone: "say" }, { key: "s", label: "Stated reasons leave it out (of those)", tone: "do" }]} /></div>
           <div className="mt-3"><DotChart connect={false} rows={memo.map((r) => ({ id: r.model, label: <ModelName id={r.model} />, sub: r.fidelity === "summary" ? "provider summary" : "full reasoning", marks: [{ key: "w", label: "weighs", p: r.weighs, tone: "say" as const }, { key: "s", label: "silent", p: r.silent_given_weighs, tone: "do" as const }] }))} /></div>
+          {(() => { const haiku = memo.find((r) => r.model === "claude-haiku-5.5" && r.silent_given_weighs && r.silent_given_weighs.n < 10); return haiku && haiku.silent_given_weighs && (
+            <p className="mt-3 text-[13.5px] leading-6 text-ink/60">Claude Haiku 5.5's "stated reasons leave it out" mark is {haiku.silent_given_weighs.k} of {haiku.silent_given_weighs.n} runs in which both graders coded the reasoning as using the memo. That is too few to read as a rate.</p>
+          ); })()}
           <Link href="/reasoning" className="link mt-5 inline-block text-[14px]">Reasoning vs stated reasons, with examples →</Link>
         </Block>
       )}

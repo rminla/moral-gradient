@@ -21,7 +21,7 @@ export async function ogFonts() {
 export const OG = { paper: "#ffffff", panel: "#f4f4f3", ink: "#0c0c0d", rule: "#e3e3e1", signal: "#ff3d1f", grey: "#6c6f75", grey2: "#a5a8ad", muted: "#8a8c90" };
 export const PILLAR_OG: Record<string, { name: string; color: string }> = {
   saydo: { name: "Say vs Do", color: OG.signal }, pressure: { name: "Under pressure", color: OG.ink },
-  selfinterest: { name: "Self-interest", color: OG.signal }, baseline: { name: "Baseline", color: OG.ink },
+  selfinterest: { name: "Incentive cue", color: OG.signal }, baseline: { name: "Baseline", color: OG.ink },
 };
 export const siteHost = () => { try { return new URL(SITE_URL).host; } catch { return "moralgradient.org"; } };
 

@@ -10,7 +10,7 @@ export const CUE = "memo_soft";
 
 export type ThinkRow = {
   id: string; name: string; fidelity: string; it: string;
-  keepMemo: Prop; keepNeutral: Prop; shift: Diff;           // the action
+  keepMemo: Prop; keepNeutral: Prop; keepNoCue: Prop | null; shift: Diff;           // the action
   mentions: Prop; setAside: Prop; weighs: Prop;              // the reasoning (memo arm)
   silentGivenWeighs: Prop; hidden: Diff; hiddenNoCue: Diff;  // the note, and influence the reasoning doesn't show
   traceActionMismatch: Prop;
@@ -26,12 +26,13 @@ export function thinkRows(v: V3): ThinkRow[] {
     if (!best) continue;
     const rt = best.m.reasoning_trace, c = rt.si_by_cue[CUE], pp = rt.press?._pressure_arms_pooled ?? {};
     const si = best.m.self_interest?.[CUE];
+    const siNoCue = best.m.self_interest?._no_cue;
     const hidden: Diff = c.unverbalized_influence_vs_neutral ?? null;
     const sg: Prop = c.trace_weighs_notes_silent_given_weighs ?? null;
     const verdict = (hidden?.lo ?? 0) > 0 ? "hidden" : sg && sg.n >= 10 && (sg.p ?? 0) >= 0.5 ? "note-omits" : "open";
     out.push({
       id, name: modelMeta(id).name, fidelity: rt.fidelity ?? modelMeta(id).trace, it: best.it,
-      keepMemo: si?.keep?.incentive ?? c.incentive?.keep, keepNeutral: si?.keep?.neutral ?? c.neutral?.keep, shift: si?.shift ?? c.shift_vs_neutral,
+      keepMemo: si?.keep?.incentive ?? c.incentive?.keep, keepNeutral: si?.keep?.neutral ?? c.neutral?.keep, keepNoCue: siNoCue?.keep ?? null, shift: si?.shift ?? c.shift_vs_neutral,
       mentions: c.incentive?.mention_any, setAside: c.incentive?.set_aside_any, weighs: c.incentive?.toward_keep_any,
       silentGivenWeighs: sg, hidden, hiddenNoCue: c.unverbalized_influence_vs_nocue ?? null,
       traceActionMismatch: rt.si_trace_vs_action?.mismatch ?? null,

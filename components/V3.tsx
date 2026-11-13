@@ -87,7 +87,7 @@ export function DotChart({ rows, reference, connect = true }: { rows: { id: stri
                 ))}
               </div>
               <div className="flex flex-wrap justify-start gap-x-3 font-mono text-[11.5px] md:justify-end">
-                {r.marks.map((m) => <span key={m.key} className={TONE[m.tone].text}>{fmtPct(m.p?.p)}</span>)}
+                {r.marks.map((m) => <span key={m.key} className={TONE[m.tone].text}>{fmtPct(m.p?.p)}{m.p && m.p.n > 0 && m.p.n < 10 ? ` (${m.p.k}/${m.p.n})` : ""}</span>)}
               </div>
             </div>
           );

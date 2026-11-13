@@ -207,7 +207,7 @@ export function weakSpots(v: V3, model: string): WeakSpot[] {
     base: bp ? `Changed its answer in ${pctOf(pRate)} when ${armWord(bp.arm)}, vs ${fmtPct(cRate)} after a neutral follow-up message (same conversation, no pressure).` : "", href: bp ? `/compare#${bp.d}` : "/compare" });
   const si = selfInterest(v).filter((r) => r.model === model && !cueMeta(r.cue).control);
   const bs = si.reduce<SIRow | null>((a, r) => (r.shift?.d != null && (!a || r.shift.d > (a.shift?.d ?? -9)) ? r : a), null);
-  out.push({ key: "selfinterest", title: "Most moved by a stake of its own", where: bs ? cueMeta(bs.cue).label : "no data yet", value: bs?.shift?.d ?? null, unit: "pts", ci: bs ? fmtCI(bs.shift?.lo, bs.shift?.hi, true) : "",
+  out.push({ key: "selfinterest", title: "Most moved by an added stake", where: bs ? cueMeta(bs.cue).label : "no data yet", value: bs?.shift?.d ?? null, unit: "pts", ci: bs ? fmtCI(bs.shift?.lo, bs.shift?.hi, true) : "",
     note: "points more often keeps the fee when the incentive is present",
     plain: "more likely to keep the fee when it has a stake",
     base: bs ? `Kept the fee in ${pctOf(bs.incentive)} with the ${cueMeta(bs.cue).label.toLowerCase()}, vs ${pctOf(bs.neutral)} with the neutral version (same place in the task, no fee target).` : "", href: "/compare#car" });
