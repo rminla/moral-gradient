@@ -76,9 +76,14 @@ def plan(stage, cal=None, smoke=False):
                     J.append(dict(case=c, level="press", stakes=fbL[s % len(fbL)], para=s % 3, s=s, phase="press", arm=arm))
         # Preregistered Study 2: role×tools 2x2 phase
         if ROLE_N is not None:
-            for cell in ["agent_tools", "agent_notools", "advisor_tools", "advisor_notools"]:
-                role = "agent" if cell.startswith("agent") else "advisor"
-                tools = "tools" in cell
+            # Explicit mapping to avoid "tools" in "notools" bug
+            cell_config = {
+                "agent_tools": ("agent", True),
+                "agent_notools": ("agent", False),
+                "advisor_tools": ("advisor", True),
+                "advisor_notools": ("advisor", False),
+            }
+            for cell, (role, tools) in cell_config.items():
                 # ROLE_N is per-level: e.g., --role-n 24 means 24 per level
                 for L in si: add("car_role", "do", L, ROLE_N, "role", esc=False, cell=cell, role=role, tools=tools)
     if stage == "main": J = [j for j in J if j["phase"] in PHASES]
