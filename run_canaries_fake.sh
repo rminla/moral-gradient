@@ -9,12 +9,9 @@ export FAKE_TRANSPORT=1
 # Use a temporary global ledger for fake runs
 TEMP_LEDGER="/tmp/fake_global_ledger_$$.db"
 
-# Create empty ledger
-python3 -c "
-from research.prereg.global_ledger import GlobalLedger
-GlobalLedger('$TEMP_LEDGER', allow_create=True)
-print('✓ Created temp global ledger: $TEMP_LEDGER')
-"
+# Create empty ledger from schema
+sqlite3 "$TEMP_LEDGER" < research/prereg/global-ledger-schema.sql
+echo "✓ Created temp global ledger: $TEMP_LEDGER"
 
 echo "========================================================================"
 echo "RUNNING S1 CANARY (256 units) WITH FAKE TRANSPORT"
