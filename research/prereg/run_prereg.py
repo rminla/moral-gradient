@@ -363,15 +363,14 @@ def main():
             stage_cap = effective_cap
         
         # Fix #9: Isolate harness ledger per study/stage
-        # Create separate harness directory per iteration to isolate ledgers
+        # Create separate harness directory per iteration with real data dir
         original_root = v3run.ROOT
         harness_dir = base_dir / "research" / "v3final" / "harness" / f"run_{args.iter}_{st}"
         harness_dir.mkdir(parents=True, exist_ok=True)
         
-        # Symlink data directory if it doesn't exist
-        data_link = harness_dir / "data"
-        if not data_link.exists():
-            data_link.symlink_to(original_root / "data")
+        # Create real data directory (not symlink) for isolated ledger.sqlite
+        data_dir = harness_dir / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
         
         try:
             v3run.ROOT = harness_dir
