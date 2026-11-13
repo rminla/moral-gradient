@@ -12,6 +12,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Install fake transport if FAKE_TRANSPORT=1 (must be before importing v3final)
+if os.environ.get("FAKE_TRANSPORT") == "1":
+    from fake_transport import install_fake_transport
+    install_fake_transport()
+
 # Add v3final harness to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "v3final" / "harness"))
 
@@ -168,12 +173,33 @@ def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name,
     """Run stage with error retry logic.
     
     Fix #7: Detect failures by row's 'error' field (frozen schema), exit non-zero on remaining errors.
+    Fix: Delete failed rows before retry to avoid UNIQUE constraint errors.
     """
     retry_count = 0
     
     while retry_count <= max_retries:
         if retry_count > 0:
             print(f"\n=== Retry pass {retry_count}/{max_retries} ===\n", flush=True)
+            
+            # Delete failed rows from output to avoid duplicates on retry
+            d = v3run.ROOT / "data" / "v3" / iter_name / model
+            out = d / f"{stage}{'_smoke' if smoke else ''}.jsonl"
+            
+            if out.exists():
+                # Read all rows, keep only non-error rows
+                rows = []
+                with open(out) as f:
+                    for line in f:
+                        row = json.loads(line)
+                        if not row.get("error"):
+                            rows.append(line)
+                
+                # Rewrite file without error rows
+                with open(out, 'w') as f:
+                    for line in rows:
+                        f.write(line)
+                
+                print(f"Cleaned {out.name} before retry", flush=True)
         
         # Run stage
         success = v3run.run_stage(model, stage, budget, cap, workers, smoke, iter_name)
