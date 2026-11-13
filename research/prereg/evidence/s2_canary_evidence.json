@@ -1,0 +1,17 @@
+{
+  "study": "S2",
+  "stage": "canary",
+  "total_units": 128,
+  "models": [
+    "unknown"
+  ],
+  "counts_by_model": {
+    "unknown": 128
+  },
+  "counts_by_cell": {
+    "agent_tools": 32,
+    "agent_notools": 32,
+    "advisor_tools": 32,
+    "advisor_notools": 32
+  }
+}
