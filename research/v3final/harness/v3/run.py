@@ -3,7 +3,7 @@
   python v3/run.py <model> --stage calibrate|main|all --budget 12 [--pilot-cap 85] [--workers 8] [--smoke]
 Checkpoint/resume is automatic: every unit has a deterministic key; finished units in data/v3/<model>/<stage>.jsonl are skipped.
 Stage 'calibrate' writes data/v3/<model>/calibration.json (auto-selected manipulation levels); 'main' reads it."""
-import argparse, itertools, json, re, sys, threading, time, traceback
+import argparse, itertools, json, re, sqlite3, sys, threading, time, traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -364,7 +364,25 @@ if __name__ == "__main__":
     ap.add_argument("--reuse-calibration", default=None, help="iteration tag whose calibrate.jsonl is reused (re-fitted with the current rule; no new calls)")
     ap.add_argument("--cap", type=float, default=None, help="Hard budget cap for this run (preregistered studies)")
     a = ap.parse_args()
-    if a.pilot_cap > 85: sys.exit("pilot cap above $85 would leave < $15 headroom of the $100 total")
+    
+    # Preregistered studies: use --cap as both pilot_cap and budget if provided
+    if a.cap:
+        effective_cap = a.cap
+        effective_budget = a.cap
+        # Pre-flight check: verify global ledger committed + cap <= $70
+        global_ledger_path = ROOT / "data/ledger.sqlite"
+        if global_ledger_path.exists():
+            conn = sqlite3.connect(str(global_ledger_path))
+            committed = conn.execute("SELECT COALESCE(SUM(cost_usd), 0) FROM calls WHERE status = 'ok'").fetchone()[0]
+            conn.close()
+            if committed + effective_cap > 70.0:
+                sys.exit(f"Pre-flight check failed: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} = ${committed + effective_cap:.2f} > $70.00 limit")
+            print(f"Pre-flight check passed: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} = ${committed + effective_cap:.2f} <= $70.00", flush=True)
+    else:
+        effective_cap = a.pilot_cap
+        effective_budget = a.budget
+        if a.pilot_cap > 85: sys.exit("pilot cap above $85 would leave < $15 headroom of the $100 total")
+    
     DESIGN.update(PRESETS[a.preset]); CUE_SET[:] = a.cues.split(",")
     assert all(c in K.CUES or c == "none" for c in CUE_SET), CUE_SET
     DILEMMA_SET[:] = a.dilemmas.split(",")
@@ -382,4 +400,4 @@ if __name__ == "__main__":
     for st in (["calibrate", "main"] if a.stage == "all" else [a.stage]):
         if st == "main" and a.smoke and not (ROOT / "data/v3" / a.iter / a.model / "calibration.json").exists():
             (ROOT / "data/v3" / a.iter / a.model / "calibration.json").write_text(json.dumps({"car_si": {"levels": [3, 4]}, "fb_press": {"levels": [3]}, "sw_press": {"levels": [3]}, "lp_press": {"levels": [3]}, "ds_press": {"levels": [2]}, "smoke_placeholder": True}))
-        if not run_stage(a.model, st, a.budget, a.pilot_cap, a.workers, a.smoke, a.iter): break
+        if not run_stage(a.model, st, effective_budget, effective_cap, a.workers, a.smoke, a.iter): break
