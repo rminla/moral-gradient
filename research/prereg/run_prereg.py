@@ -332,17 +332,33 @@ def main():
         else:
             stage_cap = effective_cap
         
-        if not run_stage_with_retries(args.model, st, effective_budget, stage_cap, args.workers, args.smoke, args.iter):
-            success = False
-            break
+        # Fix #9: Isolate harness ledger per study/stage
+        # Create separate harness directory per iteration to isolate ledgers
+        original_root = v3run.ROOT
+        harness_dir = base_dir / "research" / "v3final" / "harness" / f"run_{args.iter}_{st}"
+        harness_dir.mkdir(parents=True, exist_ok=True)
         
-        # Fix #8: Check stage cap after run
-        if global_ledger:
-            stage_spend = global_ledger.get_stage_spend()
-            if stage_spend > stage_cap:
-                print(f"✗ BUDGET EXCEEDED: Stage spend ${stage_spend:.2f} > ${stage_cap:.2f} cap", flush=True)
+        # Symlink data directory if it doesn't exist
+        data_link = harness_dir / "data"
+        if not data_link.exists():
+            data_link.symlink_to(original_root / "data")
+        
+        try:
+            v3run.ROOT = harness_dir
+            
+            if not run_stage_with_retries(args.model, st, effective_budget, stage_cap, args.workers, args.smoke, args.iter):
                 success = False
                 break
+            
+            # Fix #8: Check stage cap after run
+            if global_ledger:
+                stage_spend = global_ledger.get_stage_spend()
+                if stage_spend > stage_cap:
+                    print(f"✗ BUDGET EXCEEDED: Stage spend ${stage_spend:.2f} > ${stage_cap:.2f} cap", flush=True)
+                    success = False
+                    break
+        finally:
+            v3run.ROOT = original_root
     
     # Restore originals
     v3run.plan = original_plan
