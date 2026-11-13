@@ -2,10 +2,16 @@
 import json
 from pathlib import Path
 
-# Load preregistered Study 2 prompts
-_s2_path = Path(__file__).resolve().parent.parent.parent / "v3" / "prompts_study2.json"
-with open(_s2_path) as f:
-    _PROMPTS_S2 = json.load(f)
+# Lazy-load preregistered Study 2 prompts (don't fail if file doesn't exist at import time)
+_PROMPTS_S2 = None
+
+def _load_prompts():
+    global _PROMPTS_S2
+    if _PROMPTS_S2 is None:
+        _s2_path = Path(__file__).resolve().parent.parent.parent / "v3" / "prompts_study2.json"
+        with open(_s2_path) as f:
+            _PROMPTS_S2 = json.load(f)
+    return _PROMPTS_S2
 
 def car_role_spec(role, tools, para, lvl, model=None):
     """
@@ -21,19 +27,20 @@ def car_role_spec(role, tools, para, lvl, model=None):
     Returns:
         Dict with system, user, tools, tool_results, decisions
     """
+    prompts_s2 = _load_prompts()
     cell = f"{role}_{'tools' if tools else 'notools'}"
     
     # Find matching spec in the preregistered prompts
     # If model is provided, use that; otherwise search all models
-    models_to_search = [model] if model else list(_PROMPTS_S2["specs"].keys())
+    models_to_search = [model] if model else list(prompts_s2["specs"].keys())
     
     for m in models_to_search:
-        if m not in _PROMPTS_S2["specs"]:
+        if m not in prompts_s2["specs"]:
             continue
-        if cell not in _PROMPTS_S2["specs"][m]:
+        if cell not in prompts_s2["specs"][m]:
             continue
         
-        for spec in _PROMPTS_S2["specs"][m][cell]:
+        for spec in prompts_s2["specs"][m][cell]:
             if spec.get("para") == para and spec.get("level") == lvl:
                 return {
                     "kind": "do",
