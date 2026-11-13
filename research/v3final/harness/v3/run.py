@@ -319,38 +319,87 @@ def run_stage(model, stage, budget, cap, workers, smoke, it):
         if not cf.exists(): sys.exit("run --stage calibrate first")
         cal = json.loads(cf.read_text())
     jobs = plan(stage, cal, smoke)
+    
+    # Load existing results
     done = set()
+    error_keys = set()
     if out.exists():
         for l in open(out):
             r = json.loads(l)
-            if not r.get("error"): done.add(r["key"])
-    todo = [j for j in jobs if key(j) not in done]
-    import random; random.Random(20261031).shuffle(todo)
-    run_id = f"{it}-{model}-{stage}{'-smoke' if smoke else ''}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    L = Ledger(ROOT / "data/ledger.sqlite", d / "calls.jsonl", prices(), cap, budget, run_id)
-    E = Engine(model, L, out)
-    L.start_run(f"v3-{stage}", {"version": VERSION, "iteration": it, "model": MODELS[model], "graders": list(E.graders), "design": DESIGN, "cues": CUE_SET, "phases": PHASES, "dilemmas": DILEMMA_SET, "cue_n": CUE_N, "calibration": cal, "smoke": smoke})
-    print(f"[{model}] {stage}: {len(jobs)} planned, {len(done)} done, {len(todo)} to run; graders {list(E.graders)}; ledger total ${L.spent_total():.2f}", flush=True)
-    stop = {"b": False}; t0 = time.time(); n = 0; C = RunClock(f"[{model}] ").start()
-    def go(j):
-        if stop["b"]: return
-        try:
-            row = E.unit(j); E.emit(row)
-        except BudgetExceeded as e:
-            stop["b"] = True; print("BUDGET STOP:", e, flush=True)
-        except Exception as e:
-            E.emit({**j, "key": key(j), "error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc()[-1500:]})
-    with ThreadPoolExecutor(workers) as ex:
-        for f in as_completed([ex.submit(go, j) for j in todo]):
-            n += 1
-            if n % 50 == 0: print(f"  [{model}] {n}/{len(todo)}  run ${L.spent_run():.3f}  {C.summary()}  {now_local()}  stats {E.T.stats}", flush=True)
-    L.finish_run(); C.stop()
-    print(f"[{model}] {stage} finished: {n}/{len(todo)} in {C.summary()}; run ${L.spent_run():.3f}; total ${L.spent_total():.2f}; budget stop {stop['b']}; client {E.T.stats}", flush=True)
+            if r.get("error"):
+                error_keys.add(r["key"])
+            else:
+                done.add(r["key"])
+    
+    # Initial pass + exactly two retry passes over errors
+    MAX_PASSES = 3
+    pass_num = 1
+    
+    while pass_num <= MAX_PASSES:
+        if pass_num == 1:
+            todo = [j for j in jobs if key(j) not in done and key(j) not in error_keys]
+        else:
+            # Retry passes: only errored keys
+            todo = [j for j in jobs if key(j) in error_keys]
+        
+        if not todo:
+            break
+        
+        import random; random.Random(20261031).shuffle(todo)
+        run_id = f"{it}-{model}-{stage}{'-smoke' if smoke else ''}-pass{pass_num}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        L = Ledger(ROOT / "data/ledger.sqlite", d / "calls.jsonl", prices(), cap, budget, run_id)
+        E = Engine(model, L, out)
+        
+        if pass_num == 1:
+            L.start_run(f"v3-{stage}", {"version": VERSION, "iteration": it, "model": MODELS[model], "graders": list(E.graders), "design": DESIGN, "cues": CUE_SET, "phases": PHASES, "dilemmas": DILEMMA_SET, "cue_n": CUE_N, "calibration": cal, "smoke": smoke})
+        
+        print(f"[{model}] {stage} pass {pass_num}/{MAX_PASSES}: {len(jobs)} planned, {len(done)} done, {len(error_keys)} errors, {len(todo)} to run; graders {list(E.graders)}; ledger total ${L.spent_total():.2f}", flush=True)
+        
+        stop = {"b": False}; n = 0; C = RunClock(f"[{model}] ").start()
+        new_errors = set()
+        
+        def go(j):
+            if stop["b"]: return
+            try:
+                row = E.unit(j); E.emit(row)
+                if row.get("error"):
+                    new_errors.add(key(j))
+            except BudgetExceeded as e:
+                stop["b"] = True; print("BUDGET STOP:", e, flush=True)
+            except Exception as e:
+                err_row = {**j, "key": key(j), "error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc()[-1500:]}
+                E.emit(err_row)
+                new_errors.add(key(j))
+        
+        with ThreadPoolExecutor(workers) as ex:
+            for f in as_completed([ex.submit(go, j) for j in todo]):
+                n += 1
+                if n % 50 == 0: print(f"  [{model}] {n}/{len(todo)}  run ${L.spent_run():.3f}  {C.summary()}  {now_local()}  stats {E.T.stats}", flush=True)
+        
+        L.finish_run(); C.stop()
+        print(f"[{model}] {stage} pass {pass_num} finished: {n}/{len(todo)} in {C.summary()}; run ${L.spent_run():.3f}; total ${L.spent_total():.2f}; budget stop {stop['b']}; new errors {len(new_errors)}; client {E.T.stats}", flush=True)
+        
+        if stop["b"]:
+            return False
+        
+        # Update error tracking for next pass
+        error_keys = new_errors
+        if not error_keys:
+            break
+        
+        pass_num += 1
+    
+    # After all passes, check if any errors remain
+    if error_keys:
+        print(f"[{model}] ERROR: {len(error_keys)} units still have errors after {pass_num} passes", flush=True)
+        return False
+    
     if stage == "calibrate" and not smoke:
         rows = [json.loads(l) for l in open(out)]
         c = calibrate([r for r in rows if not r.get("error")]); (d / "calibration.json").write_text(json.dumps(c, indent=1))
         print(f"[{model}] calibration: CAR-SI levels {c['car_si']['levels']} flag {c['car_si']['flag']}; pressure levels { {k: (v['levels'], v['flag']) for k, v in c.items() if k.endswith('_press')} }", flush=True)
-    return not stop["b"]
+    
+    return True
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
