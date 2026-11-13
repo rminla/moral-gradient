@@ -310,7 +310,7 @@ def calibrate(rows):
         out[f"{c}_press"] = apply_observed_flag(fs, fx, fy); out[f"n_{c}"] = len(fb)
     return {**out, "rule": "bracket the fitted 50% point with floor/ceil levels (pressure: the one closer to 50%); else closest-to-50% level. Flag = observed P(act) at the chosen level outside [25%,75%] (v3-final)"}
 
-def run_stage(model, stage, budget, cap, workers, smoke, it):
+def run_stage(model, stage, budget, cap, workers, smoke, it, global_ledger_path=None):
     d = ROOT / "data" / "v3" / it / model; d.mkdir(parents=True, exist_ok=True)
     out = d / f"{stage}{'_smoke' if smoke else ''}.jsonl"
     cal = None
@@ -347,7 +347,9 @@ def run_stage(model, stage, budget, cap, workers, smoke, it):
         
         import random; random.Random(20261031).shuffle(todo)
         run_id = f"{it}-{model}-{stage}{'-smoke' if smoke else ''}-pass{pass_num}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        L = Ledger(ROOT / "data/ledger.sqlite", d / "calls.jsonl", prices(), cap, budget, run_id)
+        # Use per-iteration ledger for cap enforcement across all models in this study/stage
+        iter_ledger_path = ROOT / "data" / "v3" / it / "ledger.sqlite"
+        L = Ledger(iter_ledger_path, d / "calls.jsonl", prices(), cap, budget, run_id)
         E = Engine(model, L, out)
         
         if pass_num == 1:
@@ -399,6 +401,37 @@ def run_stage(model, stage, budget, cap, workers, smoke, it):
         c = calibrate([r for r in rows if not r.get("error")]); (d / "calibration.json").write_text(json.dumps(c, indent=1))
         print(f"[{model}] calibration: CAR-SI levels {c['car_si']['levels']} flag {c['car_si']['flag']}; pressure levels { {k: (v['levels'], v['flag']) for k, v in c.items() if k.endswith('_press')} }", flush=True)
     
+    # Append this run's spend to global ledger if provided
+    if global_ledger_path and not smoke:
+        # Read all calls from this run's ledger
+        iter_ledger_path = ROOT / "data" / "v3" / it / "ledger.sqlite"
+        if iter_ledger_path.exists():
+            src_conn = sqlite3.connect(str(iter_ledger_path))
+            run_calls = src_conn.execute(
+                "SELECT * FROM calls WHERE run_id LIKE ?",
+                (f"{it}-{model}-{stage}%",)
+            ).fetchall()
+            src_conn.close()
+            
+            if run_calls:
+                # Append to global ledger
+                dst_conn = sqlite3.connect(str(global_ledger_path))
+                dst_conn.executescript(SCHEMA)  # Ensure schema exists
+                
+                # Get column names
+                col_names = [desc[0] for desc in src_conn.execute("PRAGMA table_info(calls)").fetchall()]
+                placeholders = ",".join(["?" for _ in col_names])
+                
+                dst_conn.executemany(
+                    f"INSERT OR REPLACE INTO calls VALUES ({placeholders})",
+                    run_calls
+                )
+                dst_conn.commit()
+                dst_conn.close()
+                
+                total_cost = sum(row[col_names.index("cost_usd")] for row in run_calls if row[col_names.index("cost_usd")] is not None)
+                print(f"[{model}] Appended ${total_cost:.4f} to global ledger ({len(run_calls)} calls)", flush=True)
+    
     return True
 
 if __name__ == "__main__":
@@ -419,19 +452,36 @@ if __name__ == "__main__":
     ap.add_argument("--cap", type=float, default=None, help="Hard budget cap for this run (preregistered studies)")
     a = ap.parse_args()
     
-    # Preregistered studies: use --cap as both pilot_cap and budget if provided
+    # Preregistered studies: use --cap for per-study/stage enforcement
+    global_ledger_path = None
     if a.cap:
         effective_cap = a.cap
         effective_budget = a.cap
-        # Pre-flight check: verify global ledger committed + cap <= $70
-        global_ledger_path = ROOT / "data/ledger.sqlite"
-        if global_ledger_path.exists():
-            conn = sqlite3.connect(str(global_ledger_path))
-            committed = conn.execute("SELECT COALESCE(SUM(cost_usd), 0) FROM calls WHERE status = 'ok'").fetchone()[0]
-            conn.close()
-            if committed + effective_cap > 70.0:
-                sys.exit(f"Pre-flight check failed: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} = ${committed + effective_cap:.2f} > $70.00 limit")
-            print(f"Pre-flight check passed: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} = ${committed + effective_cap:.2f} <= $70.00", flush=True)
+        
+        # Pre-flight check: read REQUIRED global research ledger
+        # This must be the path to the actual global ledger, not the local pilot ledger
+        global_ledger_path = Path(os.environ.get("GLOBAL_LEDGER_PATH", ROOT / "data" / "global_ledger.sqlite"))
+        
+        if not global_ledger_path.exists():
+            sys.exit(
+                f"Pre-flight check FAILED: Global research ledger not found at {global_ledger_path}\n"
+                f"The global ledger is required for budget enforcement.\n"
+                f"Set GLOBAL_LEDGER_PATH environment variable to the correct path."
+            )
+        
+        # Check committed + open holds + cap <= $70
+        conn = sqlite3.connect(str(global_ledger_path))
+        committed = conn.execute("SELECT COALESCE(SUM(cost_usd), 0) FROM calls WHERE status = 'ok'").fetchone()[0]
+        # Note: open holds would require tracking pending runs; for now we check committed + cap
+        conn.close()
+        
+        if committed + effective_cap > 70.0:
+            sys.exit(
+                f"Pre-flight check FAILED: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} "
+                f"= ${committed + effective_cap:.2f} > $70.00 limit"
+            )
+        
+        print(f"✓ Pre-flight check passed: global ledger committed ${committed:.2f} + cap ${effective_cap:.2f} = ${committed + effective_cap:.2f} <= $70.00", flush=True)
     else:
         effective_cap = a.pilot_cap
         effective_budget = a.budget
@@ -452,4 +502,4 @@ if __name__ == "__main__":
     for st in (["calibrate", "main"] if a.stage == "all" else [a.stage]):
         if st == "main" and a.smoke and not (ROOT / "data/v3" / a.iter / a.model / "calibration.json").exists():
             (ROOT / "data/v3" / a.iter / a.model / "calibration.json").write_text(json.dumps({"car_si": {"levels": [3, 4]}, "fb_press": {"levels": [3]}, "sw_press": {"levels": [3]}, "lp_press": {"levels": [3]}, "ds_press": {"levels": [2]}, "smoke_placeholder": True}))
-        if not run_stage(a.model, st, effective_budget, effective_cap, a.workers, a.smoke, a.iter): break
+        if not run_stage(a.model, st, effective_budget, effective_cap, a.workers, a.smoke, a.iter, global_ledger_path): break
