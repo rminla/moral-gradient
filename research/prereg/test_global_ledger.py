@@ -24,7 +24,7 @@ def temp_ledger():
 
 def test_ledger_initialization(temp_ledger):
     """Test that ledger initializes with correct schema."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=5.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=5.0, allow_create=True)
     
     # Verify tables exist
     conn = sqlite3.connect(str(temp_ledger))
@@ -42,7 +42,7 @@ def test_ledger_initialization(temp_ledger):
 
 def test_pre_flight_check_passes(temp_ledger):
     """Test pre-flight check passes when budget allows."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0, allow_create=True)
     
     # Should pass with empty ledger
     ledger.pre_flight_check()
@@ -53,7 +53,7 @@ def test_pre_flight_check_passes(temp_ledger):
 def test_pre_flight_check_fails_overspend(temp_ledger):
     """Test pre-flight check fails when committed + cap > $70."""
     # Add some existing spend
-    ledger = GlobalLedger(temp_ledger, "existing_exp", stage_cap_usd=50.0)
+    ledger = GlobalLedger(temp_ledger, "existing_exp", stage_cap_usd=50.0, allow_create=True)
     ledger.insert_call(
         call_id="existing_call",
         model_id="test-model",
@@ -62,7 +62,7 @@ def test_pre_flight_check_fails_overspend(temp_ledger):
     )
     
     # Try to start new experiment that would exceed $70
-    ledger2 = GlobalLedger(temp_ledger, "new_exp", stage_cap_usd=25.0)
+    ledger2 = GlobalLedger(temp_ledger, "new_exp", stage_cap_usd=25.0, allow_create=True)
     
     with pytest.raises(BudgetExceeded, match="Pre-flight FAILED"):
         ledger2.pre_flight_check()
@@ -72,7 +72,7 @@ def test_pre_flight_check_fails_overspend(temp_ledger):
 
 def test_reserve_and_insert(temp_ledger):
     """Test reserve before call and insert after."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0, allow_create=True)
     
     # Reserve
     ledger.reserve("call_1", "test-model", "test-provider", 0.01)
@@ -108,7 +108,7 @@ def test_reserve_and_insert(temp_ledger):
 
 def test_stage_cap_enforcement(temp_ledger):
     """Test that stage cap is enforced."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=0.02)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=0.02, allow_create=True)
     
     # First call should succeed
     ledger.reserve("call_1", "test-model", "test-provider", 0.01)
@@ -123,7 +123,7 @@ def test_stage_cap_enforcement(temp_ledger):
 
 def test_global_cap_enforcement(temp_ledger):
     """Test that global $70 cap is enforced."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=100.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=100.0, allow_create=True)
     
     # Add $69 of spend
     ledger.insert_call("call_1", "test-model", "test-provider", 69.0, 1000, 1000)
@@ -137,7 +137,7 @@ def test_global_cap_enforcement(temp_ledger):
 
 def test_backup_created(temp_ledger):
     """Test that backup is created before first insert."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0, allow_create=True)
     
     # Make first insert (triggers backup)
     ledger.reserve("call_1", "test-model", "test-provider", 0.01)
@@ -151,7 +151,7 @@ def test_backup_created(temp_ledger):
 
 def test_generate_summary(temp_ledger):
     """Test summary generation matching example format."""
-    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0)
+    ledger = GlobalLedger(temp_ledger, "test_exp", stage_cap_usd=10.0, allow_create=True)
     
     # Add some calls
     ledger.insert_call("call_1", "test-model", "test-provider", 1.5, 100, 50)
@@ -182,11 +182,11 @@ def test_generate_summary(temp_ledger):
 def test_multiple_experiments(temp_ledger):
     """Test that multiple experiments can share ledger."""
     # Experiment 1
-    ledger1 = GlobalLedger(temp_ledger, "exp1", stage_cap_usd=5.0)
+    ledger1 = GlobalLedger(temp_ledger, "exp1", stage_cap_usd=5.0, allow_create=True)
     ledger1.insert_call("exp1_call", "model1", "provider", 2.0, 100, 50)
     
     # Experiment 2
-    ledger2 = GlobalLedger(temp_ledger, "exp2", stage_cap_usd=3.0)
+    ledger2 = GlobalLedger(temp_ledger, "exp2", stage_cap_usd=3.0, allow_create=True)
     ledger2.insert_call("exp2_call", "model2", "provider", 1.5, 100, 50)
     
     # Check committed includes both
