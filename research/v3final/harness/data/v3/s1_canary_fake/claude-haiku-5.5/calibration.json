@@ -1,0 +1,57 @@
+{
+ "car_si": {
+  "levels": [
+   5
+  ],
+  "fitted_p": {
+   "1": 0.5,
+   "2": 0.5,
+   "3": 0.5,
+   "4": 0.5,
+   "5": 0.5,
+   "6": 0.5,
+   "7": 0.5,
+   "8": 0.5
+  },
+  "tipping": null,
+  "flag": null,
+  "fit_flag": "floor",
+  "observed_p": null
+ },
+ "n_car": 0,
+ "fb_press": {
+  "levels": [
+   3
+  ],
+  "fitted_p": {
+   "1": 0.5,
+   "2": 0.5,
+   "3": 0.5,
+   "4": 0.5,
+   "5": 0.5
+  },
+  "tipping": null,
+  "flag": null,
+  "fit_flag": "floor",
+  "observed_p": null
+ },
+ "n_fb": 0,
+ "sw_press": {
+  "levels": [
+   3
+  ],
+  "fitted_p": {
+   "1": 0.5,
+   "2": 0.5,
+   "3": 0.5,
+   "4": 0.5,
+   "5": 0.5
+  },
+  "tipping": null,
+  "flag": null,
+  "fit_flag": "floor",
+  "observed_p": null
+ },
+ "n_sw": 0,
+ "rule": "bracket the fitted 50% point with floor/ceil levels (pressure: the one closer to 50%); else closest-to-50% level. Flag = observed P(act) at the chosen level outside [25%,75%] (v3-final)"
+}

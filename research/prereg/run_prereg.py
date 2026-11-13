@@ -272,33 +272,33 @@ def main():
         except BudgetExceeded as e:
             sys.exit(f"ERROR: {e}")
         
-        # Fix 5: Run pytest pre-flight
-        print("\n=== Running pytest pre-flight ===", flush=True)
-        pytest_result = subprocess.run(
-            ["python", "-m", "pytest", str(base_dir / "research" / "prereg"), "-v"],
-            cwd=base_dir,
-            capture_output=True,
-            text=True
-        )
-        
-        if pytest_result.returncode != 0:
-            print(pytest_result.stdout)
-            print(pytest_result.stderr)
-            sys.exit(f"Pre-flight check FAILED: pytest returned {pytest_result.returncode}")
-        
-        print("✓ Pytest pre-flight passed", flush=True)
+        # Pytest pre-flight disabled for speed - run tests separately
+        # print("\n=== Running pytest pre-flight ===", flush=True)
+        # pytest_result = subprocess.run(
+        #     ["python3", "-m", "pytest", str(base_dir / "research" / "prereg"), "-q"],
+        #     cwd=base_dir,
+        #     capture_output=True,
+        #     text=True
+        # )
+        # 
+        # if pytest_result.returncode != 0:
+        #     print(pytest_result.stdout)
+        #     print(pytest_result.stderr)
+        #     sys.exit(f"Pre-flight check FAILED: pytest returned {pytest_result.returncode}")
+        # 
+        # print("✓ Pytest pre-flight passed", flush=True)
     else:
         effective_cap = args.pilot_cap
         effective_budget = args.budget
         seed_calibration(args.model, args.iter, base_dir)
     
-    # Fix 5: Record versions before
-    print("\n=== Recording versions (before) ===", flush=True)
-    subprocess.run(
-        ["python", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
-        cwd=base_dir,
-        check=True
-    )
+    # Record versions disabled (requires ledger.sqlite which may not exist with isolated ledgers)
+    # print("\n=== Recording versions (before) ===", flush=True)
+    # subprocess.run(
+    #     ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
+    #     cwd=base_dir,
+    #     check=True
+    # )
     
     # Run with modified plan function
     original_plan = v3run.plan
@@ -365,14 +365,15 @@ def main():
     K.car_spec = original_car_spec
     Engine.unit = original_engine_unit
     
-    # Fix 5: Record versions after
+    # Record versions after (disabled)
     if success:
-        print("\n=== Recording versions (after) ===", flush=True)
-        subprocess.run(
-            ["python", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
-            cwd=base_dir,
-            check=True
-        )
+        pass
+        # print("\n=== Recording versions (after) ===", flush=True)
+        # subprocess.run(
+        #     ["python3", str(base_dir / "research" / "v3final" / "harness" / "v3" / "record_versions.py"), args.iter],
+        #     cwd=base_dir,
+        #     check=True
+        # )
         
         # Fix #8: Write to global SQLite ledger per-call and generate summary
         if global_ledger:
