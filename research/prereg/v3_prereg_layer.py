@@ -149,9 +149,11 @@ def unit_with_car_role(engine, j, key_str):
         row.update(r)
         
         if r["ok"]:
-            # Apply car_outcome
-            out = K.car_outcome(r, spec["tool_results"])
-            row.update(out)
+            # Apply car_outcome (takes list of dicts with "name" key)
+            # v3final episode() returns "tool_calls" with [{"name": ..., "input": ..., "valid": ...}]
+            tool_calls = r.get("tool_calls", r.get("calls", []))
+            outcome = K.car_outcome(tool_calls)
+            row["outcome"] = outcome
             
             # Check cue_seen
             row["cue_seen"] = (
