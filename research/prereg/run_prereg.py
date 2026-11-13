@@ -108,7 +108,7 @@ def plan_prereg(stage, cal, smoke, cue_n, role_n, phases):
             si = cal["car_si"]["levels"]
             for cell, (role, tools) in CELL_CONFIG.items():
                 for L in si:
-                    add("car_role", "do", L, role_n, "role", esc=False, cell=cell, role=role, tools=tools)
+                    add("car_role", "do", L, role_n, "role", esc=False, cell=cell, role=role, tools=tools, arm=cell)
     
     if smoke:
         seen, out = set(), []
@@ -180,6 +180,10 @@ def run_stage_with_retries(model, stage, budget, cap, workers, smoke, iter_name,
     while retry_count <= max_retries:
         if retry_count > 0:
             print(f"\n=== Retry pass {retry_count}/{max_retries} ===\n", flush=True)
+            
+            # Sleep to avoid run_id UNIQUE error (1-second resolution)
+            import time
+            time.sleep(1.1)
             
             # Delete failed rows from output to avoid duplicates on retry
             d = v3run.ROOT / "data" / "v3" / iter_name / model

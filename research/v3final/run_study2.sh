@@ -21,10 +21,10 @@ ITER="s2_${STAGE}"
 MODELS=("claude-haiku-5.5" "gpt-oss-120b" "qwen3.6-27b" "gemini-3.8-flash")
 
 if [[ "$STAGE" == "canary" ]]; then
-    ROLE_N=16  # 16 per cell per model = 64 per model (256 total with 4 cells × 4 models)
+    ROLE_N=8  # 8 per level × 2 levels = 16 per cell per model = 64 per model
     CAP=1.40
 else
-    ROLE_N=48  # 48 per cell per model = 192 per model (768 total with 4 cells × 4 models)
+    ROLE_N=24  # 24 per level × 2 levels = 48 per cell per model = 192 per model
     CAP=4.21
 fi
 
@@ -57,10 +57,11 @@ run_model() {
     
     # Fix #10: run_prereg.py handles calibration seeding
     # Fix #10: Pass --global-ledger
+    # Fix: Use --stage main --preset full
     if python3 research/prereg/run_prereg.py "$model" \
         --iter "$ITER" \
-        --stage "$STAGE" \
-        --preset iter \
+        --stage main \
+        --preset full \
         --phases role \
         --role-n "$ROLE_N" \
         --cap "$CAP" \

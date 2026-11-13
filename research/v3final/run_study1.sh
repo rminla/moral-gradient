@@ -22,10 +22,10 @@ MODELS=("claude-haiku-5.5" "gpt-oss-120b" "qwen3.6-27b" "gemini-3.8-flash")
 CUES="benef_org,benef_self,benef_other,none"
 
 if [[ "$STAGE" == "canary" ]]; then
-    N_PER_CUE=16  # 16 per arm per model = 64 per model (256 total with 4 arms × 4 models)
+    N_PER_CUE=8  # 8 per level × 2 levels = 16 per arm per model = 64 per model
     CAP=2.97
 else
-    N_PER_CUE=48  # 48 per arm per model = 192 per model (768 total with 4 arms × 4 models)
+    N_PER_CUE=24  # 24 per level × 2 levels = 48 per arm per model = 192 per model
     CAP=8.92
 fi
 
@@ -58,12 +58,12 @@ run_model() {
     
     # Fix #10: run_prereg.py handles calibration seeding
     # Fix #10: Pass --global-ledger
-    # Fix #10: Use correct phase (cues not si)
+    # Fix: Use --phases si and --stage main --preset full
     if python3 research/prereg/run_prereg.py "$model" \
         --iter "$ITER" \
-        --stage "$STAGE" \
-        --preset iter \
-        --phases cues \
+        --stage main \
+        --preset full \
+        --phases si \
         --cues "$CUES" \
         --cue-n "benef_org:$N_PER_CUE,benef_self:$N_PER_CUE,benef_other:$N_PER_CUE,none:$N_PER_CUE" \
         --cap "$CAP" \

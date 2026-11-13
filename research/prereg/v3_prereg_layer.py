@@ -72,12 +72,8 @@ def make_car_spec_for_model(model):
             # Find matching spec by level and para
             for spec in specs_list:
                 if spec['level'] == lvl and spec['para'] == para:
-                    # Return the prereg spec verbatim (system, user, tools)
-                    return {
-                        'system': spec['system'],
-                        'user': spec['user'],
-                        'tools': spec.get('tools', []),
-                    }
+                    # Return the prereg spec verbatim (full spec including tool_results)
+                    return copy.deepcopy(spec)
             
             raise KeyError(f"No Study 1 spec found for model={model}, arm={arm_name}, level={lvl}, para={para}")
         else:
@@ -152,13 +148,13 @@ def unit_with_car_role(engine, j):
     includes cell in key, doesn't double-emit.
     """
     import json as json_lib
-    from v2 import toolcheck as TC
+    from v3 import toolcheck as TC
     
     # Fix #4: Use j["stakes"] not j["level"]
     spec = car_role_spec(engine.model, j["role"], j["tools"], j["para"], j["stakes"])
     
-    # Fix #5: Include cell in key
-    key_str = f"{j['phase']}_p{j['para']}_s{j['s']}_L{j['stakes']}_cell_{j['cell']}"
+    # Fix #5: Use frozen key with cell in arm field
+    key_str = v3run.key(j)
     
     row = {
         "key": key_str,
@@ -239,6 +235,9 @@ def unit_with_car_role(engine, j):
                 row["outcome"] = "no_valid_call"
             else:
                 row["outcome"] = K.car_outcome(valid_calls)
+        
+        # Set unparsed=False for tools rows so analyze_s2 doesn't drop them
+        row["unparsed"] = False
     else:
         # No-tools cell: single chat call, parse with DEC regex
         msgs = [{"role": "user", "content": spec["user"]}]
@@ -247,7 +246,7 @@ def unit_with_car_role(engine, j):
         row.update({
             "text": r.get("text", ""),
             "thinking": r.get("thinking", ""),
-            "cost": r.get("cost_usd", 0),
+            "cost": r.get("cost", 0),
         })
         
         if not r["ok"]:
